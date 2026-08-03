@@ -158,6 +158,47 @@ export interface Database {
         Insert: { organization_id: string; key: string; value: Json; updated_by?: string | null };
         Update: Partial<Database['public']['Tables']['system_settings']['Row']>;
       };
+      course_categories: {
+        Row: {
+          id: string;
+          name: string;
+          slug: string;
+          display_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database['public']['Tables']['course_categories']['Row']> & {
+          name: string;
+          slug: string;
+        };
+        Update: Partial<Database['public']['Tables']['course_categories']['Row']>;
+      };
+      courses: {
+        Row: {
+          id: string;
+          category_id: string | null;
+          name: string;
+          slug: string;
+          short_description: string;
+          description: string | null;
+          duration_label: string;
+          fee_paise: number;
+          status: 'draft' | 'published' | 'archived';
+          display_order: number;
+          created_at: string;
+          created_by: string | null;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: Partial<Database['public']['Tables']['courses']['Row']> & {
+          name: string;
+          slug: string;
+          short_description: string;
+          duration_label: string;
+          fee_paise: number;
+        };
+        Update: Partial<Database['public']['Tables']['courses']['Row']>;
+      };
       document_sequences: {
         Row: {
           id: string;
