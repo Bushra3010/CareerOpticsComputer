@@ -215,16 +215,32 @@ describe.skipIf(!hasCredentials)("RLS proof tests (P1-P6)", () => {
     expect(data).toBe(true);
   });
 
-  it("P2 — anon cannot read organizations, centres or memberships", async () => {
+  it("P2 — anon cannot read organizations or memberships", async () => {
     const anon: AnyClient = createClient(url!, anonKey!);
-    const [orgs, centres, memberships] = await Promise.all([
+    const [orgs, memberships] = await Promise.all([
       anon.from("organizations").select("id"),
-      anon.from("centres").select("id"),
       anon.from("memberships").select("id"),
     ]);
     expect(orgs.data ?? []).toHaveLength(0);
-    expect(centres.data ?? []).toHaveLength(0);
     expect(memberships.data ?? []).toHaveLength(0);
+  });
+
+  it("P2b — anon can read an active centre but not a suspended one (migration 0007's intentional public read)", async () => {
+    const anon: AnyClient = createClient(url!, anonKey!);
+    await admin
+      .from("centres")
+      .update({ status: "suspended" })
+      .eq("id", centreB);
+
+    const [visibleA, hiddenB] = await Promise.all([
+      anon.from("centres").select("id").eq("id", centreA),
+      anon.from("centres").select("id").eq("id", centreB),
+    ]);
+
+    expect(visibleA.data ?? []).toHaveLength(1);
+    expect(hiddenB.data ?? []).toHaveLength(0);
+
+    await admin.from("centres").update({ status: "active" }).eq("id", centreB);
   });
 
   it("P3 — Centre staff cannot change their own role via direct update", async () => {

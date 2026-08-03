@@ -27,6 +27,7 @@ export interface Database {
           slug: string;
         };
         Update: Partial<Database['public']['Tables']['organizations']['Row']>;
+        Relationships: [];
       };
       profiles: {
         Row: {
@@ -42,6 +43,7 @@ export interface Database {
           full_name: string;
         };
         Update: Partial<Database['public']['Tables']['profiles']['Row']>;
+        Relationships: [];
       };
       centres: {
         Row: {
@@ -65,6 +67,7 @@ export interface Database {
           name: string;
         };
         Update: Partial<Database['public']['Tables']['centres']['Row']>;
+        Relationships: [];
       };
       roles: {
         Row: {
@@ -81,16 +84,19 @@ export interface Database {
           name: string;
         };
         Update: Partial<Database['public']['Tables']['roles']['Row']>;
+        Relationships: [];
       };
       permissions: {
         Row: { code: string; description: string };
         Insert: { code: string; description: string };
         Update: Partial<Database['public']['Tables']['permissions']['Row']>;
+        Relationships: [];
       };
       role_permissions: {
         Row: { role_id: string; permission_code: string };
         Insert: { role_id: string; permission_code: string };
         Update: Partial<Database['public']['Tables']['role_permissions']['Row']>;
+        Relationships: [];
       };
       memberships: {
         Row: {
@@ -111,6 +117,7 @@ export interface Database {
           role_id: string;
         };
         Update: Partial<Database['public']['Tables']['memberships']['Row']>;
+        Relationships: [];
       };
       audit_logs: {
         Row: {
@@ -130,6 +137,7 @@ export interface Database {
           table_name: string;
         };
         Update: never;
+        Relationships: [];
       };
       idempotency_keys: {
         Row: {
@@ -146,6 +154,7 @@ export interface Database {
           request_hash: string;
         };
         Update: Partial<Database['public']['Tables']['idempotency_keys']['Row']>;
+        Relationships: [];
       };
       system_settings: {
         Row: {
@@ -157,6 +166,7 @@ export interface Database {
         };
         Insert: { organization_id: string; key: string; value: Json; updated_by?: string | null };
         Update: Partial<Database['public']['Tables']['system_settings']['Row']>;
+        Relationships: [];
       };
       course_categories: {
         Row: {
@@ -172,6 +182,7 @@ export interface Database {
           slug: string;
         };
         Update: Partial<Database['public']['Tables']['course_categories']['Row']>;
+        Relationships: [];
       };
       courses: {
         Row: {
@@ -198,6 +209,7 @@ export interface Database {
           fee_paise: number;
         };
         Update: Partial<Database['public']['Tables']['courses']['Row']>;
+        Relationships: [];
       };
       leads: {
         Row: {
@@ -222,6 +234,7 @@ export interface Database {
           phone: string;
         };
         Update: Partial<Database['public']['Tables']['leads']['Row']>;
+        Relationships: [];
       };
       document_sequences: {
         Row: {
@@ -238,6 +251,7 @@ export interface Database {
           period: string;
         };
         Update: Partial<Database['public']['Tables']['document_sequences']['Row']>;
+        Relationships: [];
       };
     };
     Views: Record<string, never>;
