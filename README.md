@@ -138,3 +138,17 @@ These are enforced by review, tests and CI — not by convention:
 - Conventional Commits where practical.
 - **Never rewrite an applied migration.** Add a new forward migration.
 - Run `npm run verify` before pushing.
+
+## Repository configuration
+
+| Setting                     | Status                                                                                              |
+| --------------------------- | --------------------------------------------------------------------------------------------------- |
+| Visibility                  | Private                                                                                             |
+| Dependabot alerts           | Enabled                                                                                             |
+| Secret scanning             | **Not enabled** — needs GitHub Advanced Security, unavailable on a private repo on the current plan |
+| Branch protection on `main` | **Not enabled** — needs GitHub Pro for private repos                                                |
+
+PRD §15 requires protected `main`, required reviews and secret scanning. Both
+need a GitHub Pro plan (or a public repository). Until then, the CI workflow
+still runs on every push and pull request — it just cannot be _enforced_ as a
+merge gate. Raise this before Phase 1 ships anything to a real environment.
