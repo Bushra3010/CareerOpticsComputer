@@ -3,10 +3,12 @@
 Multi-tenant computer education, franchise and training-centre management
 platform for **Career Optics Computer Academy**.
 
-> **Status: Phase 0 — Foundation.** The design system, application shells and
-> project tooling exist. There is no database, no authentication and no feature
-> module yet. See [`docs/00-build-plan.md`](docs/00-build-plan.md) for what lands
-> in each phase.
+> **Status: Phase 0 — Foundation, database live.** The design system,
+> application shells, project tooling, initial schema (`0001`–`0004`), RLS
+> policies and the six mandatory proof tests (P1–P6, build plan §5.3) are all
+> in place against a hosted Supabase project. No authentication UI or feature
+> module yet. See [`docs/00-build-plan.md`](docs/00-build-plan.md) for what
+> lands in each phase.
 
 ---
 
@@ -118,9 +120,22 @@ These are enforced by review, tests and CI — not by convention:
 
 ## Known limitations
 
-- **No database yet.** Migrations `0001`–`0003` and the mandatory RLS proof
-  tests (build plan §5.3) are the next deliverable and are blocked on Supabase
-  credentials.
+- **Database types are hand-maintained.** `types/database.generated.ts` is
+  written by hand, not generated, because `npm run db:types` needs a reachable
+  Postgres connection (`SUPABASE_DB_URL`), which isn't configured yet — only
+  the REST-facing anon/service-role keys are. Once the DB URL is available,
+  regenerate it and delete `lib/db/rpc.ts`'s `callRpc` escape hatch, which
+  exists only because postgrest-js's RPC generics need the fully generated
+  shape to type-check.
+- **P6 (idempotent wallet debit) is proven against `idempotency_keys`, not
+  `wallet_entries`** — the wallet ledger lands in migration `0009` (Phase 3).
+  Re-point `tests/integration/rls-proof.test.ts` at it then.
+- **No local Supabase / pgTAP.** Docker isn't available on the dev machine, so
+  RLS proof tests run as Vitest integration tests against the hosted project
+  (`npm run test:integration`) instead of pgTAP in CI. This needs
+  `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` and
+  `SUPABASE_SERVICE_ROLE_KEY` in the environment and is intentionally excluded
+  from `npm run verify` so CI without those secrets doesn't fail.
 - **Node 20.18 compatibility.** The toolchain wants Node ≥20.19. On 20.18,
   Vitest is pinned to 3.x and jsdom to 26.x, and npm prints `EBADENGINE`
   warnings. Upgrading to Node 22.13 removes all of it. CI already uses 22.

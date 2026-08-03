@@ -30,8 +30,10 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files — .env.example is the one exception, tracked deliberately so
+# `cp .env.example .env.local` (README) has something to copy.
 .env*
+!.env.example
 
 # vercel
 .vercel
