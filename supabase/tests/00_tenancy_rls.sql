@@ -13,7 +13,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(24);
+select plan(25);
 
 -- ---------------------------------------------------------------------------
 -- Fixtures
@@ -436,6 +436,15 @@ select is(
     where table_schema = 'public' and grantee = 'anon'),
   0,
   'anon holds no table privilege anywhere in public'
+);
+
+-- The RPC wrappers added in 0005 must not become an anon-reachable oracle.
+select is(
+  (select count(*)::int
+     from information_schema.role_routine_grants
+    where routine_schema = 'public' and grantee = 'anon'),
+  0,
+  'anon cannot execute any function in public'
 );
 
 select * from finish();
