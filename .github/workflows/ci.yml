@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# PRD §15 defines eight CI jobs. They are split into two workflows-in-one here:
+# `quality` covers 1–5 and needs no database; `database` covers 6–7 and boots a
+# local Supabase stack. `e2e` (job 8) is added in Phase 1 when there is a flow
+# worth smoke-testing.
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Pinned above the 20.19 floor that the toolchain requires. Keep in step
+  # with .nvmrc and the `engines` field in package.json.
+  NODE_VERSION: "22.13.0"
+
+jobs:
+  quality:
+    name: Quality gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      # 1. Install with locked dependencies.
+      - name: Install
+        run: npm ci
+
+      # 2. Format and lint.
+      - name: Format check
+        run: npm run format:check
+
+      - name: Lint
+        run: npm run lint
+
+      # 3. Type-check. CI fails on any type error (PRD §20.3).
+      - name: Type check
+        run: npm run typecheck
+
+      # 4. Unit tests.
+      - name: Unit tests
+        run: npm run test
+
+      # 5. Build.
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
+          NEXT_PUBLIC_APP_URL: http://localhost:3000
+          NEXT_PUBLIC_APP_ENV: preview
+
+  database:
+    name: Migrations and RLS tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      # 6. Start local Supabase and apply every migration from scratch. This is
+      #    what proves a migration can be applied to an empty database, which a
+      #    `db push` against a long-lived dev project never proves.
+      - name: Start Supabase
+        run: supabase start
+
+      - name: Apply migrations from scratch
+        run: supabase db reset
+
+      # 7. RLS and database integration tests (pgTAP).
+      #    Skipped cleanly until the first suite lands in Phase 0 step 0.12.
+      - name: RLS and integration tests
+        run: |
+          if compgen -G "supabase/tests/*.sql" > /dev/null; then
+            supabase test db
+          else
+            echo "::warning::No pgTAP suites yet — RLS tests are a Phase 0 exit gate."
+          fi
+
+      - name: Stop Supabase
+        if: always()
+        run: supabase stop --no-backup
