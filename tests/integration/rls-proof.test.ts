@@ -173,9 +173,24 @@ describe.skipIf(!hasCredentials)("RLS proof tests (P1-P6)", () => {
   }, 30000);
 
   afterAll(async () => {
+    // Deletion order matters: FKs are RESTRICT by default, so children go
+    // first. document_sequences (P5) and role_permissions/roles both
+    // reference these orgs and will block org deletion if left behind.
     for (const id of userIds) {
       await admin.auth.admin.deleteUser(id).catch(() => undefined);
     }
+    await admin
+      .from("document_sequences")
+      .delete()
+      .in("organization_id", [orgA, orgB]);
+    await admin
+      .from("role_permissions")
+      .delete()
+      .in("role_id", [studentRoleId, centreOwnerRoleId]);
+    await admin
+      .from("roles")
+      .delete()
+      .in("id", [studentRoleId, centreOwnerRoleId]);
     await admin.from("centres").delete().in("id", [centreA, centreB]);
     await admin.from("organizations").delete().in("id", [orgA, orgB]);
   }, 30000);

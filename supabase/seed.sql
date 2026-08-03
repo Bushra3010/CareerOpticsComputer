@@ -1,3 +1,8 @@
+-- The platform's first (and for now only) tenant — build plan assumption A1.
+insert into public.organizations (name, slug) values
+  ('Career Optics Computer Academy', 'career-optics')
+on conflict (slug) do nothing;
+
 -- Initial course catalogue. Synthetic but realistic Indian computer-academy
 -- offerings (build plan §1.4, decision D5) — replace with the real catalogue
 -- when it's available; this is not demo data under /dev, it's the seed for

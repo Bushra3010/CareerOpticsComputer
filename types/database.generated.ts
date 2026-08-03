@@ -199,6 +199,30 @@ export interface Database {
         };
         Update: Partial<Database['public']['Tables']['courses']['Row']>;
       };
+      leads: {
+        Row: {
+          id: string;
+          organization_id: string;
+          full_name: string;
+          phone: string;
+          email: string | null;
+          city: string | null;
+          course_interest_id: string | null;
+          message: string | null;
+          status: 'new' | 'contacted' | 'converted' | 'closed';
+          source: string;
+          created_at: string;
+          created_by: string | null;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: Partial<Database['public']['Tables']['leads']['Row']> & {
+          organization_id: string;
+          full_name: string;
+          phone: string;
+        };
+        Update: Partial<Database['public']['Tables']['leads']['Row']>;
+      };
       document_sequences: {
         Row: {
           id: string;
@@ -234,6 +258,18 @@ export interface Database {
       can_access_centre: {
         Args: { centre: string };
         Returns: boolean;
+      };
+      submit_public_enquiry: {
+        Args: {
+          p_organization_slug: string;
+          p_full_name: string;
+          p_phone: string;
+          p_email: string | null;
+          p_city: string | null;
+          p_course_interest_id: string | null;
+          p_message: string | null;
+        };
+        Returns: string;
       };
       record_audit_entry: {
         Args: {
