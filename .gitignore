@@ -30,8 +30,11 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files — real values never, the template always.
+# .env.example must be committed: PRD §16.2 requires the exact variable list to
+# be documented, and without it nobody can set the project up from a clone.
 .env*
+!.env.example
 
 # vercel
 .vercel
