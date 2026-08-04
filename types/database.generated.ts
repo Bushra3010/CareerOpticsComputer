@@ -194,6 +194,8 @@ export interface Database {
           description: string | null;
           duration_label: string;
           fee_paise: number;
+          pass_percent: number;
+          distinction_percent: number;
           status: 'draft' | 'published' | 'archived';
           display_order: number;
           created_at: string;
@@ -461,6 +463,48 @@ export interface Database {
         Update: never;
         Relationships: [];
       };
+      result_publications: {
+        Row: {
+          id: string;
+          organization_id: string;
+          centre_id: string;
+          course_id: string;
+          term_label: string;
+          version: number;
+          published_at: string | null;
+          published_by: string | null;
+          created_at: string;
+          created_by: string | null;
+        };
+        Insert: Partial<Database['public']['Tables']['result_publications']['Row']> & {
+          organization_id: string;
+          centre_id: string;
+          course_id: string;
+          term_label: string;
+        };
+        Update: Partial<Database['public']['Tables']['result_publications']['Row']>;
+        Relationships: [];
+      };
+      student_results: {
+        Row: {
+          id: string;
+          publication_id: string;
+          enrolment_id: string;
+          max_marks: number;
+          obtained_marks: number;
+          outcome: 'fail' | 'pass' | 'distinction';
+          created_at: string;
+        };
+        Insert: Partial<Database['public']['Tables']['student_results']['Row']> & {
+          publication_id: string;
+          enrolment_id: string;
+          max_marks: number;
+          obtained_marks: number;
+          outcome: 'fail' | 'pass' | 'distinction';
+        };
+        Update: Partial<Database['public']['Tables']['student_results']['Row']>;
+        Relationships: [];
+      };
       document_sequences: {
         Row: {
           id: string;
@@ -565,6 +609,19 @@ export interface Database {
       };
       link_student_login: {
         Args: { p_student_id: string; p_user_id: string };
+        Returns: undefined;
+      };
+      record_student_result: {
+        Args: {
+          p_publication_id: string;
+          p_enrolment_id: string;
+          p_max_marks: number;
+          p_obtained_marks: number;
+        };
+        Returns: 'fail' | 'pass' | 'distinction';
+      };
+      publish_results: {
+        Args: { p_publication_id: string };
         Returns: undefined;
       };
       record_audit_entry: {

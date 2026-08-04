@@ -5,9 +5,13 @@ import { StatusBadge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/states";
 import { formatPaise } from "@/lib/money";
 import { getStudentOverview } from "@/features/student-portal/queries";
+import { getStudentResults } from "@/features/results/queries";
 
 export default async function StudentDashboardPage() {
-  const overview = await getStudentOverview();
+  const [overview, results] = await Promise.all([
+    getStudentOverview(),
+    getStudentResults(),
+  ]);
 
   if (!overview) {
     return (
@@ -66,6 +70,44 @@ export default async function StudentDashboardPage() {
           icon={<IndianRupee />}
         />
       </div>
+
+      <h2 className="text-section text-navy-900 mt-10">Results</h2>
+      {results.length === 0 ? (
+        <p className="text-body text-text-secondary mt-2">
+          No results have been published for you yet.
+        </p>
+      ) : (
+        <ul className="mt-3 space-y-3">
+          {results.map((r) => (
+            <li
+              key={`${r.courseName}-${r.termLabel}`}
+              className="border-border rounded-[var(--radius-card)] border p-4"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-card-title text-navy-900">
+                    {r.courseName ?? "Course"}
+                  </p>
+                  <p className="text-meta text-text-secondary">{r.termLabel}</p>
+                </div>
+                <StatusBadge
+                  status={r.outcome === "fail" ? "failed" : "passed"}
+                  label={
+                    r.outcome === "distinction"
+                      ? "Distinction"
+                      : r.outcome === "pass"
+                        ? "Pass"
+                        : "Fail"
+                  }
+                />
+              </div>
+              <p className="text-body text-text mt-2 tabular-nums">
+                {r.obtainedMarks}/{r.maxMarks} · {r.percentage}%
+              </p>
+            </li>
+          ))}
+        </ul>
+      )}
 
       <h2 className="text-section text-navy-900 mt-10">Fee schedule</h2>
       {overview.instalments.length === 0 ? (

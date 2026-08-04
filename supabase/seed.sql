@@ -15,7 +15,9 @@ insert into public.permissions (code, description) values
   ('attendance.create', 'Mark attendance'),
   ('fee.read', 'Read fee plans, instalments and payments'),
   ('fee.manage', 'Create and adjust fee plans'),
-  ('payment.post', 'Post a payment against a fee plan')
+  ('payment.post', 'Post a payment against a fee plan'),
+  ('result.read', 'Read result publications and marks'),
+  ('result.manage', 'Enter and publish results')
 on conflict (code) do nothing;
 
 insert into public.roles (organization_id, code, name, is_system_role)
@@ -30,7 +32,8 @@ join public.organizations o on o.id = r.organization_id and o.slug = 'career-opt
 cross join (
   values ('centre.read'), ('centre.update'), ('student.create'), ('student.read'),
          ('attendance.read'), ('attendance.create'),
-         ('fee.read'), ('fee.manage'), ('payment.post')
+         ('fee.read'), ('fee.manage'), ('payment.post'),
+         ('result.read'), ('result.manage')
 ) as p(code)
 where r.code = 'centre_owner'
 on conflict do nothing;
