@@ -216,7 +216,6 @@ export async function getAdminOverview(): Promise<AdminOverview> {
   // Centres created before the window still count towards the running total,
   // otherwise the line would start at zero and imply the platform was empty.
   let runningTotal = 0;
-  for (const row of centresAll.data ?? []) void row;
   const createdKeys = (centresForTrend.data ?? []).map((c) =>
     istDayKey(c.created_at as string),
   );
