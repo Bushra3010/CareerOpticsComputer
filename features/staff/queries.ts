@@ -45,22 +45,4 @@ export async function listCentreStaff(
   });
 }
 
-/** Roles a centre owner may invite into — never centre_owner itself. */
-export const INVITABLE_ROLES = [
-  {
-    code: "centre_manager",
-    name: "Centre Manager",
-    note: "Everything except staff changes",
-  },
-  {
-    code: "counsellor",
-    name: "Counsellor",
-    note: "Admissions; cannot take payments",
-  },
-  {
-    code: "faculty",
-    name: "Faculty",
-    note: "Attendance and results; no fee access",
-  },
-  { code: "accountant", name: "Accountant", note: "Fees and payments only" },
-] as const;
+export { INVITABLE_ROLES } from "./roles";

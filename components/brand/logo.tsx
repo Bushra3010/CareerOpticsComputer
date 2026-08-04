@@ -60,12 +60,15 @@ export function LogoLockup({
   size = "md",
   surface = "light",
   showTagline = false,
+  subtitle,
   className,
   priority,
 }: {
   size?: keyof typeof SIZES;
   surface?: "light" | "navy";
   showTagline?: boolean;
+  /** Overrides the second line — used for the portal name, e.g. "Super Admin". */
+  subtitle?: string;
   className?: string;
   priority?: boolean;
 }) {
@@ -97,7 +100,7 @@ export function LogoLockup({
             onNavy ? "text-sidebar-muted" : "text-text-secondary",
           )}
         >
-          {showTagline ? BRAND.tagline : "Computer Academy"}
+          {subtitle ?? (showTagline ? BRAND.tagline : "Computer Academy")}
         </span>
       </span>
     </span>

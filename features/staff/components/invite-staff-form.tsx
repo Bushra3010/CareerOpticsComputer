@@ -7,7 +7,7 @@ import { Field, RequiredLegend } from "@/components/ui/field";
 import { Input, Select } from "@/components/ui/input";
 
 import { inviteStaff, type StaffActionState } from "../actions";
-import { INVITABLE_ROLES } from "../queries";
+import { INVITABLE_ROLES } from "../roles";
 
 const initial: StaffActionState = { status: "idle" };
 

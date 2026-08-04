@@ -1,191 +1,341 @@
 "use client";
 
+import * as React from "react";
+import Link from "next/link";
 import {
+  AlertTriangle,
+  Bell,
   CalendarCheck,
+  ClipboardCheck,
+  GraduationCap,
+  IndianRupee,
   Receipt,
-  Search,
-  ShoppingBag,
   UserPlus,
+  Users,
   Wallet,
 } from "lucide-react";
-import {
-  FilterBar,
-  PageHeader,
-  PortalShell,
-} from "@/components/layout/portal-shell";
+import { PortalShell } from "@/components/layout/portal-shell";
 import { TopBarSearch } from "@/components/layout/top-bar";
 import { Button } from "@/components/ui/button";
 import { Card, KpiCard } from "@/components/ui/card";
-import { Alert } from "@/components/ui/alert";
-import { StatusBadge } from "@/components/ui/badge";
-import { Select } from "@/components/ui/input";
-import { MobileList, MobileListItem } from "@/components/tables/mobile-list";
+import { TrendChart } from "@/components/charts/trend-chart";
+import { DonutChart } from "@/components/charts/donut-chart";
+import { PanelTable } from "@/components/tables/panel-table";
+import {
+  ActivityStrip,
+  ChartCard,
+  InitialsAvatar,
+  SectionCard,
+} from "@/components/dashboard";
 import { CENTRE_BOTTOM_NAV, CENTRE_NAV } from "@/lib/navigation/centre-nav";
+import { cn } from "@/lib/utils";
+import {
+  ACTIVITY,
+  ATTENDANCE,
+  CENTRE_SUBTITLE,
+  COLLECTION,
+  DEMO_DATE,
+  PENDING_FEES,
+  RECENT_ADMISSIONS,
+  TODAYS_CLASSES,
+} from "./demo-data";
 
 /**
- * Shell preview — demonstrates the desktop shell (§8) and the mobile app shell
- * (§9) with the Centre portal navigation. Synthetic content only.
+ * Centre Admin dashboard — shell preview.
  *
- * Review at 360, 390, 768, 1024 and 1440px.
+ * Follows the owner's mockup for layout and information architecture, and the
+ * style guide for colour and iconography. The deviations are the same four
+ * logged as C4 in docs/02-open-conflicts.md, which now apply to both dashboards.
+ *
+ * Synthetic content only. This route 404s in production; it becomes
+ * app/centre/page.tsx on real queries in Phase 1 (PRD §20.1).
  */
-export default function CentreShellPreview() {
+export default function CentreDashboardPreview() {
   return (
     <PortalShell
       navGroups={CENTRE_NAV}
       bottomNavItems={CENTRE_BOTTOM_NAV}
       homeHref="/dev/shell/centre"
       profileHref="/dev/shell/centre"
+      portalName="Centre Admin"
       title="Dashboard"
-      breadcrumbs={[
-        { label: "Delhi Central", href: "#" },
-        { label: "Dashboard" },
-      ]}
-      notificationCount={3}
-      searchSlot={<TopBarSearch placeholder="Search students, receipts" />}
+      breadcrumbs={[{ label: "Ara Centre", href: "#" }, { label: "Dashboard" }]}
+      notificationCount={5}
+      searchSlot={<TopBarSearch placeholder="Search students, fees, courses" />}
+      searchWidth="wide"
       walletSlot={
-        <a
+        <Link
           href="#wallet"
           className="border-border bg-canvas flex h-10 items-center gap-2 rounded-[var(--radius-control)] border px-3"
         >
           <Wallet className="text-text-secondary size-4" aria-hidden="true" />
           <span className="text-meta text-text-secondary">Wallet</span>
-          <span className="text-label text-navy-900 tabular font-semibold">
-            ₹18,450
+          <span className="text-label tabular text-navy-900 font-semibold">
+            ₹24,500
           </span>
-        </a>
+        </Link>
       }
-      // The app header carries a *secondary* contextual action. The primary
-      // action lives in PageHeader so it is not duplicated (§9.1).
       headerAction={
-        <Button size="icon" variant="tertiary" aria-label="Search">
-          <Search />
-        </Button>
+        <Link
+          href="#notifications"
+          aria-label="Notifications, 5 unread"
+          className="text-text-secondary relative grid size-11 place-items-center"
+        >
+          <Bell className="size-5" aria-hidden="true" />
+          <span className="absolute top-1.5 right-1.5 min-w-4 rounded-[var(--radius-pill)] bg-orange-500 px-1 text-center text-[11px] leading-4 font-semibold text-white">
+            5
+          </span>
+        </Link>
       }
     >
-      <PageHeader
-        title="Dashboard"
-        description="Delhi Central · CO-DL01 · 4 August 2026"
-        primaryAction={
-          <Button>
-            <UserPlus /> New student
-          </Button>
-        }
-        secondaryActions={
-          <Button variant="secondary" className="max-lg:hidden">
-            <CalendarCheck /> Take attendance
-          </Button>
-        }
-      />
-
-      {/* §11.1: critical alerts and required actions come before metrics. */}
-      <Alert
-        tone="warning"
-        title="4 admissions are waiting for document review"
-        recovery="Open the applications list to review identity proofs before Friday."
-        className="mb-4"
-      />
-
-      {/* Mobile quick actions — §11.1 mobile order puts these above the KPIs. */}
-      <div className="mb-4 grid grid-cols-2 gap-3 lg:hidden">
-        <QuickAction icon={<UserPlus />} label="New student" />
-        <QuickAction icon={<CalendarCheck />} label="Take attendance" />
-        <QuickAction icon={<Receipt />} label="Record payment" />
-        <QuickAction icon={<ShoppingBag />} label="Place order" />
+      <div className="mb-5">
+        <h1 className="text-page-title text-navy-900">
+          Good morning, Centre Admin
+        </h1>
+        <p className="text-body text-text-secondary mt-1">{CENTRE_SUBTITLE}</p>
+        <p className="text-meta text-text-muted mt-0.5">{DEMO_DATE}</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
+      {/* --- KPIs (§11.1: four to six) ------------------------------------ */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5 lg:gap-4">
         <KpiCard
-          label="Active students"
-          value="1,284"
-          context="+38 this month"
+          label="Total students"
+          value="486"
+          context="All time"
+          icon={<Users />}
+          accent="navy"
+          href="#students"
         />
         <KpiCard
-          label="Collected in August"
-          value="₹4,82,150"
-          context="₹1,12,400 still due"
+          label="Present today"
+          value="412"
+          context="84.8% of total"
+          icon={<ClipboardCheck />}
+          accent="green"
+          href="#attendance"
         />
         <KpiCard
-          label="Attendance today"
-          value="86%"
-          context="17 below the 75% minimum"
+          label="Fees collected"
+          value="₹2.84L"
+          context="This month"
+          icon={<IndianRupee />}
+          accent="blue"
+          href="#collected"
         />
         <KpiCard
-          label="Open tickets"
-          value="2"
-          context="1 breaching SLA today"
+          label="Pending fees"
+          value="₹68,500"
+          context="From 86 students"
+          icon={<AlertTriangle />}
+          accent="orange"
+          href="#pending"
+        />
+        {/* The one highlighted tile. §3.4 caps saturated colour, so exactly one
+            card per dashboard may carry a tint — the wallet, because a centre
+            cannot place orders or issue certificates once it runs dry. */}
+        <KpiCard
+          className="col-span-2 lg:col-span-1"
+          label="Wallet balance"
+          value="₹24,500"
+          icon={<Wallet />}
+          accent="navy"
+          highlight
+          action={<Button className="w-full">Recharge</Button>}
         />
       </div>
 
-      <FilterBar
-        className="mt-6"
-        mobileTrigger={
-          <Button variant="secondary" className="w-full">
-            Filter recent activity
-          </Button>
-        }
+      {/* --- Trends -------------------------------------------------------- */}
+      <div className="mt-4 grid gap-4 lg:mt-6 lg:grid-cols-2">
+        <ChartCard
+          title="Student attendance"
+          legend={[
+            { label: "Present", kind: "bar" },
+            { label: "Absent", kind: "line" },
+          ]}
+        >
+          <TrendChart
+            points={ATTENDANCE}
+            caption="Daily student attendance through May 2026: students present and absent"
+            lineLabel="Absent"
+            barLabel="Present"
+            emphasis="bar"
+          />
+        </ChartCard>
+
+        <ChartCard title="Fee collection">
+          <div className="tablet:grid-cols-2 grid gap-5 [&>*]:min-w-0">
+            <DonutChart
+              caption="Fee collection for May 2026: collected against pending"
+              centreValue="₹2.84L"
+              centreLabel="Total"
+              segments={[
+                {
+                  label: "Collected",
+                  value: 284000,
+                  tone: "blue",
+                  detail: "₹2,84,000 (80.6%)",
+                },
+                {
+                  label: "Pending",
+                  value: 68500,
+                  tone: "orange",
+                  detail: "₹68,500 (19.4%)",
+                },
+              ]}
+            />
+            <TrendChart
+              points={COLLECTION}
+              caption="Cumulative fee collection through May 2026, in rupees"
+              lineLabel="Collected"
+              labelEvery={3}
+              formatValue={(v) => `₹${Math.round(v / 1000)}K`}
+            />
+          </div>
+        </ChartCard>
+      </div>
+
+      {/* --- Operational panels -------------------------------------------- */}
+      <div className="wide:grid-cols-[minmax(0,0.85fr)_minmax(0,1.2fr)_minmax(0,1.1fr)_minmax(0,0.85fr)] mt-4 grid gap-4 lg:mt-6 lg:grid-cols-2">
+        <SectionCard title="Today's classes" href="#timetable">
+          <ol className="space-y-2.5">
+            {TODAYS_CLASSES.map((c) => (
+              <li
+                key={c.batch}
+                className="border-border flex items-start gap-3 border-l-2 border-l-blue-700 py-1 pl-3"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="text-body text-text font-medium">{c.course}</p>
+                  <p className="text-meta text-text-secondary">
+                    Batch {c.batch}
+                  </p>
+                </div>
+                <div className="shrink-0 text-right">
+                  <p className="text-meta tabular text-navy-900 font-semibold">
+                    {c.startTime}
+                  </p>
+                  <p className="text-meta text-text-muted">{c.room}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </SectionCard>
+
+        <SectionCard title="Recent admissions" href="#admissions">
+          <PanelTable
+            primaryHeader="Student"
+            rows={RECENT_ADMISSIONS.map((s) => ({
+              id: s.name,
+              primary: (
+                <span className="flex min-w-0 items-center gap-2">
+                  <InitialsAvatar name={s.name} />
+                  <span className="truncate">{s.name}</span>
+                </span>
+              ),
+              secondary: s.course,
+              cells: [
+                { label: "Admitted", value: s.date, align: "right" as const },
+              ],
+            }))}
+          />
+        </SectionCard>
+
+        <SectionCard title="Pending fees" href="#pending-fees">
+          <PanelTable
+            primaryHeader="Student"
+            rows={PENDING_FEES.map((f) => ({
+              id: f.name,
+              primary: f.name,
+              secondary: f.course,
+              cells: [
+                {
+                  label: "Amount",
+                  value: `₹${f.amount.toLocaleString("en-IN")}`,
+                  align: "right" as const,
+                },
+                {
+                  label: "Due",
+                  align: "right" as const,
+                  // §14: never colour alone. Overdue carries an icon and an
+                  // accessible label as well as the red.
+                  value: (
+                    <span
+                      className={cn(
+                        "inline-flex items-center gap-1 whitespace-nowrap",
+                        f.overdue && "text-danger font-medium",
+                      )}
+                    >
+                      {f.overdue ? (
+                        <>
+                          <AlertTriangle
+                            className="size-3.5 shrink-0"
+                            aria-hidden="true"
+                          />
+                          <span className="sr-only">Overdue: </span>
+                        </>
+                      ) : null}
+                      {f.dueDate}
+                    </span>
+                  ),
+                },
+              ],
+            }))}
+          />
+        </SectionCard>
+
+        <div className="grid gap-4">
+          <SectionCard title="Staff attendance" href="#staff">
+            <DonutChart
+              size="sm"
+              caption="Staff attendance today: 22 present, 2 absent of 24"
+              centreValue="92%"
+              centreLabel="Present"
+              segments={[
+                {
+                  label: "Present",
+                  value: 22,
+                  tone: "green",
+                  detail: "22 staff",
+                },
+                { label: "Absent", value: 2, tone: "muted", detail: "2 staff" },
+              ]}
+            />
+            <p className="text-meta text-text-secondary mt-3">
+              Total staff: 24
+            </p>
+          </SectionCard>
+
+          {/* Quick actions. The mockup colours all four; §10.1 allows one most
+              important action per region and §3.4 caps orange. See C4. */}
+          <Card className="p-4 lg:p-5">
+            <h2 className="text-card-title text-navy-900 mb-3">
+              Quick actions
+            </h2>
+            <div className="grid gap-2">
+              <Button className="justify-start">
+                <UserPlus /> Add student
+              </Button>
+              <Button variant="secondary" className="justify-start">
+                <CalendarCheck /> Mark attendance
+              </Button>
+              <Button variant="secondary" className="justify-start">
+                <Receipt /> Collect fee
+              </Button>
+              <Button variant="secondary" className="justify-start">
+                <GraduationCap /> Create exam
+              </Button>
+            </div>
+          </Card>
+        </div>
+      </div>
+
+      {/* --- Recent activity ----------------------------------------------- */}
+      <SectionCard
+        title="Recent activity"
+        href="#activity"
+        className="mt-4 lg:mt-6"
       >
-        <Select className="w-44" aria-label="Batch">
-          <option>All batches</option>
-          <option>DCA-M-07</option>
-        </Select>
-        <Select className="w-44" aria-label="Status">
-          <option>All statuses</option>
-          <option>Active</option>
-        </Select>
-      </FilterBar>
-
-      <h2 className="text-section text-navy-900 mb-3">Recent admissions</h2>
-      <MobileList label="Recent admissions">
-        <MobileListItem
-          title="Ananya Deshmukh"
-          subtitle="CO-DL01-26-DCA-00042"
-          status={<StatusBadge status="active" />}
-          href="#"
-          fields={[
-            { label: "Course", value: "DCA" },
-            { label: "Admitted", value: "2 Aug 2026" },
-          ]}
-        />
-        <MobileListItem
-          title="Rohit Kumar Yadav"
-          subtitle="CO-DL01-26-ADCA-00118"
-          status={<StatusBadge status="pending_approval" />}
-          href="#"
-          fields={[
-            { label: "Course", value: "ADCA" },
-            { label: "Applied", value: "3 Aug 2026" },
-          ]}
-        />
-      </MobileList>
-
-      <Card className="mt-6 p-4 lg:p-6">
-        <p className="text-meta text-text-secondary">
-          Below 1024px this page is the mobile app shell — 56px header, 64px
-          bottom navigation, no sidebar and no breadcrumb. At 1024px and above
-          it becomes the desktop shell with the 256px navy sidebar. Collapse the
-          sidebar with the control at its foot to check the 72px state.
-        </p>
-      </Card>
+        <ActivityStrip items={ACTIVITY} />
+      </SectionCard>
     </PortalShell>
-  );
-}
-
-function QuickAction({
-  icon,
-  label,
-}: {
-  icon: React.ReactNode;
-  label: string;
-}) {
-  return (
-    <button
-      type="button"
-      className="border-border bg-surface active:bg-surface-subtle flex min-h-[76px] flex-col items-start justify-between rounded-[var(--radius-card)] border p-3 text-left"
-    >
-      <span className="text-orange-500 [&_svg]:size-5" aria-hidden="true">
-        {icon}
-      </span>
-      <span className="text-label text-text font-semibold">{label}</span>
-    </button>
   );
 }

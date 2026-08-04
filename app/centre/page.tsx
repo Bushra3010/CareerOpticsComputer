@@ -3,10 +3,13 @@ import {
   CalendarCheck,
   GraduationCap,
   IndianRupee,
+  Receipt,
   TriangleAlert,
+  UserPlus,
 } from "lucide-react";
 
-import { KpiCard } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, KpiCard } from "@/components/ui/card";
 import { EmptyState } from "@/components/states";
 import { createClient } from "@/lib/db/server";
 import { formatPaise } from "@/lib/money";
@@ -59,17 +62,18 @@ export default async function CentreDashboardPage() {
     <div>
       <h1 className="text-page-title text-navy-900">{dashboard.centreName}</h1>
       <p className="text-body text-text-secondary mt-1">
-        {dashboard.centreCode}
+        {dashboard.centreCode} · today&rsquo;s operations
       </p>
 
       {/* Every tile drills down — §7.1 forbids decorative numbers with no
           accessible source list behind them. */}
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
         <KpiCard
           label="Active students"
           value={dashboard.activeStudents.toLocaleString("en-IN")}
           context="Currently enrolled"
           icon={<GraduationCap />}
+          accent="navy"
           href="/centre/students"
         />
         <KpiCard
@@ -81,6 +85,7 @@ export default async function CentreDashboardPage() {
               : "No session recorded yet"
           }
           icon={<CalendarCheck />}
+          accent="green"
           href="/centre/attendance"
         />
         <KpiCard
@@ -90,6 +95,7 @@ export default async function CentreDashboardPage() {
           })}
           context="Payments posted"
           icon={<IndianRupee />}
+          accent="blue"
           href="/centre/fees"
         />
         <KpiCard
@@ -103,30 +109,33 @@ export default async function CentreDashboardPage() {
               : "Nothing past due"
           }
           icon={<TriangleAlert />}
+          accent="orange"
           href="/centre/fees"
         />
       </div>
 
-      <div className="mt-8 flex flex-wrap gap-4">
-        <Link
-          href="/centre/students/new"
-          className="text-body font-semibold text-blue-700"
-        >
-          Admit a student
-        </Link>
-        <Link
-          href="/centre/attendance/take"
-          className="text-body font-semibold text-blue-700"
-        >
-          Take attendance
-        </Link>
-        <Link
-          href="/centre/fees"
-          className="text-body font-semibold text-blue-700"
-        >
-          Collect fees
-        </Link>
-      </div>
+      {/* Quick actions. §10.1 allows one most important action per region, so
+          one orange primary and the rest secondary — see C4(b). */}
+      <Card className="mt-4 p-4 lg:mt-6 lg:p-5">
+        <h2 className="text-card-title text-navy-900 mb-3">Quick actions</h2>
+        <div className="tablet:grid-cols-3 grid gap-2">
+          <Button asChild className="justify-start">
+            <Link href="/centre/students/new">
+              <UserPlus /> Admit a student
+            </Link>
+          </Button>
+          <Button asChild variant="secondary" className="justify-start">
+            <Link href="/centre/attendance/take">
+              <CalendarCheck /> Take attendance
+            </Link>
+          </Button>
+          <Button asChild variant="secondary" className="justify-start">
+            <Link href="/centre/fees">
+              <Receipt /> Collect fees
+            </Link>
+          </Button>
+        </div>
+      </Card>
     </div>
   );
 }

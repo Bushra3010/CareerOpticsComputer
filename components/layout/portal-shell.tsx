@@ -25,6 +25,8 @@ export function PortalShell({
   breadcrumbs,
   backHref,
   searchSlot,
+  searchWidth,
+  portalName,
   walletSlot,
   headerAction,
   notificationCount,
@@ -39,6 +41,9 @@ export function PortalShell({
   breadcrumbs: Breadcrumb[];
   backHref?: string;
   searchSlot?: React.ReactNode;
+  searchWidth?: "default" | "wide";
+  /** Shown under the sidebar wordmark, e.g. "Super Admin". */
+  portalName?: string;
   walletSlot?: React.ReactNode;
   headerAction?: React.ReactNode;
   notificationCount?: number;
@@ -53,6 +58,7 @@ export function PortalShell({
         collapsed={collapsed}
         onToggleCollapsed={() => setCollapsed((c) => !c)}
         homeHref={homeHref}
+        portalName={portalName}
       />
 
       {/* min-w-0 stops a wide table from forcing the whole page to scroll
@@ -66,6 +72,7 @@ export function PortalShell({
         <TopBar
           breadcrumbs={breadcrumbs}
           searchSlot={searchSlot}
+          searchWidth={searchWidth}
           walletSlot={walletSlot}
           profileHref={profileHref}
           notificationCount={notificationCount}

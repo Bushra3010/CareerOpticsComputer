@@ -97,3 +97,57 @@ as links/interaction.
 specific, is dated one day later, and §17 designates it _"the visual source of
 truth."_ Recorded here rather than in a code comment so the divergence from the
 PRD is traceable. No decision needed unless you disagree.
+
+---
+
+## C4 — Dashboard mockups vs the style guide
+
+**Status:** open · **Raised:** 4 August 2026 · **Owner supplied a mockup**
+
+The owner supplied three dashboard mockups — Super Admin, Centre Admin and the
+Student portal — and asked for each panel to be built like them. Its **layout and information architecture were followed exactly**
+— greeting, four KPIs, two trend charts, three summary panels plus quick
+actions, transactions with a platform summary, and a recent-activity strip. That
+structure is good and matches §11.1's prescribed order.
+
+Four **visual** details in the mockup contradict the style guide. Each was built
+the guide's way, because §17 says the guide is the visual source of truth and
+tells us to raise a conflict rather than invent a third style. Each is a small
+change if you prefer the mockup.
+
+| #   | Mockup                                                               | Style guide                                                                                                        | Built as                                                                                    |
+| --- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
+| a   | 64px solid-filled circular icons on the KPI cards, one per brand hue | §10.3 "Avoid giant icons"; §3.4 "Do not create dashboards with every card in a different bright colour"            | 40px tinted disc — icon coloured, background a pale tint, so the saturated area stays small |
+| b   | Four Quick Action buttons, each a different solid colour             | §10.1 "One most important action per region"; §3.4 orange stays "below approximately 10%" of visual area           | One orange primary ("Add centre"), three secondary                                          |
+| c   | Green fill on "Approve centre", orange fill on "Recharge wallet"     | §3.4 "Green should appear only when the meaning is positive or successful" — a button is an intent, not an outcome | Secondary style; green kept for success states and the Active-centres KPI                   |
+| d   | Sidebar logo block roughly 200px tall with the full circular seal    | §8.1 "Logo area: 64–72px high"                                                                                     | 68px lock-up: compact mark plus "Career Optics / Super Admin"                               |
+
+**Also worth knowing:** the mockup's flat twelve-item sidebar was preferred over
+the twenty-five-item grouped tree in build plan §2.3. §8.1 warns against more
+than two nested levels, and twelve flat destinations are more scannable. The
+deeper routes still exist and are reached from their section landing pages.
+
+Labels use sentence case per §4.2, so "Exams and results" rather than the
+mockup's "Exams & Results".
+
+### Centre Admin and Student mockups — same four, plus three more
+
+| #   | Mockup                                                   | Style guide                                                                  | Built as                                                           |
+| --- | -------------------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| e   | Red icon disc on the "Pending fees" KPI                  | §3.3 red is the destructive/error colour; §10.5 maps pending to warning gold | Warning gold, with a warning-triangle icon                         |
+| f   | Due dates in the pending-fees panel rendered in red text | §3.4 and §14: "Never communicate status using colour alone"                  | Red plus a warning icon and a screen-reader-only "Overdue:" prefix |
+
+The Student mockup shows a photograph in the identity card. Student photographs
+are personal data held in the private `student-private` bucket behind
+short-lived signed URLs (PRD §10.7), so list and summary views show initials
+until a real signed URL exists. Not a conflict, but worth knowing before someone
+files it as a missing feature.
+
+Both donuts follow the mockup as drawn. §12.3 forbids "decorative donuts for one
+number", but neither is one: fee collection is collected against pending, and
+staff attendance is 22 present against 2 absent. Each is a genuine part-to-whole
+with a summary in the centre, which is the legitimate use.
+
+**Decision needed from:** brand owner. Reply with the letters you want switched
+to the mockup treatment, or "keep as built". The decision applies to both
+dashboards — they share the same components.

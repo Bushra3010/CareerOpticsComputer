@@ -194,7 +194,13 @@ export default function ComponentShowcase() {
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             <Button asChild variant="secondary" size="sm">
-              <a href="/dev/shell/centre">Centre portal shell</a>
+              <a href="/dev/shell/admin">Super Admin dashboard</a>
+            </Button>
+            <Button asChild variant="secondary" size="sm">
+              <a href="/dev/shell/centre">Centre Admin dashboard</a>
+            </Button>
+            <Button asChild variant="secondary" size="sm">
+              <a href="/dev/shell/student">Student portal</a>
             </Button>
             <Button asChild variant="secondary" size="sm">
               <a href="/dev/shell/public">Public site shell</a>

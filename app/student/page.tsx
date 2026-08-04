@@ -29,6 +29,14 @@ export default async function StudentDashboardPage() {
     );
   }
 
+  // Guard the divide: a student with no fee plan yet has a zero total.
+  const paidPercent =
+    overview.totalPaise > 0
+      ? Math.round(
+          (Number(overview.paidPaise) / Number(overview.totalPaise)) * 100,
+        )
+      : 0;
+
   const attendancePct = overview.attendance
     ? Math.round(
         (overview.attendance.present / overview.attendance.total) * 100,
@@ -37,13 +45,15 @@ export default async function StudentDashboardPage() {
 
   return (
     <div>
-      <h1 className="text-page-title text-navy-900">{overview.studentName}</h1>
+      <h1 className="text-page-title text-navy-900">
+        Welcome back, {overview.studentName.split(" ")[0]}
+      </h1>
       <p className="text-body text-text-secondary mt-1">
         {overview.registrationNumber}
         {overview.centreName ? ` · ${overview.centreName}` : ""}
       </p>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-3 lg:gap-4">
         <KpiCard
           label="Course"
           value={
@@ -55,6 +65,7 @@ export default async function StudentDashboardPage() {
             overview.courseName ? "Currently enrolled" : "No active enrolment"
           }
           icon={<GraduationCap />}
+          accent="navy"
         />
         <KpiCard
           label="Attendance"
@@ -65,12 +76,18 @@ export default async function StudentDashboardPage() {
               : "Nothing recorded yet"
           }
           icon={<CalendarCheck />}
+          accent="green"
+          progress={attendancePct ?? undefined}
+          progressTone="green"
         />
         <KpiCard
           label="Fees due"
           value={formatPaise(overview.duePaise, { showDecimals: false })}
           context={`${formatPaise(overview.paidPaise, { showDecimals: false })} paid of ${formatPaise(overview.totalPaise, { showDecimals: false })}`}
           icon={<IndianRupee />}
+          accent="orange"
+          progress={paidPercent}
+          progressTone="orange"
         />
       </div>
 

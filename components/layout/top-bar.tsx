@@ -21,6 +21,7 @@ export interface Breadcrumb {
 export function TopBar({
   breadcrumbs,
   searchSlot,
+  searchWidth = "default",
   walletSlot,
   notificationCount = 0,
   profileHref,
@@ -28,6 +29,8 @@ export function TopBar({
 }: {
   breadcrumbs: Breadcrumb[];
   searchSlot?: React.ReactNode;
+  /** `wide` suits a global search across several entity types. */
+  searchWidth?: "default" | "wide";
   walletSlot?: React.ReactNode;
   notificationCount?: number;
   profileHref: string;
@@ -77,7 +80,16 @@ export function TopBar({
         </ol>
       </nav>
 
-      {searchSlot ? <div className="w-72 shrink-0">{searchSlot}</div> : null}
+      {searchSlot ? (
+        <div
+          className={cn(
+            "shrink-0",
+            searchWidth === "wide" ? "w-96 max-w-[38%]" : "w-72",
+          )}
+        >
+          {searchSlot}
+        </div>
+      ) : null}
       {walletSlot ? <div className="shrink-0">{walletSlot}</div> : null}
 
       <div className="flex shrink-0 items-center gap-1">
