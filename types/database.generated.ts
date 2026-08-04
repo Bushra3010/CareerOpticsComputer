@@ -236,6 +236,59 @@ export interface Database {
         Update: Partial<Database['public']['Tables']['leads']['Row']>;
         Relationships: [];
       };
+      centre_applications: {
+        Row: {
+          id: string;
+          organization_id: string;
+          application_number: string;
+          applicant_name: string;
+          applicant_email: string;
+          applicant_phone: string;
+          proposed_centre_name: string;
+          city: string;
+          state: string;
+          pincode: string;
+          address: string;
+          message: string | null;
+          status: 'draft' | 'submitted' | 'under_review' | 'changes_requested' | 'approved' | 'rejected';
+          reviewed_by: string | null;
+          reviewed_at: string | null;
+          centre_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database['public']['Tables']['centre_applications']['Row']> & {
+          organization_id: string;
+          application_number: string;
+          applicant_name: string;
+          applicant_email: string;
+          applicant_phone: string;
+          proposed_centre_name: string;
+          city: string;
+          state: string;
+          pincode: string;
+          address: string;
+        };
+        Update: Partial<Database['public']['Tables']['centre_applications']['Row']>;
+        Relationships: [];
+      };
+      centre_application_reviews: {
+        Row: {
+          id: string;
+          application_id: string;
+          reviewer_id: string;
+          action: 'draft' | 'submitted' | 'under_review' | 'changes_requested' | 'approved' | 'rejected';
+          comments: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database['public']['Tables']['centre_application_reviews']['Row']> & {
+          application_id: string;
+          reviewer_id: string;
+          action: 'draft' | 'submitted' | 'under_review' | 'changes_requested' | 'approved' | 'rejected';
+        };
+        Update: Partial<Database['public']['Tables']['centre_application_reviews']['Row']>;
+        Relationships: [];
+      };
       document_sequences: {
         Row: {
           id: string;
@@ -281,6 +334,21 @@ export interface Database {
           p_email: string | null;
           p_city: string | null;
           p_course_interest_id: string | null;
+          p_message: string | null;
+        };
+        Returns: string;
+      };
+      submit_centre_application: {
+        Args: {
+          p_organization_slug: string;
+          p_applicant_name: string;
+          p_applicant_email: string;
+          p_applicant_phone: string;
+          p_proposed_centre_name: string;
+          p_city: string;
+          p_state: string;
+          p_pincode: string;
+          p_address: string;
           p_message: string | null;
         };
         Returns: string;

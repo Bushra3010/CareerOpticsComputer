@@ -3,6 +3,29 @@ insert into public.organizations (name, slug) values
   ('Career Optics Computer Academy', 'career-optics')
 on conflict (slug) do nothing;
 
+-- Minimal role/permission set for centre approval (build plan §4 role matrix
+-- lists far more permissions; seeded incrementally as each feature needs
+-- them rather than all 60+ up front).
+insert into public.permissions (code, description) values
+  ('centre.read', 'Read centre records'),
+  ('centre.update', 'Update centre records'),
+  ('student.create', 'Create student records'),
+  ('student.read', 'Read student records')
+on conflict (code) do nothing;
+
+insert into public.roles (organization_id, code, name, is_system_role)
+select id, 'centre_owner', 'Centre Owner', true
+from public.organizations where slug = 'career-optics'
+on conflict (organization_id, code) do nothing;
+
+insert into public.role_permissions (role_id, permission_code)
+select r.id, p.code
+from public.roles r
+join public.organizations o on o.id = r.organization_id and o.slug = 'career-optics'
+cross join (values ('centre.read'), ('centre.update'), ('student.create'), ('student.read')) as p(code)
+where r.code = 'centre_owner'
+on conflict do nothing;
+
 -- Initial course catalogue. Synthetic but realistic Indian computer-academy
 -- offerings (build plan §1.4, decision D5) — replace with the real catalogue
 -- when it's available; this is not demo data under /dev, it's the seed for

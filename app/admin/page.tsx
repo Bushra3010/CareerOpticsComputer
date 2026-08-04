@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { createClient } from "@/lib/db/server";
 
 export default async function AdminDashboardPage() {
@@ -23,6 +25,12 @@ export default async function AdminDashboardPage() {
           ? "Platform super admin."
           : "No platform admin role — most admin features will be denied by RLS and authorize()."}
       </p>
+      <Link
+        href="/admin/centre-applications"
+        className="text-body mt-4 inline-block font-semibold text-blue-700"
+      >
+        Review centre applications
+      </Link>
     </div>
   );
 }
