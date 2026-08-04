@@ -19,11 +19,14 @@ export function Sidebar({
   collapsed,
   onToggleCollapsed,
   homeHref,
+  portalName,
 }: {
   groups: NavGroup[];
   collapsed: boolean;
   onToggleCollapsed: () => void;
   homeHref: string;
+  /** Shown under the wordmark, e.g. "Super Admin". */
+  portalName?: string;
 }) {
   const pathname = usePathname();
 
@@ -61,7 +64,12 @@ export function Sidebar({
               <LogoMark size="sm" priority />
             </span>
           ) : (
-            <LogoLockup size="sm" surface="navy" priority />
+            <LogoLockup
+              size="sm"
+              surface="navy"
+              subtitle={portalName}
+              priority
+            />
           )}
         </Link>
       </div>

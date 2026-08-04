@@ -97,3 +97,38 @@ as links/interaction.
 specific, is dated one day later, and §17 designates it _"the visual source of
 truth."_ Recorded here rather than in a code comment so the divergence from the
 PRD is traceable. No decision needed unless you disagree.
+
+---
+
+## C4 — Super Admin dashboard mockup vs the style guide
+
+**Status:** open · **Raised:** 4 August 2026 · **Owner supplied a mockup**
+
+The owner supplied a Super Admin dashboard mockup and asked for the panel to be
+built like it. Its **layout and information architecture were followed exactly**
+— greeting, four KPIs, two trend charts, three summary panels plus quick
+actions, transactions with a platform summary, and a recent-activity strip. That
+structure is good and matches §11.1's prescribed order.
+
+Four **visual** details in the mockup contradict the style guide. Each was built
+the guide's way, because §17 says the guide is the visual source of truth and
+tells us to raise a conflict rather than invent a third style. Each is a small
+change if you prefer the mockup.
+
+| #   | Mockup                                                               | Style guide                                                                                                        | Built as                                                                                    |
+| --- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
+| a   | 64px solid-filled circular icons on the KPI cards, one per brand hue | §10.3 "Avoid giant icons"; §3.4 "Do not create dashboards with every card in a different bright colour"            | 40px tinted disc — icon coloured, background a pale tint, so the saturated area stays small |
+| b   | Four Quick Action buttons, each a different solid colour             | §10.1 "One most important action per region"; §3.4 orange stays "below approximately 10%" of visual area           | One orange primary ("Add centre"), three secondary                                          |
+| c   | Green fill on "Approve centre", orange fill on "Recharge wallet"     | §3.4 "Green should appear only when the meaning is positive or successful" — a button is an intent, not an outcome | Secondary style; green kept for success states and the Active-centres KPI                   |
+| d   | Sidebar logo block roughly 200px tall with the full circular seal    | §8.1 "Logo area: 64–72px high"                                                                                     | 68px lock-up: compact mark plus "Career Optics / Super Admin"                               |
+
+**Also worth knowing:** the mockup's flat twelve-item sidebar was preferred over
+the twenty-five-item grouped tree in build plan §2.3. §8.1 warns against more
+than two nested levels, and twelve flat destinations are more scannable. The
+deeper routes still exist and are reached from their section landing pages.
+
+Labels use sentence case per §4.2, so "Exams and results" rather than the
+mockup's "Exams & Results".
+
+**Decision needed from:** brand owner. Reply with the letters you want switched
+to the mockup treatment, or "keep as built".
