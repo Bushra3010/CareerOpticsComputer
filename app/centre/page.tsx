@@ -45,6 +45,12 @@ export default async function CentreDashboardPage() {
             >
               Attendance
             </Link>
+            <Link
+              href="/centre/fees"
+              className="text-body font-semibold text-blue-700"
+            >
+              Fees
+            </Link>
           </div>
         </>
       )}

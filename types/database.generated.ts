@@ -377,6 +377,89 @@ export interface Database {
         Update: Partial<Database['public']['Tables']['attendance_records']['Row']>;
         Relationships: [];
       };
+      fee_plans: {
+        Row: {
+          id: string;
+          organization_id: string;
+          centre_id: string;
+          enrolment_id: string;
+          total_paise: number;
+          created_at: string;
+          created_by: string | null;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: Partial<Database['public']['Tables']['fee_plans']['Row']> & {
+          organization_id: string;
+          centre_id: string;
+          enrolment_id: string;
+          total_paise: number;
+        };
+        Update: Partial<Database['public']['Tables']['fee_plans']['Row']>;
+        Relationships: [];
+      };
+      fee_instalments: {
+        Row: {
+          id: string;
+          fee_plan_id: string;
+          sequence: number;
+          due_date: string;
+          amount_paise: number;
+          status: 'pending' | 'partially_paid' | 'paid' | 'waived';
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database['public']['Tables']['fee_instalments']['Row']> & {
+          fee_plan_id: string;
+          sequence: number;
+          due_date: string;
+          amount_paise: number;
+        };
+        Update: Partial<Database['public']['Tables']['fee_instalments']['Row']>;
+        Relationships: [];
+      };
+      payments: {
+        Row: {
+          id: string;
+          organization_id: string;
+          centre_id: string;
+          student_id: string;
+          fee_plan_id: string;
+          receipt_number: string;
+          amount_paise: number;
+          method: 'cash' | 'upi' | 'bank_transfer' | 'cheque' | 'card' | 'wallet';
+          reference: string | null;
+          posted_at: string;
+          posted_by: string | null;
+        };
+        Insert: Partial<Database['public']['Tables']['payments']['Row']> & {
+          organization_id: string;
+          centre_id: string;
+          student_id: string;
+          fee_plan_id: string;
+          receipt_number: string;
+          amount_paise: number;
+          method: 'cash' | 'upi' | 'bank_transfer' | 'cheque' | 'card' | 'wallet';
+        };
+        Update: never;
+        Relationships: [];
+      };
+      payment_allocations: {
+        Row: {
+          id: string;
+          payment_id: string;
+          fee_instalment_id: string;
+          amount_paise: number;
+          created_at: string;
+        };
+        Insert: Partial<Database['public']['Tables']['payment_allocations']['Row']> & {
+          payment_id: string;
+          fee_instalment_id: string;
+          amount_paise: number;
+        };
+        Update: never;
+        Relationships: [];
+      };
       document_sequences: {
         Row: {
           id: string;
@@ -455,6 +538,29 @@ export interface Database {
           p_address: string | null;
         };
         Returns: { student_id: string; registration_number: string }[];
+      };
+      create_fee_plan: {
+        Args: {
+          p_organization_id: string;
+          p_centre_id: string;
+          p_enrolment_id: string;
+          p_total_paise: number;
+          p_instalment_count: number;
+          p_first_due_date: string;
+        };
+        Returns: string;
+      };
+      post_payment: {
+        Args: {
+          p_organization_id: string;
+          p_centre_id: string;
+          p_student_id: string;
+          p_fee_plan_id: string;
+          p_amount_paise: number;
+          p_method: 'cash' | 'upi' | 'bank_transfer' | 'cheque' | 'card' | 'wallet';
+          p_reference: string | null;
+        };
+        Returns: { payment_id: string; receipt_number: string }[];
       };
       record_audit_entry: {
         Args: {
