@@ -171,9 +171,8 @@ export const CENTRE_NAV: NavGroup[] = [
       {
         label: "Staff",
         href: "/centre/staff",
-        planned: true,
         icon: Users,
-        permission: "user.read",
+        permission: "staff.read",
         matchPrefix: true,
       },
       {

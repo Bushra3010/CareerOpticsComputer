@@ -713,6 +713,22 @@ export interface Database {
         };
         Returns: undefined;
       };
+      invite_centre_staff: {
+        Args: {
+          p_centre_id: string;
+          p_user_id: string;
+          p_role_code: string;
+          p_full_name: string;
+        };
+        Returns: string;
+      };
+      set_membership_status: {
+        Args: {
+          p_membership_id: string;
+          p_status: 'active' | 'suspended' | 'revoked';
+        };
+        Returns: undefined;
+      };
       record_audit_entry: {
         Args: {
           p_organization_id: string | null;
