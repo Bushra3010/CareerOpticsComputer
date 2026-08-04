@@ -25,6 +25,8 @@
     "db:push": "supabase db push",
     "db:diff": "supabase db diff",
     "db:types": "supabase gen types typescript --local > types/database.generated.ts",
+    "db:seed:dev": "node scripts/seed-dev-data.mjs",
+    "db:seed:dev:remove": "node scripts/seed-dev-data.mjs --remove",
     "db:test": "supabase test db",
     "verify": "npm run format:check && npm run lint && npm run typecheck && npm run test",
     "prepare": "husky"

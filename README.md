@@ -76,18 +76,19 @@ style guide §16.
 
 ## Scripts
 
-| Command             | Purpose                                                            |
-| ------------------- | ------------------------------------------------------------------ |
-| `npm run dev`       | Development server                                                 |
-| `npm run build`     | Production build                                                   |
-| `npm run verify`    | Format check, lint, type-check and unit tests — run before pushing |
-| `npm run typecheck` | `tsc --noEmit`                                                     |
-| `npm run test`      | Unit tests (Vitest)                                                |
-| `npm run test:e2e`  | Accessibility scan over the public routes (Playwright + axe)       |
-| `npm run db:start`  | Start local Supabase (requires Docker)                             |
-| `npm run db:reset`  | Drop and re-apply every migration from scratch                     |
-| `npm run db:test`   | pgTAP RLS and integration suites                                   |
-| `npm run db:types`  | Regenerate `types/database.generated.ts`                           |
+| Command               | Purpose                                                            |
+| --------------------- | ------------------------------------------------------------------ |
+| `npm run dev`         | Development server                                                 |
+| `npm run build`       | Production build                                                   |
+| `npm run verify`      | Format check, lint, type-check and unit tests — run before pushing |
+| `npm run typecheck`   | `tsc --noEmit`                                                     |
+| `npm run test`        | Unit tests (Vitest)                                                |
+| `npm run test:e2e`    | Accessibility scan over the public routes (Playwright + axe)       |
+| `npm run db:start`    | Start local Supabase (requires Docker)                             |
+| `npm run db:reset`    | Drop and re-apply every migration from scratch                     |
+| `npm run db:test`     | pgTAP RLS and integration suites                                   |
+| `npm run db:types`    | Regenerate `types/database.generated.ts`                           |
+| `npm run db:seed:dev` | Fill an empty database with development data (see below)           |
 
 ## Architecture
 
@@ -156,6 +157,36 @@ Two things a reader should not have to discover the hard way:
 Uploaded files are **not scanned for malware.** `MALWARE_SCAN_URL` exists in
 `.env.example` and nothing calls it; the MIME allow-list and the 5 MB cap are
 the only checks. Treat that as a gap before real files from the public arrive.
+
+### Seeing the portals with something in them
+
+`supabase/seed.sql` creates the organisation, permissions, roles and the course
+catalogue — and no centres and no students. On a fresh database every dashboard
+therefore renders its empty state, which reads as broken rather than new. That
+was build plan §6 step 9 and it was never finished.
+
+```bash
+npm run db:seed:dev            # 18 centres, ~580 students, fees, payments,
+                               # applications, leads, results, certificates
+npm run db:seed:dev:remove     # take all of it back out
+```
+
+The data is deterministic, so the script is its own manifest — removal deletes
+exactly what creation made, with no marker column to keep in step and nothing
+synthetic leaking into the UI. It refuses to run when `NEXT_PUBLIC_APP_ENV` is
+`production`.
+
+It deliberately does **not** reproduce the mockup's 128 centres and 12,840
+students. Inserting thirteen thousand rows so a screenshot matches would be
+dressing the database to flatter a picture. The aim is enough shape that the
+growth chart curves, the top-performer table has an order, and two centres are
+suspended or closed so those states are visible at all.
+
+**The design is not the same thing as the data.** If a dashboard looks empty,
+check the row counts before changing the page — the three shells under
+[`/dev/shell/admin`](http://localhost:3000/dev/shell/admin),
+`/dev/shell/centre` and `/dev/shell/student` render the same layouts against
+synthetic content and will look right even when the database is bare.
 
 ### Accessibility
 
