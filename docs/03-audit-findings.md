@@ -54,7 +54,20 @@ Notes on severity:
    and attached to zero tables, so non-negotiable #3 ("every service-role call
    site records an actor") had no backing record for ordinary CRUD at all.
 
-All seven are addressed in `supabase/migrations/20260804000012_security_fixes.sql`.
+All seven are addressed in `supabase/migrations/20260804000012_security_fixes.sql`,
+and the same probe was re-run afterwards: every attack is now blocked, attendance
+re-saves and persists the correction, and `audit_logs` fills.
+
+**0012 shipped with a regression.** Its linkage guard in `post_payment` used
+`SELECT ... FOR UPDATE` on `fee_plans`, and under RLS a row can only be locked
+by someone who could also UPDATE it — `fee_plans` has SELECT and INSERT policies
+but no UPDATE policy, so the guard rejected _every_ legitimate payment.
+`20260804000013_fix_payment_lock.sql` keeps the guard, drops the unlockable
+lock, and moves the serialising lock onto `fee_instalments`, which is what the
+allocation loop actually mutates and which does have an UPDATE policy.
+
+The lesson worth keeping: 0012 was written from a passing security probe alone.
+A fix migration needs the happy path re-probed too, not just the attack.
 
 ## Unverified backlog
 
