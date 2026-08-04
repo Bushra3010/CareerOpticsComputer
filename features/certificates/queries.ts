@@ -49,6 +49,7 @@ export async function listIssuedCertificates(
 
 export interface PrintableCertificate {
   documentNumber: string;
+  studentId: string;
   studentName: string;
   registrationNumber: string;
   courseName: string;
@@ -76,7 +77,7 @@ export async function getPrintableCertificate(
   const { data } = await supabase
     .from("issued_documents")
     .select(
-      `document_number, status, issued_at,
+      `document_number, status, issued_at, student_id,
        students(full_name, registration_number),
        student_results(obtained_marks, max_marks, outcome,
          result_publications(courses(name))),
@@ -100,6 +101,7 @@ export async function getPrintableCertificate(
 
   return {
     documentNumber: data.document_number,
+    studentId: data.student_id,
     studentName: student?.full_name ?? "Unknown",
     registrationNumber: student?.registration_number ?? "",
     courseName: one<{ name: string }>(publication?.courses)?.name ?? "Course",

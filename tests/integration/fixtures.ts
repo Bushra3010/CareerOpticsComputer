@@ -206,9 +206,38 @@ export async function setupFixture(): Promise<Fixture> {
   };
 }
 
+/**
+ * Removes every object under a centre's prefix in the private student bucket.
+ *
+ * Storage is not covered by the table cascades — deleting a student drops the
+ * `student_documents` row but leaves the file, which would accumulate on every
+ * test run and eventually be indistinguishable from real data.
+ */
+async function purgeCentreFiles(
+  admin: AnyClient,
+  centreId: string,
+): Promise<void> {
+  const bucket = admin.storage.from("student-private");
+  const { data: folders } = await bucket.list(centreId);
+  const paths: string[] = [];
+
+  for (const folder of folders ?? []) {
+    const { data: files } = await bucket.list(`${centreId}/${folder.name}`);
+    for (const file of files ?? []) {
+      paths.push(`${centreId}/${folder.name}/${file.name}`);
+    }
+  }
+
+  if (paths.length) await bucket.remove(paths);
+}
+
 export async function teardownFixture(fx: Fixture): Promise<void> {
   const { admin } = fx;
   const centres = [fx.centreId, fx.otherCentreId];
+
+  for (const centre of centres) {
+    await purgeCentreFiles(admin, centre).catch(() => undefined);
+  }
 
   for (const id of fx.userIds) {
     await admin.auth.admin.deleteUser(id).catch(() => undefined);
@@ -263,6 +292,7 @@ export async function teardownFixture(fx: Fixture): Promise<void> {
       .in("session_id", sessionIds);
   }
   await admin.from("attendance_sessions").delete().in("centre_id", centres);
+  await admin.from("student_documents").delete().in("centre_id", centres);
   await admin.from("enrolments").delete().in("centre_id", centres);
   await admin.from("students").delete().in("centre_id", centres);
   await admin.from("memberships").delete().in("centre_id", centres);

@@ -531,6 +531,33 @@ export interface Database {
         Update: Partial<Database['public']['Tables']['issued_documents']['Row']>;
         Relationships: [];
       };
+      student_documents: {
+        Row: {
+          id: string;
+          organization_id: string;
+          centre_id: string;
+          student_id: string;
+          kind: 'photo' | 'id_proof' | 'other';
+          storage_path: string;
+          original_name: string;
+          mime_type: string;
+          size_bytes: number;
+          uploaded_at: string;
+          uploaded_by: string | null;
+        };
+        Insert: Partial<Database['public']['Tables']['student_documents']['Row']> & {
+          organization_id: string;
+          centre_id: string;
+          student_id: string;
+          kind: 'photo' | 'id_proof' | 'other';
+          storage_path: string;
+          original_name: string;
+          mime_type: string;
+          size_bytes: number;
+        };
+        Update: Partial<Database['public']['Tables']['student_documents']['Row']>;
+        Relationships: [];
+      };
       public_verification_logs: {
         Row: {
           id: string;
@@ -746,6 +773,7 @@ export interface Database {
     Enums: {
       membership_status: 'active' | 'suspended' | 'revoked';
       centre_status: 'active' | 'suspended' | 'closed';
+      student_document_kind: 'photo' | 'id_proof' | 'other';
     };
     CompositeTypes: Record<string, never>;
   };

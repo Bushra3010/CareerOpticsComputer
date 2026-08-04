@@ -4,13 +4,14 @@ Multi-tenant computer education, franchise and training-centre management
 platform for **Career Optics Computer Academy**.
 
 > **Status: Phase 1 substantially complete, running against a hosted Supabase
-> project.** Migrations `0001`–`0018`. Working end to end: the public site and
+> project.** Migrations `0001`–`0019`. Working end to end: the public site and
 > course catalogue, admission enquiries, the centre franchise application and
 > its atomic head-office approval, authentication for three portals, five
 > centre roles with staff invitations, student admission and the student
-> portal, attendance, fees with an insert-only payment ledger, results with
-> immutable publication, certificates with printable A4 documents and QR
-> codes, and public credential verification.
+> portal, private file storage for student photographs and identity proofs,
+> attendance, fees with an insert-only payment ledger, results with immutable
+> publication, certificates with printable A4 documents and QR codes, and
+> public credential verification.
 >
 > Not built yet: exams (question banks, attempts, the exam runner), inventory,
 > wallets, referrals, notifications and reporting. Known defects and an
@@ -127,6 +128,33 @@ These are enforced by review, tests and CI — not by convention:
    and nowhere else.
 6. **Status is never colour alone.** Every badge carries an icon and text.
 
+### Student files
+
+Photographs and identity documents live in a **private** Supabase Storage
+bucket (`student-private`, migration `0019`), never a public one. Objects are
+keyed `{centre_id}/{student_id}/{uuid}.{ext}`; the storage policies parse the
+first two segments to decide access, and the random filename is what makes a
+path unguessable even to someone who knows both ids. Reads go through signed
+URLs minted per render and valid for five minutes, so nothing durable ever
+points at a private file. Uploads run as the signed-in user rather than the
+service role, so a centre cannot write into another centre's folder despite
+controlling the path string.
+
+Two things a reader should not have to discover the hard way:
+
+- **A student can read their own documents but never upload one.** A
+  photograph that ends up on a certificate has to come from the centre that
+  verified the identity.
+- **The certificate inlines the photograph as a data URI**, like the QR code,
+  because a signed URL would have to be fetched while the print dialogue opens
+  and expires besides. The bucket's 5 MB cap bounds the worst case at roughly
+  6.7 MB of base64 — storing a downscaled rendition at upload time is the
+  outstanding fix.
+
+Uploaded files are **not scanned for malware.** `MALWARE_SCAN_URL` exists in
+`.env.example` and nothing calls it; the MIME allow-list and the 5 MB cap are
+the only checks. Treat that as a gap before real files from the public arrive.
+
 ## Known limitations
 
 - **Database types are hand-maintained.** `types/database.generated.ts` is
@@ -147,6 +175,10 @@ These are enforced by review, tests and CI — not by convention:
   including proof test R13, attendance re-save and cross-centre marking, the
   fee split and allocation arithmetic, overpayment rollback, result
   publication immutability, and certificate issuance and public verification.
+  A third, `storage.test.ts`, covers the private student bucket: cross-centre
+  read and write denial against a known-good object path, the one-photograph
+  rule, a student reading their own files but never uploading, and the bucket
+  refusing an unsigned public URL.
   They create and tear down their own tenant, so they are safe to re-run. This needs
   `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` and
   `SUPABASE_SERVICE_ROLE_KEY` in the environment and is intentionally excluded

@@ -1,6 +1,7 @@
 import { LogoLockup } from "@/components/brand/logo";
 import { PrintButton } from "@/features/certificates/components/print-button";
 import type { PrintableCertificate } from "@/features/certificates/queries";
+import { getStudentPhotoDataUri } from "@/features/students/document-queries";
 import { BRAND } from "@/lib/brand";
 import { qrSvg, verificationUrl } from "@/lib/qr";
 
@@ -17,7 +18,13 @@ export async function CertificateDocument({
   cert: PrintableCertificate;
 }) {
   const url = verificationUrl(cert.documentNumber);
-  const qr = await qrSvg(url, 104);
+  const [qr, photo] = await Promise.all([
+    qrSvg(url, 104),
+    // Inline, like the QR, so the sheet prints without a network fetch. Absent
+    // for anyone admitted before a photograph was on file, which the layout
+    // below handles by simply not reserving the space.
+    getStudentPhotoDataUri(cert.studentId),
+  ]);
 
   const outcomeLabel =
     cert.outcome === "distinction"
@@ -65,6 +72,17 @@ export async function CertificateDocument({
         <p className="text-meta text-text-secondary mt-6 tracking-[0.2em] uppercase">
           Certificate of Completion
         </p>
+
+        {photo ? (
+          <div className="mt-8 flex justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element -- inline data URI, nothing for next/image to optimise */}
+            <img
+              src={photo}
+              alt={`Photograph of ${cert.studentName}`}
+              className="border-navy-900 h-[35mm] w-[28mm] border object-cover"
+            />
+          </div>
+        ) : null}
 
         <p className="text-body text-text-secondary mt-8">
           This is to certify that

@@ -52,7 +52,14 @@ export default async function StudentsPage() {
                   <td className="text-body px-4 py-3 font-semibold">
                     {student.registration_number}
                   </td>
-                  <td className="text-body px-4 py-3">{student.full_name}</td>
+                  <td className="text-body px-4 py-3">
+                    <Link
+                      href={`/centre/students/${student.id}`}
+                      className="text-brand-600 font-semibold hover:underline"
+                    >
+                      {student.full_name}
+                    </Link>
+                  </td>
                   <td className="text-body px-4 py-3">{student.phone}</td>
                   <td className="px-4 py-3">
                     <StatusBadge status={student.status} />
