@@ -39,6 +39,7 @@ export const CENTRE_NAV: NavGroup[] = [
       {
         label: "Leads",
         href: "/centre/leads",
+        planned: true,
         icon: ClipboardList,
         permission: "lead.read",
         matchPrefix: true,
@@ -64,6 +65,7 @@ export const CENTRE_NAV: NavGroup[] = [
       {
         label: "Batches and timetable",
         href: "/centre/batches",
+        planned: true,
         icon: CalendarCheck,
         permission: "batch.read",
         matchPrefix: true,
@@ -78,6 +80,7 @@ export const CENTRE_NAV: NavGroup[] = [
       {
         label: "Exams",
         href: "/centre/exams",
+        planned: true,
         icon: GraduationCap,
         permission: "exam.read",
         matchPrefix: true,
@@ -92,6 +95,7 @@ export const CENTRE_NAV: NavGroup[] = [
       {
         label: "Certificates and ID cards",
         href: "/centre/certificates",
+
         icon: FileBadge,
         permission: "certificate.read",
         matchPrefix: true,
@@ -105,12 +109,13 @@ export const CENTRE_NAV: NavGroup[] = [
         label: "Fee management",
         href: "/centre/fees",
         icon: Receipt,
-        permission: "fee_plan.read",
+        permission: "fee.read",
         matchPrefix: true,
       },
       {
         label: "Wallet and recharge",
         href: "/centre/wallet",
+        planned: true,
         icon: Wallet,
         permission: "wallet.read",
         matchPrefix: true,
@@ -118,12 +123,14 @@ export const CENTRE_NAV: NavGroup[] = [
       {
         label: "Income and expenses",
         href: "/centre/finance/expenses",
+        planned: true,
         icon: Banknote,
         permission: "expense.read",
       },
       {
         label: "Referrals",
         href: "/centre/referrals",
+        planned: true,
         icon: Share2,
         permission: "referral.read",
       },
@@ -135,6 +142,7 @@ export const CENTRE_NAV: NavGroup[] = [
       {
         label: "Shop",
         href: "/centre/shop",
+        planned: true,
         icon: ShoppingBag,
         permission: "product.read",
         matchPrefix: true,
@@ -142,6 +150,7 @@ export const CENTRE_NAV: NavGroup[] = [
       {
         label: "My orders",
         href: "/centre/orders",
+        planned: true,
         icon: Package,
         permission: "order.read",
         matchPrefix: true,
@@ -154,6 +163,7 @@ export const CENTRE_NAV: NavGroup[] = [
       {
         label: "Centre profile",
         href: "/centre/profile",
+
         icon: Building2,
         permission: "centre.read",
         matchPrefix: true,
@@ -161,6 +171,7 @@ export const CENTRE_NAV: NavGroup[] = [
       {
         label: "Staff",
         href: "/centre/staff",
+        planned: true,
         icon: Users,
         permission: "user.read",
         matchPrefix: true,
@@ -168,22 +179,30 @@ export const CENTRE_NAV: NavGroup[] = [
       {
         label: "Announcements",
         href: "/centre/announcements",
+        planned: true,
         icon: Megaphone,
       },
       {
         label: "Support",
         href: "/centre/support",
+        planned: true,
         icon: LifeBuoy,
         matchPrefix: true,
       },
       {
         label: "Reports",
         href: "/centre/reports",
+        planned: true,
         icon: BarChart3,
         permission: "report.read",
         matchPrefix: true,
       },
-      { label: "Settings", href: "/centre/settings", icon: Settings },
+      {
+        label: "Settings",
+        href: "/centre/settings",
+        icon: Settings,
+        planned: true,
+      },
     ],
   },
 ];
@@ -207,5 +226,5 @@ export const CENTRE_BOTTOM_NAV: BottomNavItems = [
     matchPrefix: true,
   },
   { label: "Fees", href: "/centre/fees", icon: Receipt, matchPrefix: true },
-  { label: "More", href: "/centre/more", icon: MoreHorizontal },
+  { label: "More", href: "/centre/more", icon: MoreHorizontal, planned: true },
 ];
