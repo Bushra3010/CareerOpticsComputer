@@ -304,6 +304,7 @@ export interface Database {
           address: string | null;
           gov_id_last4: string | null;
           gov_id_hmac: string | null;
+          user_id: string | null;
           status: 'active' | 'completed' | 'withdrawn' | 'transferred' | 'on_hold';
           created_at: string;
           created_by: string | null;
@@ -561,6 +562,10 @@ export interface Database {
           p_reference: string | null;
         };
         Returns: { payment_id: string; receipt_number: string }[];
+      };
+      link_student_login: {
+        Args: { p_student_id: string; p_user_id: string };
+        Returns: undefined;
       };
       record_audit_entry: {
         Args: {

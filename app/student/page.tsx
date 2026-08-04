@@ -1,20 +1,172 @@
-import { createClient } from "@/lib/db/server";
+import { CalendarCheck, GraduationCap, IndianRupee } from "lucide-react";
+
+import { KpiCard } from "@/components/ui/card";
+import { StatusBadge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/states";
+import { formatPaise } from "@/lib/money";
+import { getStudentOverview } from "@/features/student-portal/queries";
 
 export default async function StudentDashboardPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const overview = await getStudentOverview();
+
+  if (!overview) {
+    return (
+      <div>
+        <h1 className="text-page-title text-navy-900">Your course</h1>
+        <EmptyState
+          className="mt-8"
+          title="No student record linked to this account"
+          description="Ask your centre to send you a portal invitation from your student record."
+        />
+      </div>
+    );
+  }
+
+  const attendancePct = overview.attendance
+    ? Math.round(
+        (overview.attendance.present / overview.attendance.total) * 100,
+      )
+    : null;
 
   return (
     <div>
-      <h1 className="text-page-title text-navy-900">Student dashboard</h1>
-      <p className="text-body text-text-secondary mt-2">
-        Signed in as {user?.email}.
-      </p>
+      <h1 className="text-page-title text-navy-900">{overview.studentName}</h1>
       <p className="text-body text-text-secondary mt-1">
-        Course, timetable and fee details land with the admissions feature.
+        {overview.registrationNumber}
+        {overview.centreName ? ` · ${overview.centreName}` : ""}
       </p>
+
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <KpiCard
+          label="Course"
+          value={
+            <span className="text-card-title">
+              {overview.courseName ?? "Not enrolled"}
+            </span>
+          }
+          context={
+            overview.courseName ? "Currently enrolled" : "No active enrolment"
+          }
+          icon={<GraduationCap />}
+        />
+        <KpiCard
+          label="Attendance"
+          value={attendancePct === null ? "No sessions" : `${attendancePct}%`}
+          context={
+            overview.attendance
+              ? `${overview.attendance.present} of ${overview.attendance.total} sessions`
+              : "Nothing recorded yet"
+          }
+          icon={<CalendarCheck />}
+        />
+        <KpiCard
+          label="Fees due"
+          value={formatPaise(overview.duePaise, { showDecimals: false })}
+          context={`${formatPaise(overview.paidPaise, { showDecimals: false })} paid of ${formatPaise(overview.totalPaise, { showDecimals: false })}`}
+          icon={<IndianRupee />}
+        />
+      </div>
+
+      <h2 className="text-section text-navy-900 mt-10">Fee schedule</h2>
+      {overview.instalments.length === 0 ? (
+        <p className="text-body text-text-secondary mt-2">
+          Your centre has not set up a fee plan yet.
+        </p>
+      ) : (
+        <div className="border-border mt-3 overflow-x-auto rounded-[var(--radius-card)] border">
+          <table className="w-full text-left">
+            <thead className="bg-surface-subtle">
+              <tr>
+                <th scope="col" className="text-label px-4 py-3">
+                  #
+                </th>
+                <th scope="col" className="text-label px-4 py-3">
+                  Due date
+                </th>
+                <th scope="col" className="text-label px-4 py-3 text-right">
+                  Amount
+                </th>
+                <th scope="col" className="text-label px-4 py-3 text-right">
+                  Paid
+                </th>
+                <th scope="col" className="text-label px-4 py-3">
+                  Status
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {overview.instalments.map((i) => (
+                <tr key={i.id} className="border-border border-t">
+                  <td className="text-body px-4 py-3">{i.sequence}</td>
+                  <td className="text-body px-4 py-3">{i.dueDate}</td>
+                  <td className="text-body px-4 py-3 text-right tabular-nums">
+                    {formatPaise(i.amountPaise)}
+                  </td>
+                  <td className="text-body px-4 py-3 text-right tabular-nums">
+                    {formatPaise(i.allocatedPaise)}
+                  </td>
+                  <td className="px-4 py-3">
+                    <StatusBadge status={i.status} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <h2 className="text-section text-navy-900 mt-10">Receipts</h2>
+      {overview.receipts.length === 0 ? (
+        <p className="text-body text-text-secondary mt-2">
+          No payments recorded yet.
+        </p>
+      ) : (
+        <div className="border-border mt-3 overflow-x-auto rounded-[var(--radius-card)] border">
+          <table className="w-full text-left">
+            <thead className="bg-surface-subtle">
+              <tr>
+                <th scope="col" className="text-label px-4 py-3">
+                  Receipt no.
+                </th>
+                <th scope="col" className="text-label px-4 py-3 text-right">
+                  Amount
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {overview.receipts.map((r) => (
+                <tr key={r.id} className="border-border border-t">
+                  <td className="text-body px-4 py-3 font-semibold">
+                    {r.receiptNumber}
+                  </td>
+                  <td className="text-body px-4 py-3 text-right tabular-nums">
+                    {formatPaise(r.amountPaise)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <h2 className="text-section text-navy-900 mt-10">Attendance history</h2>
+      {overview.attendanceHistory.length === 0 ? (
+        <p className="text-body text-text-secondary mt-2">
+          No attendance has been recorded for you yet.
+        </p>
+      ) : (
+        <ul className="mt-3 space-y-2">
+          {overview.attendanceHistory.map((r) => (
+            <li
+              key={r.sessionDate}
+              className="border-border flex items-center justify-between rounded-[var(--radius-card)] border px-4 py-3"
+            >
+              <span className="text-body text-text">{r.sessionDate}</span>
+              <StatusBadge status={r.status} />
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/states";
 import { createClient } from "@/lib/db/server";
 import { getCurrentCentreContext } from "@/features/centres/current-membership";
 import { listStudentsForCentre } from "@/features/students/queries";
+import { InviteButton } from "@/features/students/components/invite-button";
 
 export default async function StudentsPage() {
   const supabase = await createClient();
@@ -42,6 +43,7 @@ export default async function StudentsPage() {
                 <th className="text-label px-4 py-3">Name</th>
                 <th className="text-label px-4 py-3">Phone</th>
                 <th className="text-label px-4 py-3">Status</th>
+                <th className="text-label px-4 py-3">Portal</th>
               </tr>
             </thead>
             <tbody>
@@ -54,6 +56,15 @@ export default async function StudentsPage() {
                   <td className="text-body px-4 py-3">{student.phone}</td>
                   <td className="px-4 py-3">
                     <StatusBadge status={student.status} />
+                  </td>
+                  <td className="px-4 py-3">
+                    {student.user_id ? (
+                      <span className="text-meta text-text-secondary">
+                        Has login
+                      </span>
+                    ) : (
+                      <InviteButton studentId={student.id} />
+                    )}
                   </td>
                 </tr>
               ))}
