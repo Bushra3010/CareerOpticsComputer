@@ -128,6 +128,7 @@ export default async function StudentFeesPage({ params }: PageProps) {
                   <tr>
                     <th className="text-label px-4 py-3">Receipt no.</th>
                     <th className="text-label px-4 py-3">Method</th>
+                    <th className="text-label px-4 py-3"></th>
                     <th className="text-label px-4 py-3 text-right">Amount</th>
                   </tr>
                 </thead>
@@ -140,6 +141,14 @@ export default async function StudentFeesPage({ params }: PageProps) {
                       <td className="text-body px-4 py-3">{payment.method}</td>
                       <td className="text-body px-4 py-3 text-right tabular-nums">
                         {formatPaise(payment.amountPaise)}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <Link
+                          href={`/centre/fees/receipt/${payment.id}`}
+                          className="text-meta font-semibold text-blue-700"
+                        >
+                          Receipt
+                        </Link>
                       </td>
                     </tr>
                   ))}

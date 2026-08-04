@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { StatusBadge } from "@/components/ui/badge";
@@ -49,6 +50,9 @@ export default async function CertificatesPage() {
                 <th scope="col" className="text-label px-4 py-3">
                   Status
                 </th>
+                <th scope="col" className="text-label px-4 py-3">
+                  Document
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -69,6 +73,14 @@ export default async function CertificatesPage() {
                       status={c.status === "revoked" ? "revoked" : "issued"}
                       label={c.status === "revoked" ? "Revoked" : "Issued"}
                     />
+                  </td>
+                  <td className="px-4 py-3">
+                    <Link
+                      href={`/centre/certificates/${c.id}/print`}
+                      className="text-meta font-semibold text-blue-700"
+                    >
+                      Print
+                    </Link>
                   </td>
                 </tr>
               ))}

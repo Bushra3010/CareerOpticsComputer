@@ -273,3 +273,59 @@
     box-shadow: var(--shadow-float);
   }
 }
+
+/* --------------------------------------------------------------------------
+   Print.
+
+   Certificates and receipts are printed far more often than they are read on
+   screen — a centre hands the student a piece of paper. Rather than pull in
+   headless Chromium (build plan R2 flags it as fragile on Vercel: bundle
+   limits, cold starts, no Edge runtime), the document pages are laid out for
+   A4 and the browser's own "Save as PDF" does the rendering.
+
+   The templates stay plain HTML and CSS, which is exactly what R2's mitigation
+   asks for — a server-side renderer can be dropped in later behind the same
+   markup without touching it.
+   -------------------------------------------------------------------------- */
+
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm;
+  }
+
+  /* Anything that only makes sense on screen: navigation, buttons, the print
+     control itself. */
+  [data-print="hide"] {
+    display: none !important;
+  }
+
+  html,
+  body {
+    background: #fff;
+  }
+
+  /* Tailwind's colour utilities resolve to CSS variables that most print
+     paths drop, so force the ink we actually want. */
+  body {
+    color: #000;
+  }
+
+  /* A certificate split across two sheets is worthless. */
+  [data-print="sheet"] {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Browsers strip backgrounds by default; the certificate border and the
+     navy heading are load-bearing, not decoration. */
+  [data-print="sheet"],
+  [data-print="sheet"] * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  a[href]::after {
+    content: "";
+  }
+}

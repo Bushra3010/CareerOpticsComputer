@@ -199,3 +199,87 @@ export async function getStudentFeeDetail(
     })),
   };
 }
+
+export interface PrintableReceipt {
+  receiptNumber: string;
+  studentName: string;
+  registrationNumber: string;
+  centreName: string;
+  courseName: string | null;
+  amountPaise: Paise;
+  method: string;
+  reference: string | null;
+  postedOn: string;
+  totalPaise: Paise;
+  paidPaise: Paise;
+  duePaise: Paise;
+}
+
+function embedded<T>(rel: unknown): T | null {
+  return Array.isArray(rel) ? ((rel[0] as T) ?? null) : ((rel as T) ?? null);
+}
+
+/**
+ * One receipt, plus the running balance at the time it is printed.
+ *
+ * Scoped by RLS: payments_select covers centre staff and payments_select_self
+ * covers the student, so both can print the same document without this query
+ * taking a centre or student argument to be spoofed.
+ */
+export async function getPrintableReceipt(
+  paymentId: string,
+): Promise<PrintableReceipt | null> {
+  const supabase = await createClient();
+
+  const { data: payment } = await supabase
+    .from("payments")
+    .select(
+      `receipt_number, amount_paise, method, reference, posted_at, student_id, fee_plan_id,
+       students(full_name, registration_number),
+       centres(name)`,
+    )
+    .eq("id", paymentId)
+    .maybeSingle();
+
+  if (!payment) return null;
+
+  const student = embedded<{ full_name: string; registration_number: string }>(
+    payment.students,
+  );
+
+  const { data: plan } = await supabase
+    .from("fee_plans")
+    .select("total_paise, enrolments(courses(name))")
+    .eq("id", payment.fee_plan_id)
+    .maybeSingle();
+
+  const enrolment = embedded<{ courses: unknown }>(plan?.enrolments);
+
+  // Everything paid on this plan so far, so the receipt shows a balance the
+  // student can reconcile rather than just the one figure they handed over.
+  const { data: allPayments } = await supabase
+    .from("payments")
+    .select("amount_paise")
+    .eq("fee_plan_id", payment.fee_plan_id);
+
+  const total = plan?.total_paise ?? 0;
+  const paidSoFar = (allPayments ?? []).reduce(
+    (sum: number, p: { amount_paise: number }) => sum + p.amount_paise,
+    0,
+  );
+
+  return {
+    receiptNumber: payment.receipt_number,
+    studentName: student?.full_name ?? "Unknown",
+    registrationNumber: student?.registration_number ?? "",
+    centreName: embedded<{ name: string }>(payment.centres)?.name ?? "Centre",
+    courseName: embedded<{ name: string }>(enrolment?.courses)?.name ?? null,
+    amountPaise: paise(payment.amount_paise),
+    method: payment.method,
+    reference: payment.reference,
+    postedOn: payment.posted_at.slice(0, 10),
+    totalPaise: paise(total),
+    paidPaise: paise(paidSoFar),
+    duePaise: paise(Math.max(0, total - paidSoFar)),
+  };
+}

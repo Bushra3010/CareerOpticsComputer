@@ -4,11 +4,13 @@ Multi-tenant computer education, franchise and training-centre management
 platform for **Career Optics Computer Academy**.
 
 > **Status: Phase 1 substantially complete, running against a hosted Supabase
-> project.** Migrations `0001`–`0016`. Working end to end: the public site and
+> project.** Migrations `0001`–`0018`. Working end to end: the public site and
 > course catalogue, admission enquiries, the centre franchise application and
-> its head-office review, authentication for three portals, student admission,
-> attendance, fees with an insert-only payment ledger, results with immutable
-> publication, certificates, and public credential verification.
+> its atomic head-office approval, authentication for three portals, five
+> centre roles with staff invitations, student admission and the student
+> portal, attendance, fees with an insert-only payment ledger, results with
+> immutable publication, certificates with printable A4 documents and QR
+> codes, and public credential verification.
 >
 > Not built yet: exams (question banks, attempts, the exam runner), inventory,
 > wallets, referrals, notifications and reporting. Known defects and an
@@ -155,7 +157,24 @@ These are enforced by review, tests and CI — not by convention:
 - **Brand assets are placeholders.** Only a raster JPEG of the logo exists. The
   SVG, white monochrome and compact variants required by style guide §2.2 are
   outstanding — see conflict C2.
-- **Certificate numbers are enumerable, by design of the spec.** Build plan
+- **`notFound()` inside a portal route returns a soft 404.** The portal
+  segments have a `loading.tsx`, which makes Next stream the shell immediately;
+  by the time a page calls `notFound()` the response has already committed 200,
+  so the styled not-found page renders with the wrong status. Confirmed by
+  removing `app/centre/loading.tsx`, after which the same URL returns 404.
+  Kept as-is deliberately: these routes are authenticated and `noindex`, no
+  crawler or API consumer reads the status, and the loading state is worth
+  more on pages that run several queries. The public routes, which have no
+  `loading.tsx`, return a correct 404.
+- **Certificate numbers are enumerable, by design of the spec.**
+- **PDF is the browser's, not the server's.** Certificates and receipts are
+  laid out for A4 with print CSS and saved via the browser's own print dialogue,
+  rather than rendered by headless Chromium — build plan R2 flags Chromium on
+  Vercel as fragile (bundle limits, cold starts, no Edge runtime). The
+  templates are plain HTML and CSS, which is R2's own suggested mitigation, so
+  a server-side renderer can be added behind the same markup. What is missing
+  until then: no PDF is generated on the server, so nothing can be emailed or
+  archived automatically. Build plan
   §1.3 specifies sequential certificate numbers and §2.1 requires a QR code to
   resolve `/verify/c/[number]` directly, so anyone can walk the number space
   and read holder names. The public payload is therefore the minimum an

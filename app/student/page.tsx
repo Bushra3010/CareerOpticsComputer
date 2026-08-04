@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { CalendarCheck, GraduationCap, IndianRupee } from "lucide-react";
 
 import { KpiCard } from "@/components/ui/card";
@@ -6,11 +7,13 @@ import { EmptyState } from "@/components/states";
 import { formatPaise } from "@/lib/money";
 import { getStudentOverview } from "@/features/student-portal/queries";
 import { getStudentResults } from "@/features/results/queries";
+import { listStudentCertificates } from "@/features/certificates/queries";
 
 export default async function StudentDashboardPage() {
-  const [overview, results] = await Promise.all([
+  const [overview, results, certificates] = await Promise.all([
     getStudentOverview(),
     getStudentResults(),
+    listStudentCertificates(),
   ]);
 
   if (!overview) {
@@ -109,6 +112,41 @@ export default async function StudentDashboardPage() {
         </ul>
       )}
 
+      <h2 className="text-section text-navy-900 mt-10">Certificates</h2>
+      {certificates.length === 0 ? (
+        <p className="text-body text-text-secondary mt-2">
+          No certificate has been issued to you yet.
+        </p>
+      ) : (
+        <ul className="mt-3 space-y-2">
+          {certificates.map((c) => (
+            <li
+              key={c.id}
+              className="border-border flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-card)] border px-4 py-3"
+            >
+              <div>
+                <p className="text-body text-text font-semibold">
+                  {c.documentNumber}
+                </p>
+                <p className="text-meta text-text-secondary">
+                  Issued {c.issuedOn}
+                </p>
+              </div>
+              {c.status === "revoked" ? (
+                <StatusBadge status="revoked" label="Revoked" />
+              ) : (
+                <Link
+                  href={`/student/certificate/${c.id}`}
+                  className="text-body font-semibold text-blue-700"
+                >
+                  View and print
+                </Link>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+
       <h2 className="text-section text-navy-900 mt-10">Fee schedule</h2>
       {overview.instalments.length === 0 ? (
         <p className="text-body text-text-secondary mt-2">
@@ -173,6 +211,7 @@ export default async function StudentDashboardPage() {
                 <th scope="col" className="text-label px-4 py-3 text-right">
                   Amount
                 </th>
+                <th scope="col" className="text-label px-4 py-3"></th>
               </tr>
             </thead>
             <tbody>
@@ -183,6 +222,14 @@ export default async function StudentDashboardPage() {
                   </td>
                   <td className="text-body px-4 py-3 text-right tabular-nums">
                     {formatPaise(r.amountPaise)}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <Link
+                      href={`/student/receipt/${r.id}`}
+                      className="text-meta font-semibold text-blue-700"
+                    >
+                      Receipt
+                    </Link>
                   </td>
                 </tr>
               ))}
