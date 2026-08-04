@@ -1,75 +1,78 @@
 import {
+  Award,
+  BellRing,
   BookOpen,
   CalendarDays,
   CircleUserRound,
   ClipboardList,
-  FileBadge,
+  FileText,
   GraduationCap,
   LayoutDashboard,
   LifeBuoy,
-  Megaphone,
   Receipt,
-  ShieldCheck,
   Trophy,
 } from "lucide-react";
 import type { BottomNavItems, NavGroup } from "@/components/layout/nav-types";
 
-/** Student portal navigation — PRD §5.4. */
+/**
+ * Student portal navigation — PRD §5.4, ordered to match the owner's mockup.
+ *
+ * Flat for the same reason as the other two portals: §8.1 warns against more
+ * than two nested levels, and twelve scannable destinations beat a tree.
+ * Labels are sentence case per §4.2.
+ */
 export const STUDENT_NAV: NavGroup[] = [
   {
-    items: [{ label: "Dashboard", href: "/student", icon: LayoutDashboard }],
-  },
-  {
-    label: "My learning",
     items: [
-      { label: "My course and batch", href: "/student/course", icon: BookOpen },
-      { label: "Timetable", href: "/student/timetable", icon: CalendarDays },
+      { label: "Dashboard", href: "/student", icon: LayoutDashboard },
+      { label: "My profile", href: "/student/profile", icon: CircleUserRound },
+      { label: "My course", href: "/student/course", icon: BookOpen },
       {
         label: "Attendance",
         href: "/student/attendance",
         icon: ClipboardList,
         matchPrefix: true,
       },
-      { label: "Study materials", href: "/student/materials", icon: BookOpen },
-    ],
-  },
-  {
-    label: "Assessment",
-    items: [
       {
-        label: "Live and upcoming exams",
+        label: "Class schedule",
+        href: "/student/timetable",
+        icon: CalendarDays,
+      },
+      {
+        label: "Study materials",
+        href: "/student/materials",
+        icon: FileText,
+        matchPrefix: true,
+      },
+      {
+        label: "Online exams",
         href: "/student/exams",
         icon: GraduationCap,
         matchPrefix: true,
       },
       {
-        label: "Results and performance",
+        label: "Results",
         href: "/student/results",
         icon: Trophy,
         matchPrefix: true,
       },
-      {
-        label: "Certificates and ID card",
-        href: "/student/certificates",
-        icon: FileBadge,
-        matchPrefix: true,
-      },
-    ],
-  },
-  {
-    label: "Account",
-    items: [
       {
         label: "Fees and receipts",
         href: "/student/fees",
         icon: Receipt,
         matchPrefix: true,
       },
-      { label: "My profile", href: "/student/profile", icon: CircleUserRound },
       {
-        label: "Announcements",
+        label: "Certificates",
+        href: "/student/certificates",
+        icon: Award,
+        matchPrefix: true,
+      },
+      {
+        label: "Notices",
         href: "/student/announcements",
-        icon: Megaphone,
+        icon: BellRing,
+        matchPrefix: true,
       },
       {
         label: "Support",
@@ -77,17 +80,12 @@ export const STUDENT_NAV: NavGroup[] = [
         icon: LifeBuoy,
         matchPrefix: true,
       },
-      {
-        label: "Security and password",
-        href: "/student/security",
-        icon: ShieldCheck,
-      },
     ],
   },
 ];
 
 /**
- * Mobile bottom navigation — style guide §9.2 specifies exactly these five for
+ * Mobile bottom navigation — style guide §9.2 names these five explicitly for
  * the Student portal: Home, Classes, Exams, Results, Profile.
  */
 export const STUDENT_BOTTOM_NAV: BottomNavItems = [

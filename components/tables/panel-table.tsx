@@ -67,7 +67,18 @@ export function PanelTable({
    * "Rahul K…" in a panel that had room to spare, so the split scales with how
    * many columns there actually are.
    */
-  const trailingWidth = trailingHeader ? 22 : 0;
+  /*
+   * A status badge is an icon plus a word plus pill padding — roughly 90px, not
+   * a percentage of whatever is left. The fewer data columns a panel has, the
+   * more of the width the badge can safely claim.
+   */
+  const trailingWidth = trailingHeader
+    ? columns.length === 0
+      ? 38
+      : columns.length === 1
+        ? 30
+        : 24
+    : 0;
   const primaryWidth =
     columns.length <= 1
       ? 62 - trailingWidth / 2

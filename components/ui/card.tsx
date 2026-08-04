@@ -2,6 +2,7 @@ import * as React from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Progress, type ProgressTone } from "./progress";
 
 /**
  * Card — style guide §10.3.
@@ -100,6 +101,8 @@ export function KpiCard({
   href,
   action,
   highlight,
+  progress,
+  progressTone = "blue",
   className,
 }: {
   label: string;
@@ -110,6 +113,9 @@ export function KpiCard({
   action?: React.ReactNode;
   /** Tints the whole tile. Use for at most one card per dashboard. */
   highlight?: boolean;
+  /** 0-100. Renders a labelled progress bar under the value. */
+  progress?: number;
+  progressTone?: ProgressTone;
   /**
    * Tints the icon disc. Use sparingly — §3.4 forbids "dashboards with every
    * card in a different bright colour", so the accent identifies a *domain*
@@ -147,7 +153,9 @@ export function KpiCard({
           </span>
         ) : null}
         <div className="min-w-0 flex-1">
-          <p className="text-meta text-text-secondary font-medium">{label}</p>
+          <p className="text-meta text-text-secondary min-h-[2.6em] font-medium">
+            {label}
+          </p>
           <p className="text-kpi text-navy-900 mt-0.5" data-numeric>
             {value}
           </p>
@@ -159,6 +167,14 @@ export function KpiCard({
           />
         ) : null}
       </div>
+      {progress !== undefined ? (
+        <Progress
+          value={progress}
+          tone={progressTone}
+          label={`${label} progress`}
+          className="mt-2.5"
+        />
+      ) : null}
       {context ? (
         <p className="text-meta text-text-secondary mt-2">{context}</p>
       ) : null}

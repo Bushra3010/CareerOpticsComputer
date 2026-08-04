@@ -104,8 +104,8 @@ PRD is traceable. No decision needed unless you disagree.
 
 **Status:** open · **Raised:** 4 August 2026 · **Owner supplied a mockup**
 
-The owner supplied a Super Admin dashboard mockup, then a Centre Admin one, and
-asked for both panels to be built like them. Its **layout and information architecture were followed exactly**
+The owner supplied three dashboard mockups — Super Admin, Centre Admin and the
+Student portal — and asked for each panel to be built like them. Its **layout and information architecture were followed exactly**
 — greeting, four KPIs, two trend charts, three summary panels plus quick
 actions, transactions with a platform summary, and a recent-activity strip. That
 structure is good and matches §11.1's prescribed order.
@@ -130,12 +130,18 @@ deeper routes still exist and are reached from their section landing pages.
 Labels use sentence case per §4.2, so "Exams and results" rather than the
 mockup's "Exams & Results".
 
-### Centre Admin mockup — same four, plus two more
+### Centre Admin and Student mockups — same four, plus three more
 
 | #   | Mockup                                                   | Style guide                                                                  | Built as                                                           |
 | --- | -------------------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------ |
 | e   | Red icon disc on the "Pending fees" KPI                  | §3.3 red is the destructive/error colour; §10.5 maps pending to warning gold | Warning gold, with a warning-triangle icon                         |
 | f   | Due dates in the pending-fees panel rendered in red text | §3.4 and §14: "Never communicate status using colour alone"                  | Red plus a warning icon and a screen-reader-only "Overdue:" prefix |
+
+The Student mockup shows a photograph in the identity card. Student photographs
+are personal data held in the private `student-private` bucket behind
+short-lived signed URLs (PRD §10.7), so list and summary views show initials
+until a real signed URL exists. Not a conflict, but worth knowing before someone
+files it as a missing feature.
 
 Both donuts follow the mockup as drawn. §12.3 forbids "decorative donuts for one
 number", but neither is one: fee collection is collected against pending, and
