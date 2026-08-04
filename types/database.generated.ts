@@ -289,6 +289,58 @@ export interface Database {
         Update: Partial<Database['public']['Tables']['centre_application_reviews']['Row']>;
         Relationships: [];
       };
+      students: {
+        Row: {
+          id: string;
+          organization_id: string;
+          centre_id: string;
+          registration_number: string;
+          full_name: string;
+          date_of_birth: string | null;
+          gender: string | null;
+          guardian_name: string | null;
+          phone: string;
+          email: string | null;
+          address: string | null;
+          gov_id_last4: string | null;
+          gov_id_hmac: string | null;
+          status: 'active' | 'completed' | 'withdrawn' | 'transferred' | 'on_hold';
+          created_at: string;
+          created_by: string | null;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: Partial<Database['public']['Tables']['students']['Row']> & {
+          organization_id: string;
+          centre_id: string;
+          registration_number: string;
+          full_name: string;
+          phone: string;
+        };
+        Update: Partial<Database['public']['Tables']['students']['Row']>;
+        Relationships: [];
+      };
+      enrolments: {
+        Row: {
+          id: string;
+          organization_id: string;
+          centre_id: string;
+          student_id: string;
+          course_id: string;
+          status: 'active' | 'completed' | 'withdrawn' | 'transferred' | 'on_hold';
+          enrolled_at: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database['public']['Tables']['enrolments']['Row']> & {
+          organization_id: string;
+          centre_id: string;
+          student_id: string;
+          course_id: string;
+        };
+        Update: Partial<Database['public']['Tables']['enrolments']['Row']>;
+        Relationships: [];
+      };
       document_sequences: {
         Row: {
           id: string;
@@ -352,6 +404,21 @@ export interface Database {
           p_message: string | null;
         };
         Returns: string;
+      };
+      admit_student: {
+        Args: {
+          p_organization_id: string;
+          p_centre_id: string;
+          p_course_id: string;
+          p_full_name: string;
+          p_phone: string;
+          p_email: string | null;
+          p_date_of_birth: string | null;
+          p_gender: string | null;
+          p_guardian_name: string | null;
+          p_address: string | null;
+        };
+        Returns: { student_id: string; registration_number: string }[];
       };
       record_audit_entry: {
         Args: {

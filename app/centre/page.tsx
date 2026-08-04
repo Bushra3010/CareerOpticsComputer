@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { createClient } from "@/lib/db/server";
 
 export default async function CentreDashboardPage() {
@@ -24,11 +26,19 @@ export default async function CentreDashboardPage() {
           No active centre membership found for this account.
         </p>
       ) : (
-        <ul className="text-body text-text mt-4 space-y-1">
-          {memberships.map((m, i) => (
-            <li key={i}>Active membership at centre {m.centre_id}</li>
-          ))}
-        </ul>
+        <>
+          <ul className="text-body text-text mt-4 space-y-1">
+            {memberships.map((m, i) => (
+              <li key={i}>Active membership at centre {m.centre_id}</li>
+            ))}
+          </ul>
+          <Link
+            href="/centre/students"
+            className="text-body mt-4 inline-block font-semibold text-blue-700"
+          >
+            Manage students
+          </Link>
+        </>
       )}
     </div>
   );
