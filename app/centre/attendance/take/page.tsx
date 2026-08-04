@@ -8,6 +8,7 @@ import { getCurrentCentreContext } from "@/features/centres/current-membership";
 import { listPublishedCourses } from "@/features/academics/queries";
 import { getAttendanceRoster } from "@/features/attendance/queries";
 import { AttendanceForm } from "@/features/attendance/components/attendance-form";
+import { businessDate } from "@/lib/dates";
 
 interface PageProps {
   searchParams: Promise<{ courseId?: string; date?: string }>;
@@ -15,7 +16,9 @@ interface PageProps {
 
 export default async function TakeAttendancePage({ searchParams }: PageProps) {
   const { courseId, date } = await searchParams;
-  const sessionDate = date || new Date().toISOString().slice(0, 10);
+  // Must be the centre's local date, not the server's UTC one: between
+  // midnight and 05:30 IST a UTC date would default to yesterday (R13).
+  const sessionDate = date || businessDate();
 
   const supabase = await createClient();
   const {

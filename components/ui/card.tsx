@@ -1,4 +1,5 @@
 import * as React from "react";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 /**
@@ -94,16 +95,19 @@ export function KpiCard({
   value,
   context,
   icon,
+  href,
   className,
 }: {
   label: string;
   value: React.ReactNode;
   context?: React.ReactNode;
   icon?: React.ReactNode;
+  /** Drill-down target. Makes the whole tile one link. */
+  href?: string;
   className?: string;
 }) {
-  return (
-    <Card className={cn("p-4 lg:p-6", className)}>
+  const body = (
+    <>
       <div className="flex items-start justify-between gap-3">
         <p className="text-meta text-text-secondary font-medium">{label}</p>
         {icon ? (
@@ -118,6 +122,29 @@ export function KpiCard({
       {context ? (
         <p className="text-meta text-text-secondary mt-1">{context}</p>
       ) : null}
+    </>
+  );
+
+  if (!href) {
+    return <Card className={cn("p-4 lg:p-6", className)}>{body}</Card>;
+  }
+
+  /* One link wrapping the whole tile rather than a link inside it: a nested
+     interactive element would give screen readers two targets for one metric,
+     and the label is the accessible name we want announced. */
+  return (
+    <Card
+      className={cn(
+        "hover:border-border-strong focus-within:border-border-strong transition-colors",
+        className,
+      )}
+    >
+      <Link
+        href={href}
+        className="block rounded-[inherit] p-4 focus-visible:outline-2 focus-visible:outline-offset-2 lg:p-6"
+      >
+        {body}
+      </Link>
     </Card>
   );
 }
