@@ -1,46 +1,54 @@
 import {
-  Award,
+  Banknote,
   BarChart3,
   Building2,
   CalendarCheck,
   ClipboardList,
+  FileBadge,
   GraduationCap,
   LayoutDashboard,
   LifeBuoy,
+  Megaphone,
   MoreHorizontal,
+  Package,
   Receipt,
   Settings,
+  Share2,
+  ShoppingBag,
+  Trophy,
   UserPlus,
   Users,
-  UsersRound,
   Wallet,
-  Wallet2,
 } from "lucide-react";
 import type { BottomNavItems, NavGroup } from "@/components/layout/nav-types";
 
 /**
- * Centre portal navigation — PRD §5.3, ordered to match the owner's dashboard
- * mockup.
+ * Centre portal navigation — PRD §5.3, with permission codes from the build
+ * plan's role matrix (docs/00-build-plan.md §4).
  *
- * Flat rather than grouped, for the same reason as the admin sidebar: §8.1
- * warns against more than two nested levels, and a scannable flat list beats a
- * tree of collapsed groups when every destination is used daily. The deeper
- * routes (receipts, defaulters, corrections, timetable) are reached from their
- * section landing page.
- *
- * Labels are sentence case per §4.2, so "Fees and receipts" rather than the
- * mockup's "Fees & Receipts".
+ * Items are filtered by permission at render time in Phase 1; the codes are
+ * declared here now so the route map and the permission registry stay in step.
  */
 export const CENTRE_NAV: NavGroup[] = [
   {
+    items: [{ label: "Dashboard", href: "/centre", icon: LayoutDashboard }],
+  },
+  {
+    label: "Admissions",
     items: [
-      { label: "Dashboard", href: "/centre", icon: LayoutDashboard },
       {
-        label: "Centre profile",
-        href: "/centre/profile",
-        icon: Building2,
-        permission: "centre.read",
+        label: "Leads",
+        href: "/centre/leads",
+        planned: true,
+        icon: ClipboardList,
+        permission: "lead.read",
         matchPrefix: true,
+      },
+      {
+        label: "New student",
+        href: "/centre/students/new",
+        icon: UserPlus,
+        permission: "student.create",
       },
       {
         label: "Students",
@@ -49,77 +57,141 @@ export const CENTRE_NAV: NavGroup[] = [
         permission: "student.read",
         matchPrefix: true,
       },
+    ],
+  },
+  {
+    label: "Academics",
+    items: [
       {
-        label: "New admission",
-        href: "/centre/students/new",
-        icon: UserPlus,
-        permission: "student.create",
-      },
-      {
-        label: "Attendance",
-        href: "/centre/attendance",
-        icon: CalendarCheck,
-        permission: "attendance.read",
-        matchPrefix: true,
-      },
-      {
-        label: "Fees and receipts",
-        href: "/centre/fees",
-        icon: Receipt,
-        permission: "fee_plan.read",
-        matchPrefix: true,
-      },
-      {
-        label: "Courses and batches",
+        label: "Batches and timetable",
         href: "/centre/batches",
-        icon: ClipboardList,
+        planned: true,
+        icon: CalendarCheck,
         permission: "batch.read",
         matchPrefix: true,
       },
       {
-        label: "Exams and results",
+        label: "Attendance",
+        href: "/centre/attendance",
+        icon: ClipboardList,
+        permission: "attendance.read",
+        matchPrefix: true,
+      },
+      {
+        label: "Exams",
         href: "/centre/exams",
+        planned: true,
         icon: GraduationCap,
         permission: "exam.read",
         matchPrefix: true,
       },
       {
-        label: "Certificates",
+        label: "Results and performance",
+        href: "/centre/results",
+        icon: Trophy,
+        permission: "result.read",
+        matchPrefix: true,
+      },
+      {
+        label: "Certificates and ID cards",
         href: "/centre/certificates",
-        icon: Award,
+
+        icon: FileBadge,
         permission: "certificate.read",
         matchPrefix: true,
       },
+    ],
+  },
+  {
+    label: "Money",
+    items: [
       {
-        label: "Staff",
-        href: "/centre/staff",
-        icon: UsersRound,
-        permission: "user.read",
+        label: "Fee management",
+        href: "/centre/fees",
+        icon: Receipt,
+        permission: "fee.read",
         matchPrefix: true,
       },
       {
-        label: "Income and expense",
-        href: "/centre/finance/expenses",
-        icon: Wallet2,
-        permission: "expense.read",
-        matchPrefix: true,
-      },
-      {
-        label: "Wallet",
+        label: "Wallet and recharge",
         href: "/centre/wallet",
+        planned: true,
         icon: Wallet,
         permission: "wallet.read",
         matchPrefix: true,
       },
       {
+        label: "Income and expenses",
+        href: "/centre/finance/expenses",
+        planned: true,
+        icon: Banknote,
+        permission: "expense.read",
+      },
+      {
+        label: "Referrals",
+        href: "/centre/referrals",
+        planned: true,
+        icon: Share2,
+        permission: "referral.read",
+      },
+    ],
+  },
+  {
+    label: "Supplies",
+    items: [
+      {
+        label: "Shop",
+        href: "/centre/shop",
+        planned: true,
+        icon: ShoppingBag,
+        permission: "product.read",
+        matchPrefix: true,
+      },
+      {
+        label: "My orders",
+        href: "/centre/orders",
+        planned: true,
+        icon: Package,
+        permission: "order.read",
+        matchPrefix: true,
+      },
+    ],
+  },
+  {
+    label: "Centre",
+    items: [
+      {
+        label: "Centre profile",
+        href: "/centre/profile",
+
+        icon: Building2,
+        permission: "centre.read",
+        matchPrefix: true,
+      },
+      {
+        label: "Staff",
+        href: "/centre/staff",
+        icon: Users,
+        permission: "staff.read",
+        matchPrefix: true,
+      },
+      {
+        label: "Announcements",
+        href: "/centre/announcements",
+        planned: true,
+        icon: Megaphone,
+      },
+      {
         label: "Support",
         href: "/centre/support",
+        planned: true,
         icon: LifeBuoy,
         matchPrefix: true,
       },
       {
         label: "Reports",
         href: "/centre/reports",
+        planned: true,
         icon: BarChart3,
         permission: "report.read",
         matchPrefix: true,
@@ -128,14 +200,14 @@ export const CENTRE_NAV: NavGroup[] = [
         label: "Settings",
         href: "/centre/settings",
         icon: Settings,
-        matchPrefix: true,
+        planned: true,
       },
     ],
   },
 ];
 
 /**
- * Mobile bottom navigation — style guide §9.2 names these five explicitly for
+ * Mobile bottom navigation — style guide §9.2 specifies exactly these five for
  * the Centre portal: Home, Students, Attendance, Fees, More.
  */
 export const CENTRE_BOTTOM_NAV: BottomNavItems = [
@@ -153,5 +225,5 @@ export const CENTRE_BOTTOM_NAV: BottomNavItems = [
     matchPrefix: true,
   },
   { label: "Fees", href: "/centre/fees", icon: Receipt, matchPrefix: true },
-  { label: "More", href: "/centre/more", icon: MoreHorizontal },
+  { label: "More", href: "/centre/more", icon: MoreHorizontal, planned: true },
 ];

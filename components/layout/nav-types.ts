@@ -17,6 +17,13 @@ export interface NavItem {
   badge?: number;
   /** Marks the item active for nested routes, e.g. /centre/students/[id]. */
   matchPrefix?: boolean;
+  /**
+   * The route is in the plan but not built yet, so the item is hidden.
+   * Delete the flag on the same line as the href when the page ships — this
+   * lives here, next to the route, precisely so it cannot drift out of step
+   * the way a separate "built routes" list would.
+   */
+  planned?: boolean;
 }
 
 export interface NavGroup {

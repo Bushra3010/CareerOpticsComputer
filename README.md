@@ -3,16 +3,19 @@
 Multi-tenant computer education, franchise and training-centre management
 platform for **Career Optics Computer Academy**.
 
-> **Status: Phase 0 — Foundation, not yet closed.** The design system,
-> application shells, project tooling and the full tenancy schema with its RLS
-> security model exist. There is no authentication and no feature module yet.
+> **Status: Phase 1 substantially complete, running against a hosted Supabase
+> project.** Migrations `0001`–`0016`. Working end to end: the public site and
+> course catalogue, admission enquiries, the centre franchise application and
+> its head-office review, authentication for three portals, student admission,
+> attendance, fees with an insert-only payment ledger, results with immutable
+> publication, certificates, and public credential verification.
 >
-> Phase 0 closes when the RLS proof suite runs green. It is written but has
-> never been executed — see [`docs/01-handover.md`](docs/01-handover.md) §2.1
-> for why and how to unblock it.
-
-**New to this repository?** Read [`CLAUDE.md`](CLAUDE.md) for the conventions,
-then [`docs/01-handover.md`](docs/01-handover.md) for where the work stands.
+> Not built yet: exams (question banks, attempts, the exam runner), inventory,
+> wallets, referrals, notifications and reporting. Known defects and an
+> unverified audit backlog are in
+> [`docs/03-audit-findings.md`](docs/03-audit-findings.md) — read it before
+> treating any of this as production-ready. See
+> [`docs/00-build-plan.md`](docs/00-build-plan.md) for the full phase plan.
 
 ---
 
@@ -23,9 +26,7 @@ then [`docs/01-handover.md`](docs/01-handover.md) for where the work stands.
 | [`Computer_Centre_Management_System_PRD.md`](Computer_Centre_Management_System_PRD.md) | Functional requirements, data model, security rules                                 |
 | `Career_Optics_UI_UX_Style_Guide.docx`                                                 | Visual and interaction specification — the source of truth for anything you can see |
 | [`docs/00-build-plan.md`](docs/00-build-plan.md)                                       | Route map, ERD plan, permission matrix, RLS strategy, phase plan                    |
-| [`docs/01-handover.md`](docs/01-handover.md)                                           | Where the work stands, what is blocked, what is next                                |
 | [`docs/02-open-conflicts.md`](docs/02-open-conflicts.md)                               | Conflicts between the two documents awaiting a decision                             |
-| [`CLAUDE.md`](CLAUDE.md)                                                               | Conventions and the traps that are easy to fall into                                |
 
 Where the PRD and the style guide disagree on a visual question, **the style
 guide wins**. That resolution and its reasoning are recorded as C3 in the
@@ -126,20 +127,43 @@ These are enforced by review, tests and CI — not by convention:
 
 ## Known limitations
 
-- **The RLS proof suite has never run.** Migrations `0001`–`0005` and 25 pgTAP
-  assertions covering proof tests P1, P3, P4 and P5 exist, but applying DDL
-  needs a Postgres connection string or a Supabase CLI token — the anon and
-  service_role API keys cannot do it. This is what keeps Phase 0 open. See
-  [`docs/01-handover.md`](docs/01-handover.md) §2.1.
-- **`types/database.generated.ts` is a placeholder.** A few `as never` casts in
-  `lib/audit` and `lib/permissions` exist only because of it. Run
-  `npm run db:types` once the database is reachable and remove them.
+- **Database types are hand-maintained.** `types/database.generated.ts` is
+  written by hand, not generated, because `npm run db:types` needs a reachable
+  Postgres connection (`SUPABASE_DB_URL`), which isn't configured yet — only
+  the REST-facing anon/service-role keys are. Once the DB URL is available,
+  regenerate it and delete `lib/db/rpc.ts`'s `callRpc` escape hatch, which
+  exists only because postgrest-js's RPC generics need the fully generated
+  shape to type-check.
+- **P6 (idempotent wallet debit) is proven against `idempotency_keys`, not
+  `wallet_entries`** — the wallet ledger lands in migration `0009` (Phase 3).
+  Re-point `tests/integration/rls-proof.test.ts` at it then.
+- **No local Supabase / pgTAP.** Docker isn't available on the dev machine, so
+  the database tests run as Vitest integration tests against the hosted project
+  (`npm run test:integration`) instead of pgTAP in CI. Two suites live there:
+  `rls-proof.test.ts` (the P1–P6 gate from build plan §5.3) and
+  `feature-invariants.test.ts` (24 tests total), which covers the role matrix
+  including proof test R13, attendance re-save and cross-centre marking, the
+  fee split and allocation arithmetic, overpayment rollback, result
+  publication immutability, and certificate issuance and public verification.
+  They create and tear down their own tenant, so they are safe to re-run. This needs
+  `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` and
+  `SUPABASE_SERVICE_ROLE_KEY` in the environment and is intentionally excluded
+  from `npm run verify` so CI without those secrets doesn't fail.
 - **Node 20.18 compatibility.** The toolchain wants Node ≥20.19. On 20.18,
   Vitest is pinned to 3.x and jsdom to 26.x, and npm prints `EBADENGINE`
   warnings. Upgrading to Node 22.13 removes all of it. CI already uses 22.
 - **Brand assets are placeholders.** Only a raster JPEG of the logo exists. The
   SVG, white monochrome and compact variants required by style guide §2.2 are
   outstanding — see conflict C2.
+- **Certificate numbers are enumerable, by design of the spec.** Build plan
+  §1.3 specifies sequential certificate numbers and §2.1 requires a QR code to
+  resolve `/verify/c/[number]` directly, so anyone can walk the number space
+  and read holder names. The public payload is therefore the minimum an
+  employer needs — name, course, centre, outcome, issue date, and nothing
+  else — every lookup is written to `public_verification_logs`, and the app
+  rate-limits by IP. Preventing enumeration outright means requiring name +
+  number (confirm rather than reveal) and dropping the bare-number QR route;
+  that is a product decision. See migration 0016.
 - **Primary-button contrast.** White on brand-orange measures 3.19:1 against a
   4.5:1 requirement. Implemented as the style guide specifies, pending a brand
   decision — see conflict C1.
@@ -154,18 +178,14 @@ These are enforced by review, tests and CI — not by convention:
 
 ## Repository configuration
 
-| Setting                     | Status                                                                        |
-| --------------------------- | ----------------------------------------------------------------------------- |
-| Visibility                  | **Public** — owner's decision, 4 Aug 2026, overriding PRD §15                 |
-| Dependabot alerts           | Enabled                                                                       |
-| Secret scanning             | **Not enabled** — free on public repos; switch on at Settings → Code security |
-| Branch protection on `main` | **Not enabled** — free on public repos; switch on at Settings → Rules         |
+| Setting                     | Status                                                                                              |
+| --------------------------- | --------------------------------------------------------------------------------------------------- |
+| Visibility                  | Private                                                                                             |
+| Dependabot alerts           | Enabled                                                                                             |
+| Secret scanning             | **Not enabled** — needs GitHub Advanced Security, unavailable on a private repo on the current plan |
+| Branch protection on `main` | **Not enabled** — needs GitHub Pro for private repos                                                |
 
-PRD §15 requires a private repository, protected `main`, required reviews and
-secret scanning. The repository is public by the owner's explicit choice; no
-credentials are in the git history, which was scanned in full before the first
-public push.
-
-Branch protection and secret scanning are both free on public repositories and
-are worth enabling now. Until they are, CI runs on every push and pull request
-but cannot be _enforced_ as a merge gate.
+PRD §15 requires protected `main`, required reviews and secret scanning. Both
+need a GitHub Pro plan (or a public repository). Until then, the CI workflow
+still runs on every push and pull request — it just cannot be _enforced_ as a
+merge gate. Raise this before Phase 1 ships anything to a real environment.
