@@ -83,7 +83,7 @@ style guide §16.
 | `npm run verify`    | Format check, lint, type-check and unit tests — run before pushing |
 | `npm run typecheck` | `tsc --noEmit`                                                     |
 | `npm run test`      | Unit tests (Vitest)                                                |
-| `npm run test:e2e`  | End-to-end tests (Playwright)                                      |
+| `npm run test:e2e`  | Accessibility scan over the public routes (Playwright + axe)       |
 | `npm run db:start`  | Start local Supabase (requires Docker)                             |
 | `npm run db:reset`  | Drop and re-apply every migration from scratch                     |
 | `npm run db:test`   | pgTAP RLS and integration suites                                   |
@@ -156,6 +156,27 @@ Two things a reader should not have to discover the hard way:
 Uploaded files are **not scanned for malware.** `MALWARE_SCAN_URL` exists in
 `.env.example` and nothing calls it; the MIME allow-list and the 5 MB cap are
 the only checks. Treat that as a gap before real files from the public arrive.
+
+### Accessibility
+
+`npm run test:e2e` runs an axe scan over every unauthenticated route at desktop
+and at 360px, against WCAG 2.2 AA. It needs a dev server, which it starts
+itself, and the Supabase values in `.env.local`, because the course catalogue
+and centre finder read from the database.
+
+Three things about how it is written:
+
+- It **asserts it is still on the URL it asked for** before scanning. A scan
+  that silently follows a redirect to `/sign-in` and reports green is worse
+  than no scan. That assertion is what caught the middleware bug where
+  `startsWith("/centre")` also matched `/centres` and sent every visitor to the
+  public centre finder into the staff sign-in page.
+- Contrast is checked against an **allowlist**, not muted. C1 and C5 in
+  [`docs/02-open-conflicts.md`](docs/02-open-conflicts.md) are known and
+  awaiting a brand decision; any contrast failure that is not one of those
+  fails the run.
+- The portals are **not** covered. They need a real session, and there is no
+  E2E flow yet — that is still outstanding from build plan §6 step 10.
 
 ## Known limitations
 

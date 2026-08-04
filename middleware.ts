@@ -19,13 +19,18 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const prefix = PROTECTED_PREFIXES.find((p) =>
-    request.nextUrl.pathname.startsWith(p),
+  // Matched on a path SEGMENT, not a string prefix. A bare startsWith("/centre")
+  // also matches "/centres" — the public centre finder — and bounced every
+  // visitor to it into the staff sign-in page. Found by the axe scan, which
+  // asserts it is still on the URL it asked for before scanning it.
+  const { pathname } = request.nextUrl;
+  const prefix = PROTECTED_PREFIXES.find(
+    (p) => pathname === p || pathname.startsWith(`${p}/`),
   );
 
   if (prefix && !user) {
     const signInUrl = new URL(SIGN_IN_BY_PREFIX[prefix], request.url);
-    signInUrl.searchParams.set("next", request.nextUrl.pathname);
+    signInUrl.searchParams.set("next", pathname);
     return NextResponse.redirect(signInUrl);
   }
 

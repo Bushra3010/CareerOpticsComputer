@@ -151,3 +151,51 @@ with a summary in the centre, which is the legitimate use.
 **Decision needed from:** brand owner. Reply with the letters you want switched
 to the mockup treatment, or "keep as built". The decision applies to both
 dashboards — they share the same components.
+
+---
+
+## C5 — Orange body text fails contrast on a light surface
+
+**Status:** open · **Raised:** 5 August 2026 · **Severity:** same gate as C1
+
+**The conflict.** Same root cause as [C1](#c1--primary-button-fails-the-contrast-requirement),
+opposite direction. C1 is white **on** orange; this is orange **as** the text.
+
+**The measurement.** Brand-orange-500 (`#EF6605`) on the light surface
+(`#F7F9FC`) is **3.02:1** at 13px semibold. WCAG treats that as normal-size
+text — 3:1 would only be enough at 18.66px bold or larger — so the 4.5:1
+threshold in style guide §14 applies. Orange-600 (`#D95600`) reaches only
+**3.77:1**, so the hover token does not rescue it either.
+
+**Where.** The eyebrow label above the home-page headline,
+`app/(public)/page.tsx:21`, and the same pattern in the showcase at
+`app/dev/components/page.tsx:186`. Found by the axe scan added on 5 August,
+not by review — which is the point of having the scan.
+
+**Why this is not just C1 again.** C1 is a conflict because §10.1 explicitly
+specifies "orange fill, white text", so the guide's own words produce the
+failure and only the brand owner can resolve it. Here the guide says something
+weaker: §3.4 makes orange **the action colour**. An eyebrow label is not an
+action. So it is at least arguable that orange was the wrong token for this
+element regardless of contrast, and that option A below is a fix rather than a
+new style.
+
+**Options.**
+
+| Option                                              | Result                          | Cost                                                                                                                                |
+| --------------------------------------------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| **A. Use `text-text-secondary` for eyebrow labels** | Passes comfortably.             | Loses the orange accent above the headline. Arguably closer to §3.4 than what is there now, since the label is not an action.       |
+| **B. Set eyebrow labels at 18.66px bold or larger** | 3:1 threshold applies — passes. | Changes the type scale for one element; an eyebrow that large stops reading as an eyebrow.                                          |
+| **C. Whatever resolves C1**                         | Depends.                        | If C1 is resolved by darkening the brand orange, this resolves with it. If C1 is resolved by changing the button only, it does not. |
+| **D. Accept deliberately, as C1 option D**          | Ships as built.                 | Two AA failures instead of one.                                                                                                     |
+
+**Recommendation: A**, and it does not need to wait for C1. If the guide does
+specify orange for eyebrow labels somewhere this file has not accounted for,
+say so and this becomes a genuine C1-style conflict instead.
+
+**What is implemented.** Unchanged — orange, as built. Style guide §17 says to
+pause rather than silently create a third style, and the scan now asserts that
+this and C1 are the _only_ contrast failures on any public page, so a third one
+fails the build rather than joining them quietly.
+
+**Decision needed from:** brand owner.
