@@ -98,12 +98,18 @@ export function KpiCard({
   icon,
   accent,
   href,
+  action,
+  highlight,
   className,
 }: {
   label: string;
   value: React.ReactNode;
   context?: React.ReactNode;
   icon?: React.ReactNode;
+  /** Inline action, e.g. a Recharge button on the wallet tile. */
+  action?: React.ReactNode;
+  /** Tints the whole tile. Use for at most one card per dashboard. */
+  highlight?: boolean;
   /**
    * Tints the icon disc. Use sparingly — §3.4 forbids "dashboards with every
    * card in a different bright colour", so the accent identifies a *domain*
@@ -159,13 +165,28 @@ export function KpiCard({
     </>
   );
 
+  const surface = cn(
+    "p-4 lg:p-5",
+    highlight && "border-info-border bg-blue-100",
+    className,
+  );
+
+  // An action inside the tile rules out wrapping the whole tile in a link —
+  // nesting an interactive control inside an anchor is invalid and breaks
+  // keyboard navigation.
+  if (action) {
+    return (
+      <Card className={surface}>
+        {body}
+        <div className="mt-3">{action}</div>
+      </Card>
+    );
+  }
+
   if (href) {
     return (
       <Card
-        className={cn(
-          "hover:border-border-strong p-4 transition-colors lg:p-5",
-          className,
-        )}
+        className={cn(surface, "hover:border-border-strong transition-colors")}
       >
         <Link href={href} className="block">
           {body}
@@ -174,5 +195,5 @@ export function KpiCard({
     );
   }
 
-  return <Card className={cn("p-4 lg:p-5", className)}>{body}</Card>;
+  return <Card className={surface}>{body}</Card>;
 }

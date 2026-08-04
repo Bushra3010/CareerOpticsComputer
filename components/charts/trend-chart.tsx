@@ -35,6 +35,12 @@ export interface TrendChartProps {
   formatValue?: (value: number) => string;
   /** Show only every Nth x label so they never overlap at narrow widths. */
   labelEvery?: number;
+  /**
+   * Which series carries the message. Attendance is read as "how many came in",
+   * so the bars lead and the line is context; growth is read as a trend, so the
+   * line leads. Emphasis changes weight only — never the axis.
+   */
+  emphasis?: "line" | "bar";
   className?: string;
 }
 
@@ -50,6 +56,7 @@ export function TrendChart({
   barLabel,
   formatValue = (v) => v.toLocaleString("en-IN"),
   labelEvery = 5,
+  emphasis = "line",
   className,
 }: TrendChartProps) {
   if (points.length === 0) return null;
@@ -165,8 +172,16 @@ export function TrendChart({
                 y={yBar(p.bar)}
                 width={barWidth}
                 height={Math.max(0, PAD.top + plotH - yBar(p.bar))}
-                fill="var(--color-blue-100)"
-                stroke="var(--color-info-border)"
+                fill={
+                  emphasis === "bar"
+                    ? "var(--color-blue-700)"
+                    : "var(--color-blue-100)"
+                }
+                stroke={
+                  emphasis === "bar"
+                    ? "var(--color-blue-700)"
+                    : "var(--color-info-border)"
+                }
                 strokeWidth={1}
                 rx={2}
               />
@@ -174,12 +189,14 @@ export function TrendChart({
           )}
 
         {/* Area wash under the line, then the line itself in navy. */}
-        <path d={areaPath} fill="var(--color-navy-900)" opacity={0.06} />
+        {emphasis === "line" ? (
+          <path d={areaPath} fill="var(--color-navy-900)" opacity={0.06} />
+        ) : null}
         <path
           d={linePath}
           fill="none"
           stroke="var(--color-navy-900)"
-          strokeWidth={2}
+          strokeWidth={emphasis === "bar" ? 1.5 : 2}
           strokeLinejoin="round"
           strokeLinecap="round"
           vectorEffect="non-scaling-stroke"

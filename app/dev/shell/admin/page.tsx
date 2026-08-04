@@ -18,11 +18,10 @@ import { TopBarSearch } from "@/components/layout/top-bar";
 import { Button } from "@/components/ui/button";
 import { Card, KpiCard } from "@/components/ui/card";
 import { Badge, StatusBadge } from "@/components/ui/badge";
-import { Select } from "@/components/ui/input";
-import { ChartLegend, TrendChart } from "@/components/charts/trend-chart";
+import { TrendChart } from "@/components/charts/trend-chart";
 import { PanelTable } from "@/components/tables/panel-table";
+import { ActivityStrip, ChartCard, SectionCard } from "@/components/dashboard";
 import { ADMIN_BOTTOM_NAV, ADMIN_NAV } from "@/lib/navigation/admin-nav";
-import { cn } from "@/lib/utils";
 import {
   ACTIVITY,
   APPLICATIONS,
@@ -286,102 +285,8 @@ export default function AdminDashboardPreview() {
         href="#activity"
         className="mt-4 lg:mt-6"
       >
-        <ul className="tablet:grid-cols-2 wide:grid-cols-5 grid gap-3 lg:grid-cols-3">
-          {ACTIVITY.map((item) => {
-            const Icon = item.icon;
-            return (
-              <li key={item.title} className="flex gap-3">
-                <span
-                  className={cn(
-                    "grid size-9 shrink-0 place-items-center rounded-[var(--radius-chip)] [&_svg]:size-[18px]",
-                    item.tone === "green"
-                      ? "bg-success-bg text-success"
-                      : item.tone === "orange"
-                        ? "bg-warning-bg text-orange-600"
-                        : "bg-blue-100 text-blue-700",
-                  )}
-                  aria-hidden="true"
-                >
-                  <Icon />
-                </span>
-                <div className="min-w-0">
-                  <p className="text-label text-text font-semibold">
-                    {item.title}
-                  </p>
-                  <p className="text-meta text-text-secondary truncate">
-                    {item.detail}
-                  </p>
-                  <p className="text-meta text-text-muted mt-0.5">
-                    {item.when}
-                  </p>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+        <ActivityStrip items={ACTIVITY} />
       </SectionCard>
     </PortalShell>
-  );
-}
-
-/* -------------------------------------------------------------------------
-   Dashboard building blocks
-   ------------------------------------------------------------------------- */
-
-function SectionCard({
-  title,
-  href,
-  children,
-  className,
-}: {
-  title: string;
-  /** "View all" target. PRD §7.1: every metric drills down to a source list. */
-  href: string;
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <Card className={cn("flex flex-col p-4 lg:p-5", className)}>
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <h2 className="text-card-title text-navy-900">{title}</h2>
-        <Link
-          href={href}
-          className="text-meta shrink-0 font-semibold text-blue-700 underline-offset-4 hover:underline"
-        >
-          View all
-          <span className="sr-only"> {title.toLowerCase()}</span>
-        </Link>
-      </div>
-      <div className="min-w-0 flex-1">{children}</div>
-    </Card>
-  );
-}
-
-function ChartCard({
-  title,
-  legend,
-  children,
-}: {
-  title: string;
-  legend: { label: string; kind: "line" | "bar" }[];
-  children: React.ReactNode;
-}) {
-  return (
-    <Card className="p-4 lg:p-5">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-card-title text-navy-900">{title}</h2>
-        <Select
-          aria-label={`${title} period`}
-          defaultValue="month"
-          className="text-meta h-9 w-auto lg:h-9"
-        >
-          <option value="month">This month</option>
-          <option value="quarter">This quarter</option>
-          <option value="year">This year</option>
-        </Select>
-      </div>
-      <ChartLegend items={legend} className="mb-2" />
-      {children}
-    </Card>
   );
 }

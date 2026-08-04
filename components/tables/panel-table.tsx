@@ -61,6 +61,24 @@ export function PanelTable({
 }) {
   const columns = rows[0]?.cells ?? [];
 
+  /*
+   * The identity column carries the name people scan for, so it takes whatever
+   * the other columns do not need. A fixed share truncated "Rahul Kumar" to
+   * "Rahul K…" in a panel that had room to spare, so the split scales with how
+   * many columns there actually are.
+   */
+  const trailingWidth = trailingHeader ? 22 : 0;
+  const primaryWidth =
+    columns.length <= 1
+      ? 62 - trailingWidth / 2
+      : columns.length === 2
+        ? 48
+        : 40;
+  const otherWidth =
+    columns.length > 0
+      ? (100 - primaryWidth - trailingWidth) / columns.length
+      : 0;
+
   return (
     <div className={className}>
       {/* --- Mobile: stacked blocks -------------------------------------- */}
@@ -105,7 +123,20 @@ export function PanelTable({
       </ul>
 
       {/* --- Desktop: real table with real headers ------------------------ */}
-      <table className="hidden w-full border-collapse lg:table">
+      {/* table-fixed keeps columns inside the panel — with auto layout the table
+          sizes to its content and overflows a narrow dashboard card. Fixed
+          layout alone would divide the width equally, truncating a student's
+          name to fit a date, so the identity column is weighted explicitly. */}
+      <table className="hidden w-full table-fixed border-collapse lg:table">
+        <colgroup>
+          <col style={{ width: `${primaryWidth}%` }} />
+          {columns.map((c) => (
+            <col key={c.label} style={{ width: `${otherWidth}%` }} />
+          ))}
+          {trailingHeader ? (
+            <col style={{ width: `${trailingWidth}%` }} />
+          ) : null}
+        </colgroup>
         <thead>
           <tr className="border-border border-b">
             <th
@@ -156,7 +187,11 @@ export function PanelTable({
                 <td
                   key={cell.label}
                   className={cn(
-                    "text-body text-text py-2.5 pl-3 whitespace-nowrap",
+                    "text-body text-text py-2.5 pl-3",
+                    // Only numeric columns refuse to wrap. Applying nowrap to
+                    // every cell made the table demand more width than its
+                    // panel, so text columns were clipped at the card edge.
+                    cell.align === "right" ? "whitespace-nowrap" : "truncate",
                     alignClass(cell.align),
                   )}
                 >

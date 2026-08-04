@@ -1,156 +1,40 @@
 import {
-  Banknote,
+  Award,
   BarChart3,
   Building2,
   CalendarCheck,
   ClipboardList,
-  FileBadge,
   GraduationCap,
   LayoutDashboard,
   LifeBuoy,
-  Megaphone,
   MoreHorizontal,
-  Package,
   Receipt,
   Settings,
-  Share2,
-  ShoppingBag,
-  Trophy,
   UserPlus,
   Users,
+  UsersRound,
   Wallet,
+  Wallet2,
 } from "lucide-react";
 import type { BottomNavItems, NavGroup } from "@/components/layout/nav-types";
 
 /**
- * Centre portal navigation — PRD §5.3, with permission codes from the build
- * plan's role matrix (docs/00-build-plan.md §4).
+ * Centre portal navigation — PRD §5.3, ordered to match the owner's dashboard
+ * mockup.
  *
- * Items are filtered by permission at render time in Phase 1; the codes are
- * declared here now so the route map and the permission registry stay in step.
+ * Flat rather than grouped, for the same reason as the admin sidebar: §8.1
+ * warns against more than two nested levels, and a scannable flat list beats a
+ * tree of collapsed groups when every destination is used daily. The deeper
+ * routes (receipts, defaulters, corrections, timetable) are reached from their
+ * section landing page.
+ *
+ * Labels are sentence case per §4.2, so "Fees and receipts" rather than the
+ * mockup's "Fees & Receipts".
  */
 export const CENTRE_NAV: NavGroup[] = [
   {
-    items: [{ label: "Dashboard", href: "/centre", icon: LayoutDashboard }],
-  },
-  {
-    label: "Admissions",
     items: [
-      {
-        label: "Leads",
-        href: "/centre/leads",
-        icon: ClipboardList,
-        permission: "lead.read",
-        matchPrefix: true,
-      },
-      {
-        label: "New student",
-        href: "/centre/students/new",
-        icon: UserPlus,
-        permission: "student.create",
-      },
-      {
-        label: "Students",
-        href: "/centre/students",
-        icon: Users,
-        permission: "student.read",
-        matchPrefix: true,
-      },
-    ],
-  },
-  {
-    label: "Academics",
-    items: [
-      {
-        label: "Batches and timetable",
-        href: "/centre/batches",
-        icon: CalendarCheck,
-        permission: "batch.read",
-        matchPrefix: true,
-      },
-      {
-        label: "Attendance",
-        href: "/centre/attendance",
-        icon: ClipboardList,
-        permission: "attendance.read",
-        matchPrefix: true,
-      },
-      {
-        label: "Exams",
-        href: "/centre/exams",
-        icon: GraduationCap,
-        permission: "exam.read",
-        matchPrefix: true,
-      },
-      {
-        label: "Results and performance",
-        href: "/centre/results",
-        icon: Trophy,
-        permission: "result.read",
-        matchPrefix: true,
-      },
-      {
-        label: "Certificates and ID cards",
-        href: "/centre/certificates",
-        icon: FileBadge,
-        permission: "certificate.read",
-        matchPrefix: true,
-      },
-    ],
-  },
-  {
-    label: "Money",
-    items: [
-      {
-        label: "Fee management",
-        href: "/centre/fees",
-        icon: Receipt,
-        permission: "fee_plan.read",
-        matchPrefix: true,
-      },
-      {
-        label: "Wallet and recharge",
-        href: "/centre/wallet",
-        icon: Wallet,
-        permission: "wallet.read",
-        matchPrefix: true,
-      },
-      {
-        label: "Income and expenses",
-        href: "/centre/finance/expenses",
-        icon: Banknote,
-        permission: "expense.read",
-      },
-      {
-        label: "Referrals",
-        href: "/centre/referrals",
-        icon: Share2,
-        permission: "referral.read",
-      },
-    ],
-  },
-  {
-    label: "Supplies",
-    items: [
-      {
-        label: "Shop",
-        href: "/centre/shop",
-        icon: ShoppingBag,
-        permission: "product.read",
-        matchPrefix: true,
-      },
-      {
-        label: "My orders",
-        href: "/centre/orders",
-        icon: Package,
-        permission: "order.read",
-        matchPrefix: true,
-      },
-    ],
-  },
-  {
-    label: "Centre",
-    items: [
+      { label: "Dashboard", href: "/centre", icon: LayoutDashboard },
       {
         label: "Centre profile",
         href: "/centre/profile",
@@ -159,16 +43,73 @@ export const CENTRE_NAV: NavGroup[] = [
         matchPrefix: true,
       },
       {
+        label: "Students",
+        href: "/centre/students",
+        icon: Users,
+        permission: "student.read",
+        matchPrefix: true,
+      },
+      {
+        label: "New admission",
+        href: "/centre/students/new",
+        icon: UserPlus,
+        permission: "student.create",
+      },
+      {
+        label: "Attendance",
+        href: "/centre/attendance",
+        icon: CalendarCheck,
+        permission: "attendance.read",
+        matchPrefix: true,
+      },
+      {
+        label: "Fees and receipts",
+        href: "/centre/fees",
+        icon: Receipt,
+        permission: "fee_plan.read",
+        matchPrefix: true,
+      },
+      {
+        label: "Courses and batches",
+        href: "/centre/batches",
+        icon: ClipboardList,
+        permission: "batch.read",
+        matchPrefix: true,
+      },
+      {
+        label: "Exams and results",
+        href: "/centre/exams",
+        icon: GraduationCap,
+        permission: "exam.read",
+        matchPrefix: true,
+      },
+      {
+        label: "Certificates",
+        href: "/centre/certificates",
+        icon: Award,
+        permission: "certificate.read",
+        matchPrefix: true,
+      },
+      {
         label: "Staff",
         href: "/centre/staff",
-        icon: Users,
+        icon: UsersRound,
         permission: "user.read",
         matchPrefix: true,
       },
       {
-        label: "Announcements",
-        href: "/centre/announcements",
-        icon: Megaphone,
+        label: "Income and expense",
+        href: "/centre/finance/expenses",
+        icon: Wallet2,
+        permission: "expense.read",
+        matchPrefix: true,
+      },
+      {
+        label: "Wallet",
+        href: "/centre/wallet",
+        icon: Wallet,
+        permission: "wallet.read",
+        matchPrefix: true,
       },
       {
         label: "Support",
@@ -183,13 +124,18 @@ export const CENTRE_NAV: NavGroup[] = [
         permission: "report.read",
         matchPrefix: true,
       },
-      { label: "Settings", href: "/centre/settings", icon: Settings },
+      {
+        label: "Settings",
+        href: "/centre/settings",
+        icon: Settings,
+        matchPrefix: true,
+      },
     ],
   },
 ];
 
 /**
- * Mobile bottom navigation — style guide §9.2 specifies exactly these five for
+ * Mobile bottom navigation — style guide §9.2 names these five explicitly for
  * the Centre portal: Home, Students, Attendance, Fees, More.
  */
 export const CENTRE_BOTTOM_NAV: BottomNavItems = [

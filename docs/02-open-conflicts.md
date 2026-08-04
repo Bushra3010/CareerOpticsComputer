@@ -100,12 +100,12 @@ PRD is traceable. No decision needed unless you disagree.
 
 ---
 
-## C4 — Super Admin dashboard mockup vs the style guide
+## C4 — Dashboard mockups vs the style guide
 
 **Status:** open · **Raised:** 4 August 2026 · **Owner supplied a mockup**
 
-The owner supplied a Super Admin dashboard mockup and asked for the panel to be
-built like it. Its **layout and information architecture were followed exactly**
+The owner supplied a Super Admin dashboard mockup, then a Centre Admin one, and
+asked for both panels to be built like them. Its **layout and information architecture were followed exactly**
 — greeting, four KPIs, two trend charts, three summary panels plus quick
 actions, transactions with a platform summary, and a recent-activity strip. That
 structure is good and matches §11.1's prescribed order.
@@ -130,5 +130,18 @@ deeper routes still exist and are reached from their section landing pages.
 Labels use sentence case per §4.2, so "Exams and results" rather than the
 mockup's "Exams & Results".
 
+### Centre Admin mockup — same four, plus two more
+
+| #   | Mockup                                                   | Style guide                                                                  | Built as                                                           |
+| --- | -------------------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| e   | Red icon disc on the "Pending fees" KPI                  | §3.3 red is the destructive/error colour; §10.5 maps pending to warning gold | Warning gold, with a warning-triangle icon                         |
+| f   | Due dates in the pending-fees panel rendered in red text | §3.4 and §14: "Never communicate status using colour alone"                  | Red plus a warning icon and a screen-reader-only "Overdue:" prefix |
+
+Both donuts follow the mockup as drawn. §12.3 forbids "decorative donuts for one
+number", but neither is one: fee collection is collected against pending, and
+staff attendance is 22 present against 2 absent. Each is a genuine part-to-whole
+with a summary in the centre, which is the legitimate use.
+
 **Decision needed from:** brand owner. Reply with the letters you want switched
-to the mockup treatment, or "keep as built".
+to the mockup treatment, or "keep as built". The decision applies to both
+dashboards — they share the same components.
