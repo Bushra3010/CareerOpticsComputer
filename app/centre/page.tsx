@@ -32,12 +32,20 @@ export default async function CentreDashboardPage() {
               <li key={i}>Active membership at centre {m.centre_id}</li>
             ))}
           </ul>
-          <Link
-            href="/centre/students"
-            className="text-body mt-4 inline-block font-semibold text-blue-700"
-          >
-            Manage students
-          </Link>
+          <div className="mt-4 flex gap-4">
+            <Link
+              href="/centre/students"
+              className="text-body font-semibold text-blue-700"
+            >
+              Manage students
+            </Link>
+            <Link
+              href="/centre/attendance"
+              className="text-body font-semibold text-blue-700"
+            >
+              Attendance
+            </Link>
+          </div>
         </>
       )}
     </div>

@@ -341,6 +341,42 @@ export interface Database {
         Update: Partial<Database['public']['Tables']['enrolments']['Row']>;
         Relationships: [];
       };
+      attendance_sessions: {
+        Row: {
+          id: string;
+          organization_id: string;
+          centre_id: string;
+          course_id: string;
+          session_date: string;
+          created_at: string;
+          created_by: string | null;
+        };
+        Insert: Partial<Database['public']['Tables']['attendance_sessions']['Row']> & {
+          organization_id: string;
+          centre_id: string;
+          course_id: string;
+          session_date: string;
+        };
+        Update: Partial<Database['public']['Tables']['attendance_sessions']['Row']>;
+        Relationships: [];
+      };
+      attendance_records: {
+        Row: {
+          id: string;
+          session_id: string;
+          enrolment_id: string;
+          status: 'present' | 'absent' | 'late' | 'excused';
+          marked_by: string | null;
+          marked_at: string;
+        };
+        Insert: Partial<Database['public']['Tables']['attendance_records']['Row']> & {
+          session_id: string;
+          enrolment_id: string;
+          status: 'present' | 'absent' | 'late' | 'excused';
+        };
+        Update: Partial<Database['public']['Tables']['attendance_records']['Row']>;
+        Relationships: [];
+      };
       document_sequences: {
         Row: {
           id: string;

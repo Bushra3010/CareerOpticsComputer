@@ -10,7 +10,9 @@ insert into public.permissions (code, description) values
   ('centre.read', 'Read centre records'),
   ('centre.update', 'Update centre records'),
   ('student.create', 'Create student records'),
-  ('student.read', 'Read student records')
+  ('student.read', 'Read student records'),
+  ('attendance.read', 'Read attendance records'),
+  ('attendance.create', 'Mark attendance')
 on conflict (code) do nothing;
 
 insert into public.roles (organization_id, code, name, is_system_role)
@@ -22,7 +24,10 @@ insert into public.role_permissions (role_id, permission_code)
 select r.id, p.code
 from public.roles r
 join public.organizations o on o.id = r.organization_id and o.slug = 'career-optics'
-cross join (values ('centre.read'), ('centre.update'), ('student.create'), ('student.read')) as p(code)
+cross join (
+  values ('centre.read'), ('centre.update'), ('student.create'), ('student.read'),
+         ('attendance.read'), ('attendance.create')
+) as p(code)
 where r.code = 'centre_owner'
 on conflict do nothing;
 
