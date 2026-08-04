@@ -29,7 +29,9 @@ platform for **Career Optics Computer Academy**.
 | [`Computer_Centre_Management_System_PRD.md`](Computer_Centre_Management_System_PRD.md) | Functional requirements, data model, security rules                                 |
 | `Career_Optics_UI_UX_Style_Guide.docx`                                                 | Visual and interaction specification — the source of truth for anything you can see |
 | [`docs/00-build-plan.md`](docs/00-build-plan.md)                                       | Route map, ERD plan, permission matrix, RLS strategy, phase plan                    |
+| [`docs/01-handover.md`](docs/01-handover.md)                                           | Where the work stands and what to do next                                           |
 | [`docs/02-open-conflicts.md`](docs/02-open-conflicts.md)                               | Conflicts between the two documents awaiting a decision                             |
+| [`docs/03-audit-findings.md`](docs/03-audit-findings.md)                               | Confirmed defects and the unverified audit backlog                                  |
 
 Where the PRD and the style guide disagree on a visual question, **the style
 guide wins**. That resolution and its reasoning are recorded as C3 in the
@@ -229,14 +231,32 @@ the only checks. Treat that as a gap before real files from the public arrive.
 
 ## Repository configuration
 
-| Setting                     | Status                                                                                              |
-| --------------------------- | --------------------------------------------------------------------------------------------------- |
-| Visibility                  | Private                                                                                             |
-| Dependabot alerts           | Enabled                                                                                             |
-| Secret scanning             | **Not enabled** — needs GitHub Advanced Security, unavailable on a private repo on the current plan |
-| Branch protection on `main` | **Not enabled** — needs GitHub Pro for private repos                                                |
+| Setting                     | Status                                                                                   |
+| --------------------------- | ---------------------------------------------------------------------------------------- |
+| Visibility                  | **Public** — confirmed against the GitHub API on 5 August 2026                           |
+| Dependabot alerts           | Enabled                                                                                  |
+| Secret scanning             | **Not enabled** — but it is free on a public repository, so switch it on                 |
+| Push protection             | **Not enabled** — also free here, and the one that stops a leak rather than reporting it |
+| Branch protection on `main` | **Not enabled** — free on a public repository too                                        |
 
-PRD §15 requires protected `main`, required reviews and secret scanning. Both
-need a GitHub Pro plan (or a public repository). Until then, the CI workflow
-still runs on every push and pull request — it just cannot be _enforced_ as a
-merge gate. Raise this before Phase 1 ships anything to a real environment.
+An earlier version of this table said the repository was private and that
+secret scanning therefore needed GitHub Advanced Security. That was wrong on
+both counts. PRD §15 requires protected `main`, required reviews and secret
+scanning; on a public repository all three are available at no cost, so the
+only thing standing between here and PRD §15 is somebody opening
+**Settings → Code security** and **Settings → Branches**. Until then CI runs on
+every push and pull request but cannot be enforced as a merge gate.
+
+### Credentials
+
+No key has ever been committed — `.env.local` is gitignored, and every blob in
+the history has been searched for the live anon and service-role tokens as well
+as for JWT- and `sbp_`-shaped strings generally. Nothing matched.
+
+That is not the same as saying nothing is exposed. **The `service_role` key for
+project `kabxcwrcfjtmacykqajl` has been pasted into chat transcripts and has
+not been rotated.** It bypasses row-level security completely — it is the one
+credential in the system for which RLS is not a backstop. Rotate it in the
+Supabase dashboard (Project Settings → API → service_role → Rotate) before any
+real student record exists. PRD §11.3 requires it, and `docs/01-handover.md`
+has been carrying the same warning since 4 August 2026.

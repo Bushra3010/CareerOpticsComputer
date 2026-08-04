@@ -1,39 +1,88 @@
 # Handover — current state
 
-**Last updated:** 4 August 2026
-**Phase:** 0 (Foundation) — not yet closed
-**Branch with the newest work:** `feature/phase-0-database-foundation` (PR #1)
+**Last updated:** 5 August 2026
+**Phase:** 1 (substantially complete), Phase 4 (exams) in design
+**Newest work:** on `main` — PR #1 merged, then the feature build merged on top
 
 Read `CLAUDE.md` first for the conventions. This file is only about _where the
 work stands_ and _what to do next_.
+
+> **Note for anyone who read the 4 August version of this file.** It described
+> Phase 0 with five migrations and a placeholder types file. That was accurate
+> for the `feature/phase-0-database-foundation` branch it was written on. A
+> separate line of work was happening in parallel and has since merged, so the
+> numbers below are much larger. Nothing in the old version was wrong when
+> written; it was describing a different tip. Sections 2.1 to 2.3 in particular
+> were **resolved** by that merge and are marked as such rather than deleted,
+> because how they were unblocked is worth knowing.
 
 ---
 
 ## 1. What exists and works
 
-| Area             | State                                                                                                                                                                       | Where                  |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
-| Tooling          | Next.js 16 · React 19 · TS strict · Tailwind v4 · Vitest · Playwright · ESLint · Prettier · Husky · CI                                                                      | root configs           |
-| Design tokens    | Complete, mapped 1:1 from style guide §3–§5                                                                                                                                 | `app/globals.css`      |
-| Components       | Button, Input/Select/Textarea, Field, Card, KpiCard, StatusBadge, Dialog, ConfirmDialog, BottomSheet, Tabs, Alert, ErrorSummary, DataTable, MobileList, and the four states | `components/`          |
-| Shells           | Desktop portal (§8), mobile app (§9), public header/footer (§7)                                                                                                             | `components/layout/`   |
-| Showcase         | `/dev/components`, `/dev/shell/centre`, `/dev/shell/public`                                                                                                                 | `app/dev/`             |
-| Money            | `Paise` branded type, 18 passing unit tests                                                                                                                                 | `lib/money/`           |
-| Supabase clients | Browser, server (anon key), service-role (guarded + audited)                                                                                                                | `lib/db/`              |
-| Authorisation    | `authorize()`, `hasPermission()`, step-up registry                                                                                                                          | `lib/permissions/`     |
-| Audit            | App-layer writer alongside the DB trigger                                                                                                                                   | `lib/audit/`           |
-| Migrations       | 5 files, 15 tables, full RLS policy set, 75 permissions, 10 role templates                                                                                                  | `supabase/migrations/` |
+| Area             | State                                                                                                                                                                       | Where                         |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| Tooling          | Next.js 16 · React 19 · TS strict · Tailwind v4 · Vitest · Playwright · ESLint · Prettier · Husky · CI                                                                      | root configs                  |
+| Design tokens    | Complete, mapped 1:1 from style guide §3–§5                                                                                                                                 | `app/globals.css`             |
+| Components       | Button, Input/Select/Textarea, Field, Card, KpiCard, StatusBadge, Dialog, ConfirmDialog, BottomSheet, Tabs, Alert, ErrorSummary, DataTable, MobileList, and the four states | `components/`                 |
+| Shells           | Desktop portal (§8), mobile app (§9), public header/footer (§7)                                                                                                             | `components/layout/`          |
+| Showcase         | `/dev/components`, `/dev/shell/centre`, `/dev/shell/public`                                                                                                                 | `app/dev/`                    |
+| Money            | `Paise` branded type, 18 passing unit tests                                                                                                                                 | `lib/money/`                  |
+| Supabase clients | Browser, server (anon key), service-role (guarded + audited)                                                                                                                | `lib/db/`                     |
+| Authorisation    | `authorize()`, `hasPermission()`, step-up registry                                                                                                                          | `lib/permissions/`            |
+| Audit            | App-layer writer alongside the DB trigger                                                                                                                                   | `lib/audit/`                  |
+| Migrations       | 19 files, applied through `0018`; `0019` written and not yet applied                                                                                                        | `supabase/migrations/`        |
+| Dashboards       | Super Admin, Centre Admin and Student, from the owner's mockups                                                                                                             | `app/{admin,centre,student}/` |
 
-**Verified:** `npm run verify` passes — 0 lint errors, 0 type errors, 18 unit
+**Also working end to end** (added after this file was first written): the
+public site and course catalogue, admission enquiries, the centre franchise
+application and its atomic head-office approval, authentication for three
+portals, five centre roles with staff invitations, student admission and the
+student portal, private file storage for photographs and identity documents,
+attendance, fees with an insert-only payment ledger, results with immutable
+publication, certificates with printable A4 documents and QR codes, and public
+credential verification. `README.md` carries the current inventory.
+
+**Verified:** `npm run verify` passes — 0 lint errors, 0 type errors, 29 unit
 tests green, production build clean. Responsive behaviour checked in a real
 browser at 360/390/1024/1440px: no horizontal overflow, sidebar 256px navy at
 desktop, bottom nav 65px and app header 57px at mobile, every touch target ≥44px.
 
 ---
 
-## 2. What is blocked, and on what
+## 2. What was blocked, and how it was unblocked
 
-### 2.1 The RLS proof suite has never run — this is what keeps Phase 0 open
+### 2.1 ~~The RLS proof suite has never run~~ — RESOLVED, differently than planned
+
+**Outcome:** P1–P6 are green. They did not run as pgTAP.
+
+None of options A, B or C below worked out: no database connection string was
+ever obtained, no CLI access token, and Docker is still not installed. What
+happened instead was that the proofs were rewritten as **Vitest integration
+tests running against the hosted project over PostgREST**, signing in as real
+users with real anon-key sessions:
+
+```bash
+npm run test:integration     # needs the three Supabase env vars
+```
+
+Two suites live there — `tests/integration/rls-proof.test.ts` (the P1–P6 gate)
+and `tests/integration/feature-invariants.test.ts` (24 tests), plus
+`storage.test.ts` for the private bucket. They build and tear down their own
+tenant, so they are safe to re-run. They are deliberately **excluded from
+`npm run verify`** so CI without those secrets does not fail — which also means
+**CI does not run them**. That is the remaining gap: the proofs pass on a
+developer machine and nowhere else.
+
+This is arguably a better test than pgTAP would have been, because it exercises
+the same PostgREST path the application uses rather than a superuser SQL
+session. It is worse in one way: it cannot test anything RLS does to a role the
+anon key cannot assume.
+
+The original unblocking options, still valid if you want real pgTAP:
+
+<details>
+<summary>Original section 2.1, kept for the record</summary>
 
 `supabase/tests/00_tenancy_rls.sql` holds 25 assertions covering the mandatory
 early proofs from PRD §20.4:
@@ -73,7 +122,9 @@ npm run db:start && npm run db:reset && npm run db:test
 
 Then regenerate types: `npm run db:types`.
 
-### 2.2 Migrations were applied by hand
+</details>
+
+### 2.2 Migrations were applied by hand — STILL TRUE
 
 Because of 2.1, the schema was applied through the Supabase SQL editor rather
 than the CLI. Two generated helper files support that path and are **gitignored**
@@ -86,16 +137,32 @@ than the CLI. Two generated helper files support that path and are **gitignored*
 The committed copy of the verification script is
 `supabase/tests/verify-structure-sqleditor.sql`.
 
-**Status of that application: not yet confirmed.** Ask the project owner whether
-`verify-phase-0.sql` returned 14 PASS rows before assuming the schema is live.
+**Status of that application: confirmed for `0001`–`0018`.** Not by reading the
+verification script's output, but by querying the live database directly during
+the feature build — every table, policy and function those migrations create has
+been exercised by the integration suite. **`0019` (private student files) is
+written and has NOT been applied**, so nothing in the storage slice has run
+against the live project.
 
-### 2.3 `types/database.generated.ts` is a placeholder
+The hand-application habit is the standing risk here. Nineteen migrations have
+now been pasted into the SQL editor one at a time, and the only thing keeping
+`supabase_migrations.schema_migrations` honest is a human remembering to do it.
+Getting `SUPABASE_DB_URL` populated is worth more now than it was at five
+migrations.
 
-It declares empty table maps so the client modules type-check honestly rather
-than pretending to know the schema. Queries are `unknown`-shaped, and a few
-calls in `lib/audit` and `lib/permissions` carry `as never` casts that exist
-**only** because of this. Run `npm run db:types` once the database is reachable
-and remove those casts.
+### 2.3 ~~`types/database.generated.ts` is a placeholder~~ — RESOLVED by hand
+
+It is now a full hand-written type map covering every table through `0019`,
+because `npm run db:types` still needs the database connection 2.1 never got.
+The `as never` casts are gone.
+
+Two things it left behind. `lib/db/rpc.ts` exports a `callRpc` escape hatch that
+exists **only** because postgrest-js's RPC generics need the genuinely generated
+shape to type-check against, and a hand-written map does not reproduce it. And
+embedded-resource selects (`students(full_name)`) need a small `one<T>(rel:
+unknown)` helper, duplicated in a few query modules, for the same reason. Once
+`npm run db:types` can run, regenerate, delete `callRpc`, and the `one<T>`
+helpers should collapse too.
 
 ---
 
@@ -117,6 +184,40 @@ year, no payment gateway before Phase 5, in-app notifications only in V1.
 ---
 
 ## 4. What to do next
+
+Steps 1–9 of the old Phase 1 list below are **done**. What is actually next, in
+priority order:
+
+1. **Apply migration `0019`** in the SQL editor, then `npm run test:integration`
+   to run the eight storage checks. Until that happens the private-file slice is
+   code that has never touched the database it was written for.
+2. **Rotate the `service_role` key** (see §5). This has been outstanding since
+   4 August and the repository is public.
+3. **Switch on secret scanning and push protection.** Free on a public
+   repository; `README.md`'s old claim that they needed Advanced Security was
+   wrong.
+4. **Get `SUPABASE_DB_URL` populated.** It unblocks `npm run db:types`, real
+   `supabase db push`, pgTAP, and it retires the hand-application habit in §2.2.
+5. **Integration tests in CI.** They pass locally and run nowhere else, which is
+   the same as not having them the day somebody else pushes.
+6. **Phase 4 — exams.** The largest unbuilt vertical: question banks, exam
+   setup, the distraction-free attempt runner at `app/exam/`, autosave and
+   heartbeat route handlers, auto-grading and the evaluation queue. It carries
+   the one High risk with no mitigation yet built (build plan R6: clock
+   tampering, duplicate attempts, lost answers on flaky networks) and a genuine
+   schema conflict with the already-shipped `0015` — see the exam entries in
+   `docs/02-open-conflicts.md`.
+7. **E2E.** `npm run test:e2e` exists and has no exam or admission flow behind
+   it yet, and no axe scan has run.
+
+Still unbuilt beyond exams: wallet, inventory and orders, notifications,
+reports, CMS, referrals, support tickets, the leads UI, batches and timetable,
+the admin portal beyond its dashboard and applications, the MFA / invite /
+activate pages, and `app/api` (empty — the exam route handlers will be the first
+things in it).
+
+<details>
+<summary>The original Phase 1 list, for the record — steps 1–9 are complete</summary>
 
 **Immediately:** unblock 2.1, run `npm run db:test`, confirm 25/25 pass. That
 closes Phase 0.
@@ -140,13 +241,19 @@ closes Phase 0.
 
 Phase 1 does not start until P1–P6 pass.
 
+</details>
+
+Step 10 is the one that did not happen. There is no E2E flow and no axe scan.
+
 ---
 
 ## 5. Repository facts
 
-- **Public** repository. The owner chose this on 4 August 2026, overriding
-  PRD §15's "private during development". No credentials are in the history —
-  every commit was scanned before the first public push.
+- **Public** repository — re-confirmed against the GitHub API on 5 August 2026.
+  The owner chose this on 4 August 2026, overriding PRD §15's "private during
+  development". No credentials are in the history: every blob in every commit
+  has since been searched for the live anon and service-role tokens and for
+  JWT- and `sbp_`-shaped strings in general, and nothing matched.
 - `.env.example` is committed; `.env.local` never is.
 - Branch protection and required reviews are **not** enabled. CI runs on every
   push and PR but cannot be enforced as a merge gate. PRD §15 wants this; raise
@@ -157,7 +264,14 @@ Phase 1 does not start until P1–P6 pass.
 ### If you are the owner reading this
 
 The Supabase `service_role` key for project `kabxcwrcfjtmacykqajl` was pasted
-into a chat transcript on 4 August 2026 and has not been rotated. That key
-bypasses all row-level security. The project holds no real data yet, so the
-current exposure is worthless — but rotate it before any student record exists.
-PRD §11.3 requires it.
+into a chat transcript on 4 August 2026 and **has still not been rotated** as of
+5 August. It was pasted into a second transcript during the feature build. That
+key bypasses all row-level security — it is the one credential in the system for
+which RLS is not a backstop, and this repository being public means the project
+ref it belongs to is not a secret either.
+
+The project holds no real student data, so today's exposure is worth nothing.
+Rotate it anyway, now rather than at the moment it starts to matter:
+Supabase dashboard → Project Settings → API → `service_role` → Rotate, then
+update `SUPABASE_SERVICE_ROLE_KEY` in `.env.local` and in any deployment
+environment. PRD §11.3 requires it.
