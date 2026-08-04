@@ -692,6 +692,27 @@ export interface Database {
           enrolment_status: 'active' | 'completed' | 'withdrawn' | 'transferred' | 'on_hold' | null;
         }[];
       };
+      approve_centre_application: {
+        Args: {
+          p_application_id: string;
+          p_owner_user_id: string;
+          p_reviewer_id: string;
+          p_comments: string;
+        };
+        Returns: {
+          centre_id: string;
+          centre_code: string;
+          already_approved: boolean;
+        }[];
+      };
+      reject_centre_application: {
+        Args: {
+          p_application_id: string;
+          p_reviewer_id: string;
+          p_reason: string;
+        };
+        Returns: undefined;
+      };
       record_audit_entry: {
         Args: {
           p_organization_id: string | null;
