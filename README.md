@@ -3,12 +3,19 @@
 Multi-tenant computer education, franchise and training-centre management
 platform for **Career Optics Computer Academy**.
 
-> **Status: Phase 0 — Foundation, database live.** The design system,
-> application shells, project tooling, initial schema (`0001`–`0004`), RLS
-> policies and the six mandatory proof tests (P1–P6, build plan §5.3) are all
-> in place against a hosted Supabase project. No authentication UI or feature
-> module yet. See [`docs/00-build-plan.md`](docs/00-build-plan.md) for what
-> lands in each phase.
+> **Status: Phase 1 substantially complete, running against a hosted Supabase
+> project.** Migrations `0001`–`0016`. Working end to end: the public site and
+> course catalogue, admission enquiries, the centre franchise application and
+> its head-office review, authentication for three portals, student admission,
+> attendance, fees with an insert-only payment ledger, results with immutable
+> publication, certificates, and public credential verification.
+>
+> Not built yet: exams (question banks, attempts, the exam runner), inventory,
+> wallets, referrals, notifications and reporting. Known defects and an
+> unverified audit backlog are in
+> [`docs/03-audit-findings.md`](docs/03-audit-findings.md) — read it before
+> treating any of this as production-ready. See
+> [`docs/00-build-plan.md`](docs/00-build-plan.md) for the full phase plan.
 
 ---
 
@@ -142,6 +149,15 @@ These are enforced by review, tests and CI — not by convention:
 - **Brand assets are placeholders.** Only a raster JPEG of the logo exists. The
   SVG, white monochrome and compact variants required by style guide §2.2 are
   outstanding — see conflict C2.
+- **Certificate numbers are enumerable, by design of the spec.** Build plan
+  §1.3 specifies sequential certificate numbers and §2.1 requires a QR code to
+  resolve `/verify/c/[number]` directly, so anyone can walk the number space
+  and read holder names. The public payload is therefore the minimum an
+  employer needs — name, course, centre, outcome, issue date, and nothing
+  else — every lookup is written to `public_verification_logs`, and the app
+  rate-limits by IP. Preventing enumeration outright means requiring name +
+  number (confirm rather than reveal) and dropping the bare-number QR route;
+  that is a product decision. See migration 0016.
 - **Primary-button contrast.** White on brand-orange measures 3.19:1 against a
   4.5:1 requirement. Implemented as the style guide specifies, pending a brand
   decision — see conflict C1.

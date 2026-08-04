@@ -505,6 +505,48 @@ export interface Database {
         Update: Partial<Database['public']['Tables']['student_results']['Row']>;
         Relationships: [];
       };
+      issued_documents: {
+        Row: {
+          id: string;
+          organization_id: string;
+          centre_id: string;
+          student_id: string;
+          student_result_id: string;
+          document_type: 'certificate' | 'marksheet';
+          document_number: string;
+          status: 'pending' | 'issued' | 'revoked';
+          issued_at: string;
+          issued_by: string | null;
+          revoked_at: string | null;
+          revoked_by: string | null;
+          revoked_reason: string | null;
+        };
+        Insert: Partial<Database['public']['Tables']['issued_documents']['Row']> & {
+          organization_id: string;
+          centre_id: string;
+          student_id: string;
+          student_result_id: string;
+          document_number: string;
+        };
+        Update: Partial<Database['public']['Tables']['issued_documents']['Row']>;
+        Relationships: [];
+      };
+      public_verification_logs: {
+        Row: {
+          id: string;
+          kind: string;
+          query_value: string;
+          matched: boolean;
+          created_at: string;
+        };
+        Insert: Partial<Database['public']['Tables']['public_verification_logs']['Row']> & {
+          kind: string;
+          query_value: string;
+          matched: boolean;
+        };
+        Update: never;
+        Relationships: [];
+      };
       document_sequences: {
         Row: {
           id: string;
@@ -623,6 +665,32 @@ export interface Database {
       publish_results: {
         Args: { p_publication_id: string };
         Returns: undefined;
+      };
+      issue_certificate: {
+        Args: { p_student_result_id: string };
+        Returns: string;
+      };
+      verify_certificate: {
+        Args: { p_number: string };
+        Returns: {
+          document_number: string;
+          student_name: string;
+          course_name: string;
+          centre_name: string;
+          outcome: 'fail' | 'pass' | 'distinction';
+          issued_on: string;
+          status: 'pending' | 'issued' | 'revoked';
+        }[];
+      };
+      verify_registration: {
+        Args: { p_registration_number: string };
+        Returns: {
+          registration_number: string;
+          student_name: string;
+          course_name: string | null;
+          centre_name: string;
+          enrolment_status: 'active' | 'completed' | 'withdrawn' | 'transferred' | 'on_hold' | null;
+        }[];
       };
       record_audit_entry: {
         Args: {

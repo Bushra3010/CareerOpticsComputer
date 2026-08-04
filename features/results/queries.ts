@@ -59,6 +59,8 @@ export async function listPublications(
 
 export interface MarkSheetRow {
   enrolmentId: string;
+  resultId: string | null;
+  certificateNumber: string | null;
   studentName: string;
   registrationNumber: string;
   maxMarks: number | null;
@@ -100,13 +102,30 @@ export async function getPublicationDetail(
 
   const { data: results } = await supabase
     .from("student_results")
-    .select("enrolment_id, max_marks, obtained_marks, outcome")
+    .select("id, enrolment_id, max_marks, obtained_marks, outcome")
     .eq("publication_id", publicationId);
+
+  const resultIds = (results ?? []).map((r) => r.id);
+  const { data: certs } = resultIds.length
+    ? await supabase
+        .from("issued_documents")
+        .select("student_result_id, document_number")
+        .in("student_result_id", resultIds)
+        .neq("status", "revoked")
+    : { data: [] };
+  const certByResult = new Map(
+    (certs ?? []).map((c) => [c.student_result_id, c.document_number]),
+  );
 
   const byEnrolment = new Map(
     (results ?? []).map((r) => [
       r.enrolment_id,
-      { max: r.max_marks, obtained: r.obtained_marks, outcome: r.outcome },
+      {
+        id: r.id,
+        max: r.max_marks,
+        obtained: r.obtained_marks,
+        outcome: r.outcome,
+      },
     ]),
   );
 
@@ -118,6 +137,8 @@ export async function getPublicationDetail(
       const mark = byEnrolment.get(e.id);
       return {
         enrolmentId: e.id,
+        resultId: mark?.id ?? null,
+        certificateNumber: mark ? (certByResult.get(mark.id) ?? null) : null,
         studentName: student?.full_name ?? "Unknown",
         registrationNumber: student?.registration_number ?? "",
         maxMarks: mark?.max ?? null,

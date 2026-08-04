@@ -9,6 +9,7 @@ import {
   MarkSheetForm,
   PublishButton,
 } from "@/features/results/components/mark-sheet-form";
+import { IssueCertificateButton } from "@/features/certificates/components/issue-button";
 
 export default async function PublicationPage({
   params,
