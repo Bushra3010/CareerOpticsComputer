@@ -138,8 +138,14 @@ These are enforced by review, tests and CI — not by convention:
   `wallet_entries`** — the wallet ledger lands in migration `0009` (Phase 3).
   Re-point `tests/integration/rls-proof.test.ts` at it then.
 - **No local Supabase / pgTAP.** Docker isn't available on the dev machine, so
-  RLS proof tests run as Vitest integration tests against the hosted project
-  (`npm run test:integration`) instead of pgTAP in CI. This needs
+  the database tests run as Vitest integration tests against the hosted project
+  (`npm run test:integration`) instead of pgTAP in CI. Two suites live there:
+  `rls-proof.test.ts` (the P1–P6 gate from build plan §5.3) and
+  `feature-invariants.test.ts` (24 tests total), which covers the role matrix
+  including proof test R13, attendance re-save and cross-centre marking, the
+  fee split and allocation arithmetic, overpayment rollback, result
+  publication immutability, and certificate issuance and public verification.
+  They create and tear down their own tenant, so they are safe to re-run. This needs
   `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` and
   `SUPABASE_SERVICE_ROLE_KEY` in the environment and is intentionally excluded
   from `npm run verify` so CI without those secrets doesn't fail.
