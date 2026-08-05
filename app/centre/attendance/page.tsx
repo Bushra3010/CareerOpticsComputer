@@ -2,6 +2,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
+import {
+  MobileList,
+  MobileListItem,
+  ResponsiveCollection,
+} from "@/components/tables/mobile-list";
 import { EmptyState } from "@/components/states";
 import { createClient } from "@/lib/db/server";
 import { getCurrentCentreContext } from "@/features/centres/current-membership";
@@ -38,28 +43,58 @@ export default async function AttendancePage() {
           description="Sessions you take attendance for will appear here."
         />
       ) : (
-        <div className="border-border mt-6 overflow-x-auto rounded-[var(--radius-card)] border">
-          <table className="w-full text-left">
-            <thead className="bg-surface-subtle">
-              <tr>
-                <th className="text-label px-4 py-3">Date</th>
-                <th className="text-label px-4 py-3">Marked</th>
-                <th className="text-label px-4 py-3">Present</th>
-              </tr>
-            </thead>
-            <tbody>
+        <ResponsiveCollection
+          list={
+            <MobileList className="mt-6" label="Attendance sessions">
               {sessions.map((session) => (
-                <tr key={session.id} className="border-border border-t">
-                  <td className="text-body px-4 py-3">{session.sessionDate}</td>
-                  <td className="text-body px-4 py-3">{session.totalCount}</td>
-                  <td className="text-body px-4 py-3 tabular-nums">
-                    {session.presentCount}/{session.totalCount}
-                  </td>
-                </tr>
+                <MobileListItem
+                  key={session.id}
+                  title={session.sessionDate}
+                  fields={[
+                    {
+                      label: "Marked",
+                      value: session.totalCount,
+                      numeric: true,
+                    },
+                    {
+                      label: "Present",
+                      value: `${session.presentCount}/${session.totalCount}`,
+                      numeric: true,
+                    },
+                  ]}
+                />
               ))}
-            </tbody>
-          </table>
-        </div>
+            </MobileList>
+          }
+          table={
+            <div className="border-border mt-6 rounded-[var(--radius-card)] border">
+              <table className="w-full text-left">
+                <thead className="bg-surface-subtle">
+                  <tr>
+                    <th className="text-label px-4 py-3">Date</th>
+                    <th className="text-label px-4 py-3">Marked</th>
+                    <th className="text-label px-4 py-3">Present</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sessions.map((session) => (
+                    <tr key={session.id} className="border-border border-t">
+                      <td className="text-body px-4 py-3">
+                        {session.sessionDate}
+                      </td>
+                      <td className="text-body px-4 py-3">
+                        {session.totalCount}
+                      </td>
+                      <td className="text-body px-4 py-3 tabular-nums">
+                        {session.presentCount}/{session.totalCount}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          }
+        />
       )}
     </div>
   );

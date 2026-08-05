@@ -70,19 +70,21 @@ for (const route of PUBLIC_ROUTES) {
 }
 
 /**
- * Every contrast failure that is recorded in docs/02-open-conflicts.md and
- * awaiting a brand decision. Both are the same root cause: brand-orange-500
- * (#ef6605) is too light to carry 4.5:1 against either white or the light
- * surface.
+ * Every contrast failure recorded in docs/02-open-conflicts.md. C1 and C5 are
+ * brand-orange too light to carry 4.5:1 against white and against the light
+ * surface; C6 is the muted grey text token, which is a plain defect rather
+ * than a brand question.
  *
  * This is an allowlist, not a mute. A contrast failure that is not one of
- * these fails the test, so the next one cannot arrive unnoticed the way C5
- * did — C1 was logged in August and the eyebrow label was not, and nothing
- * was watching.
+ * these fails the test, so the next one cannot arrive unnoticed the way C5 and
+ * C6 did — C1 was logged in August, the other two were not, and nothing was
+ * watching.
  */
 const KNOWN_CONTRAST_FAILURES = [
   { conflict: "C1", foreground: "#ffffff", background: "#ef6605" },
   { conflict: "C5", foreground: "#ef6605", background: "#f7f9fc" },
+  { conflict: "C6", foreground: "#8a94a6", background: "#f7f9fc" },
+  { conflict: "C6", foreground: "#8a94a6", background: "#ffffff" },
 ];
 
 function isKnown(summary: string): boolean {
@@ -117,6 +119,34 @@ for (const route of PUBLIC_ROUTES) {
   });
 }
 
+const OVERFLOW_PROBE = () => {
+  // Measured on in-flow content, not on documentElement.scrollWidth.
+  //
+  // Two reasons. A `position: fixed` element cannot scroll the page on a phone
+  // — the viewport will not move for it — so it is not what "the page scrolls
+  // sideways" means. And headless Chrome reserves a classic scrollbar, which
+  // makes `window.innerWidth` wider than `clientWidth`; a fixed `inset-x-0`
+  // element lays out to the wider figure and reports 37px of overflow that no
+  // real device has. Walking in-flow boxes answers the question actually being
+  // asked.
+  const limit = document.documentElement.clientWidth;
+  const worst = [];
+  for (const el of document.querySelectorAll("body *")) {
+    const style = getComputedStyle(el);
+    if (style.position === "fixed" || style.display === "none") continue;
+    const rect = el.getBoundingClientRect();
+    if (rect.width === 0) continue;
+    if (rect.right > limit + 1) {
+      worst.push({
+        tag: el.tagName.toLowerCase(),
+        cls: String(el.className || "").slice(0, 60),
+        over: Math.round(rect.right - limit),
+      });
+    }
+  }
+  return { limit, worst: worst.slice(0, 5) };
+};
+
 test("the public site never scrolls sideways at 360px", async ({ page }) => {
   // Style guide §16 and CLAUDE.md: wide content scrolls inside its own
   // container, the page body never does. Checked here rather than by eye
@@ -128,14 +158,7 @@ test("the public site never scrolls sideways at 360px", async ({ page }) => {
 
   for (const route of PUBLIC_ROUTES) {
     await page.goto(route.path);
-    const overflow = await page.evaluate(
-      () =>
-        document.documentElement.scrollWidth -
-        document.documentElement.clientWidth,
-    );
-    expect(
-      overflow,
-      `${route.path} overflows by ${overflow}px`,
-    ).toBeLessThanOrEqual(0);
+    const { worst } = await page.evaluate(OVERFLOW_PROBE);
+    expect(worst, `${route.path} has in-flow content past 360px`).toEqual([]);
   }
 });

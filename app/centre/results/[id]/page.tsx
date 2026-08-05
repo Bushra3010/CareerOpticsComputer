@@ -2,6 +2,11 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { StatusBadge } from "@/components/ui/badge";
+import {
+  MobileList,
+  MobileListItem,
+  ResponsiveCollection,
+} from "@/components/tables/mobile-list";
 import { createClient } from "@/lib/db/server";
 import { getCurrentCentreContext } from "@/features/centres/current-membership";
 import { getPublicationDetail } from "@/features/results/queries";
@@ -61,38 +66,16 @@ export default async function PublicationPage({
             enrolled in this course can see their own result. To correct a mark,
             create a new version from the results list.
           </p>
-          <div className="border-border mt-4 overflow-x-auto rounded-[var(--radius-card)] border">
-            <table className="w-full text-left">
-              <thead className="bg-surface-subtle">
-                <tr>
-                  <th scope="col" className="text-label px-4 py-3">
-                    Registration no.
-                  </th>
-                  <th scope="col" className="text-label px-4 py-3">
-                    Name
-                  </th>
-                  <th scope="col" className="text-label px-4 py-3 text-right">
-                    Marks
-                  </th>
-                  <th scope="col" className="text-label px-4 py-3">
-                    Outcome
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
+          <ResponsiveCollection
+            list={
+              <MobileList className="mt-4" label="Published results">
                 {detail.rows.map((r) => (
-                  <tr key={r.enrolmentId} className="border-border border-t">
-                    <td className="text-body px-4 py-3">
-                      {r.registrationNumber}
-                    </td>
-                    <td className="text-body px-4 py-3">{r.studentName}</td>
-                    <td className="text-body px-4 py-3 text-right tabular-nums">
-                      {r.obtainedMarks === null
-                        ? "—"
-                        : `${r.obtainedMarks}/${r.maxMarks}`}
-                    </td>
-                    <td className="px-4 py-3">
-                      {r.outcome ? (
+                  <MobileListItem
+                    key={r.enrolmentId}
+                    title={r.studentName}
+                    subtitle={r.registrationNumber}
+                    status={
+                      r.outcome ? (
                         <StatusBadge
                           status={r.outcome === "fail" ? "failed" : "passed"}
                           label={
@@ -107,13 +90,86 @@ export default async function PublicationPage({
                         <span className="text-meta text-text-secondary">
                           Not marked
                         </span>
-                      )}
-                    </td>
-                  </tr>
+                      )
+                    }
+                    fields={[
+                      {
+                        label: "Marks",
+                        value:
+                          r.obtainedMarks === null
+                            ? "—"
+                            : `${r.obtainedMarks}/${r.maxMarks}`,
+                        numeric: true,
+                      },
+                    ]}
+                  />
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </MobileList>
+            }
+            table={
+              <div className="border-border mt-4 rounded-[var(--radius-card)] border">
+                <table className="w-full text-left">
+                  <thead className="bg-surface-subtle">
+                    <tr>
+                      <th scope="col" className="text-label px-4 py-3">
+                        Registration no.
+                      </th>
+                      <th scope="col" className="text-label px-4 py-3">
+                        Name
+                      </th>
+                      <th
+                        scope="col"
+                        className="text-label px-4 py-3 text-right"
+                      >
+                        Marks
+                      </th>
+                      <th scope="col" className="text-label px-4 py-3">
+                        Outcome
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {detail.rows.map((r) => (
+                      <tr
+                        key={r.enrolmentId}
+                        className="border-border border-t"
+                      >
+                        <td className="text-body px-4 py-3">
+                          {r.registrationNumber}
+                        </td>
+                        <td className="text-body px-4 py-3">{r.studentName}</td>
+                        <td className="text-body px-4 py-3 text-right tabular-nums">
+                          {r.obtainedMarks === null
+                            ? "—"
+                            : `${r.obtainedMarks}/${r.maxMarks}`}
+                        </td>
+                        <td className="px-4 py-3">
+                          {r.outcome ? (
+                            <StatusBadge
+                              status={
+                                r.outcome === "fail" ? "failed" : "passed"
+                              }
+                              label={
+                                r.outcome === "distinction"
+                                  ? "Distinction"
+                                  : r.outcome === "pass"
+                                    ? "Pass"
+                                    : "Fail"
+                              }
+                            />
+                          ) : (
+                            <span className="text-meta text-text-secondary">
+                              Not marked
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            }
+          />
         </div>
       ) : (
         <div className="mt-8">

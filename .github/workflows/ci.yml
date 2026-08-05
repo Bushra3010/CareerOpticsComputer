@@ -130,10 +130,16 @@ jobs:
       #    NEXT_PUBLIC_SUPABASE_ANON_KEY as repository secrets. Both are
       #    client-side values that ship in the browser bundle anyway; the
       #    service-role key is NOT needed here and must not be added.
+      #
+      #    E2E_PASSWORD is optional and extends the scan to the three portals,
+      #    which is where most of the interface is. It is the password
+      #    `npm run db:seed:dev` prints for its seeded logins. Without it the
+      #    run covers the public routes only and says so.
       - name: Accessibility scan
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
           NEXT_PUBLIC_APP_URL: http://localhost:3000
           NEXT_PUBLIC_APP_ENV: preview
         run: |

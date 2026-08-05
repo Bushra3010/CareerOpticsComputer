@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import {
+  MobileList,
+  MobileListItem,
+  ResponsiveCollection,
+} from "@/components/tables/mobile-list";
 import { EmptyState } from "@/components/states";
 import { createClient } from "@/lib/db/server";
 import { formatPaise } from "@/lib/money";
@@ -33,43 +38,78 @@ export default async function FeesPage() {
           description="Admit a student to start tracking fees."
         />
       ) : (
-        <div className="border-border mt-6 overflow-x-auto rounded-[var(--radius-card)] border">
-          <table className="w-full text-left">
-            <thead className="bg-surface-subtle">
-              <tr>
-                <th className="text-label px-4 py-3">Registration no.</th>
-                <th className="text-label px-4 py-3">Name</th>
-                <th className="text-label px-4 py-3 text-right">Total</th>
-                <th className="text-label px-4 py-3 text-right">Paid</th>
-                <th className="text-label px-4 py-3 text-right">Due</th>
-              </tr>
-            </thead>
-            <tbody>
+        <ResponsiveCollection
+          list={
+            <MobileList className="mt-6" label="Student fee positions">
               {summaries.map((row) => (
-                <tr key={row.studentId} className="border-border border-t">
-                  <td className="text-body px-4 py-3">
-                    <Link
-                      href={`/centre/fees/${row.studentId}`}
-                      className="font-semibold text-blue-700"
-                    >
-                      {row.registrationNumber}
-                    </Link>
-                  </td>
-                  <td className="text-body px-4 py-3">{row.studentName}</td>
-                  <td className="text-body px-4 py-3 text-right tabular-nums">
-                    {row.feePlanId ? formatPaise(row.totalPaise) : "—"}
-                  </td>
-                  <td className="text-body px-4 py-3 text-right tabular-nums">
-                    {formatPaise(row.paidPaise)}
-                  </td>
-                  <td className="text-body text-navy-900 px-4 py-3 text-right font-semibold tabular-nums">
-                    {row.feePlanId ? formatPaise(row.duePaise) : "No plan"}
-                  </td>
-                </tr>
+                <MobileListItem
+                  key={row.studentId}
+                  title={row.studentName}
+                  subtitle={row.registrationNumber}
+                  href={`/centre/fees/${row.studentId}`}
+                  fields={[
+                    {
+                      label: "Total",
+                      value: row.feePlanId ? formatPaise(row.totalPaise) : "—",
+                      numeric: true,
+                    },
+                    {
+                      label: "Paid",
+                      value: formatPaise(row.paidPaise),
+                      numeric: true,
+                    },
+                    {
+                      label: "Due",
+                      value: row.feePlanId
+                        ? formatPaise(row.duePaise)
+                        : "No plan",
+                      numeric: true,
+                    },
+                  ]}
+                />
               ))}
-            </tbody>
-          </table>
-        </div>
+            </MobileList>
+          }
+          table={
+            <div className="border-border mt-6 rounded-[var(--radius-card)] border">
+              <table className="w-full text-left">
+                <thead className="bg-surface-subtle">
+                  <tr>
+                    <th className="text-label px-4 py-3">Registration no.</th>
+                    <th className="text-label px-4 py-3">Name</th>
+                    <th className="text-label px-4 py-3 text-right">Total</th>
+                    <th className="text-label px-4 py-3 text-right">Paid</th>
+                    <th className="text-label px-4 py-3 text-right">Due</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {summaries.map((row) => (
+                    <tr key={row.studentId} className="border-border border-t">
+                      <td className="text-body px-4 py-3">
+                        <Link
+                          href={`/centre/fees/${row.studentId}`}
+                          className="font-semibold text-blue-700"
+                        >
+                          {row.registrationNumber}
+                        </Link>
+                      </td>
+                      <td className="text-body px-4 py-3">{row.studentName}</td>
+                      <td className="text-body px-4 py-3 text-right tabular-nums">
+                        {row.feePlanId ? formatPaise(row.totalPaise) : "—"}
+                      </td>
+                      <td className="text-body px-4 py-3 text-right tabular-nums">
+                        {formatPaise(row.paidPaise)}
+                      </td>
+                      <td className="text-body text-navy-900 px-4 py-3 text-right font-semibold tabular-nums">
+                        {row.feePlanId ? formatPaise(row.duePaise) : "No plan"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          }
+        />
       )}
     </div>
   );

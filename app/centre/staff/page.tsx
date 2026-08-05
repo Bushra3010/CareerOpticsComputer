@@ -1,6 +1,11 @@
 import { redirect } from "next/navigation";
 
 import { StatusBadge } from "@/components/ui/badge";
+import {
+  MobileList,
+  MobileListItem,
+  ResponsiveCollection,
+} from "@/components/tables/mobile-list";
 import { PermissionDeniedState } from "@/components/states";
 import { createClient } from "@/lib/db/server";
 import { getCurrentCentreContext } from "@/features/centres/current-membership";
@@ -42,59 +47,88 @@ export default async function StaffPage() {
         record of who once had it.
       </p>
 
-      <div className="border-border mt-6 overflow-x-auto rounded-[var(--radius-card)] border">
-        <table className="w-full text-left">
-          <thead className="bg-surface-subtle">
-            <tr>
-              <th scope="col" className="text-label px-4 py-3">
-                Name
-              </th>
-              <th scope="col" className="text-label px-4 py-3">
-                Role
-              </th>
-              <th scope="col" className="text-label px-4 py-3">
-                Status
-              </th>
-              {canInvite ? (
-                <th scope="col" className="text-label px-4 py-3">
-                  Access
-                </th>
-              ) : null}
-            </tr>
-          </thead>
-          <tbody>
+      <ResponsiveCollection
+        list={
+          <MobileList className="mt-6" label="Staff">
             {staff.map((m) => (
-              <tr key={m.membershipId} className="border-border border-t">
-                <td className="text-body px-4 py-3">
-                  {m.fullName}
-                  {m.isSelf ? (
-                    <span className="text-meta text-text-secondary">
-                      {" "}
-                      (you)
-                    </span>
-                  ) : null}
-                </td>
-                <td className="text-body px-4 py-3">{m.roleName}</td>
-                <td className="px-4 py-3">
-                  <StatusBadge status={m.status} />
-                </td>
-                {canInvite ? (
-                  <td className="px-4 py-3">
-                    {m.isSelf || m.roleCode === "centre_owner" ? (
-                      <span className="text-meta text-text-secondary">—</span>
-                    ) : (
-                      <StaffStatusButton
-                        membershipId={m.membershipId}
-                        suspended={m.status !== "active"}
-                      />
-                    )}
-                  </td>
-                ) : null}
-              </tr>
+              <MobileListItem
+                key={m.membershipId}
+                title={m.isSelf ? `${m.fullName} (you)` : m.fullName}
+                subtitle={m.roleName}
+                status={<StatusBadge status={m.status} />}
+                action={
+                  // The table prints an em dash where no action is allowed so the
+                  // column stays aligned; a card has no column to align, so the
+                  // row simply carries no action.
+                  canInvite && !m.isSelf && m.roleCode !== "centre_owner" ? (
+                    <StaffStatusButton
+                      membershipId={m.membershipId}
+                      suspended={m.status !== "active"}
+                    />
+                  ) : undefined
+                }
+              />
             ))}
-          </tbody>
-        </table>
-      </div>
+          </MobileList>
+        }
+        table={
+          <div className="border-border mt-6 rounded-[var(--radius-card)] border">
+            <table className="w-full text-left">
+              <thead className="bg-surface-subtle">
+                <tr>
+                  <th scope="col" className="text-label px-4 py-3">
+                    Name
+                  </th>
+                  <th scope="col" className="text-label px-4 py-3">
+                    Role
+                  </th>
+                  <th scope="col" className="text-label px-4 py-3">
+                    Status
+                  </th>
+                  {canInvite ? (
+                    <th scope="col" className="text-label px-4 py-3">
+                      Access
+                    </th>
+                  ) : null}
+                </tr>
+              </thead>
+              <tbody>
+                {staff.map((m) => (
+                  <tr key={m.membershipId} className="border-border border-t">
+                    <td className="text-body px-4 py-3">
+                      {m.fullName}
+                      {m.isSelf ? (
+                        <span className="text-meta text-text-secondary">
+                          {" "}
+                          (you)
+                        </span>
+                      ) : null}
+                    </td>
+                    <td className="text-body px-4 py-3">{m.roleName}</td>
+                    <td className="px-4 py-3">
+                      <StatusBadge status={m.status} />
+                    </td>
+                    {canInvite ? (
+                      <td className="px-4 py-3">
+                        {m.isSelf || m.roleCode === "centre_owner" ? (
+                          <span className="text-meta text-text-secondary">
+                            —
+                          </span>
+                        ) : (
+                          <StaffStatusButton
+                            membershipId={m.membershipId}
+                            suspended={m.status !== "active"}
+                          />
+                        )}
+                      </td>
+                    ) : null}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        }
+      />
 
       {canInvite ? (
         <>

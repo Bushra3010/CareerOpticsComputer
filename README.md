@@ -214,8 +214,19 @@ Three things about how it is written:
   [`docs/02-open-conflicts.md`](docs/02-open-conflicts.md) are known and
   awaiting a brand decision; any contrast failure that is not one of those
   fails the run.
-- The portals are **not** covered. They need a real session, and there is no
-  E2E flow yet — that is still outstanding from build plan §6 step 10.
+- **The portals are covered too**, once there is a session to use. Put the
+  password `npm run db:seed:dev` prints into `.env.local` as `E2E_PASSWORD`
+  and the run adds the centre portal's ten routes and the student portal at
+  both breakpoints — 96 checks in total. Without it the portal projects are
+  not defined at all and the run covers the public routes only, saying so on
+  the way past. They cannot merely be skipped: Playwright resolves
+  `storageState` when it creates the browser context, before any test body
+  runs, so a missing auth file is a hard error rather than a skip.
+
+What the scan found on its first run, all since fixed: the `/centres`
+middleware redirect, nine portal pages scrolling a raw table sideways at 360px
+against CLAUDE.md's explicit rule, a `<thead>` whose column order did not match
+its `<tbody>`, and two unrecorded contrast failures now logged as C5 and C6.
 
 ## Known limitations
 

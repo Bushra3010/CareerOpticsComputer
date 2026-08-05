@@ -3,6 +3,11 @@ import { CalendarCheck, GraduationCap, IndianRupee } from "lucide-react";
 
 import { KpiCard } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/badge";
+import {
+  MobileList,
+  MobileListItem,
+  ResponsiveCollection,
+} from "@/components/tables/mobile-list";
 import { EmptyState } from "@/components/states";
 import { formatPaise } from "@/lib/money";
 import { getStudentOverview } from "@/features/student-portal/queries";
@@ -170,46 +175,66 @@ export default async function StudentDashboardPage() {
           Your centre has not set up a fee plan yet.
         </p>
       ) : (
-        <div className="border-border mt-3 overflow-x-auto rounded-[var(--radius-card)] border">
-          <table className="w-full text-left">
-            <thead className="bg-surface-subtle">
-              <tr>
-                <th scope="col" className="text-label px-4 py-3">
-                  #
-                </th>
-                <th scope="col" className="text-label px-4 py-3">
-                  Due date
-                </th>
-                <th scope="col" className="text-label px-4 py-3 text-right">
-                  Amount
-                </th>
-                <th scope="col" className="text-label px-4 py-3 text-right">
-                  Paid
-                </th>
-                <th scope="col" className="text-label px-4 py-3">
-                  Status
-                </th>
-              </tr>
-            </thead>
-            <tbody>
+        <ResponsiveCollection
+          list={
+            <MobileList className="mt-3" label="Fee schedule">
               {overview.instalments.map((i) => (
-                <tr key={i.id} className="border-border border-t">
-                  <td className="text-body px-4 py-3">{i.sequence}</td>
-                  <td className="text-body px-4 py-3">{i.dueDate}</td>
-                  <td className="text-body px-4 py-3 text-right tabular-nums">
-                    {formatPaise(i.amountPaise)}
-                  </td>
-                  <td className="text-body px-4 py-3 text-right tabular-nums">
-                    {formatPaise(i.allocatedPaise)}
-                  </td>
-                  <td className="px-4 py-3">
-                    <StatusBadge status={i.status} />
-                  </td>
-                </tr>
+                <MobileListItem
+                  key={i.id}
+                  title={`Instalment ${i.sequence}`}
+                  subtitle={`Due ${i.dueDate}`}
+                  status={<StatusBadge status={i.status} />}
+                  fields={[
+                    { label: "Amount", value: formatPaise(i.amountPaise) },
+                    { label: "Paid", value: formatPaise(i.allocatedPaise) },
+                  ]}
+                />
               ))}
-            </tbody>
-          </table>
-        </div>
+            </MobileList>
+          }
+          table={
+            <div className="border-border mt-3 rounded-[var(--radius-card)] border">
+              <table className="w-full text-left">
+                <thead className="bg-surface-subtle">
+                  <tr>
+                    <th scope="col" className="text-label px-4 py-3">
+                      #
+                    </th>
+                    <th scope="col" className="text-label px-4 py-3">
+                      Due date
+                    </th>
+                    <th scope="col" className="text-label px-4 py-3 text-right">
+                      Amount
+                    </th>
+                    <th scope="col" className="text-label px-4 py-3 text-right">
+                      Paid
+                    </th>
+                    <th scope="col" className="text-label px-4 py-3">
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {overview.instalments.map((i) => (
+                    <tr key={i.id} className="border-border border-t">
+                      <td className="text-body px-4 py-3">{i.sequence}</td>
+                      <td className="text-body px-4 py-3">{i.dueDate}</td>
+                      <td className="text-body px-4 py-3 text-right tabular-nums">
+                        {formatPaise(i.amountPaise)}
+                      </td>
+                      <td className="text-body px-4 py-3 text-right tabular-nums">
+                        {formatPaise(i.allocatedPaise)}
+                      </td>
+                      <td className="px-4 py-3">
+                        <StatusBadge status={i.status} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          }
+        />
       )}
 
       <h2 className="text-section text-navy-900 mt-10">Receipts</h2>
@@ -218,41 +243,59 @@ export default async function StudentDashboardPage() {
           No payments recorded yet.
         </p>
       ) : (
-        <div className="border-border mt-3 overflow-x-auto rounded-[var(--radius-card)] border">
-          <table className="w-full text-left">
-            <thead className="bg-surface-subtle">
-              <tr>
-                <th scope="col" className="text-label px-4 py-3">
-                  Receipt no.
-                </th>
-                <th scope="col" className="text-label px-4 py-3 text-right">
-                  Amount
-                </th>
-                <th scope="col" className="text-label px-4 py-3"></th>
-              </tr>
-            </thead>
-            <tbody>
+        <ResponsiveCollection
+          list={
+            <MobileList className="mt-3" label="Receipts">
               {overview.receipts.map((r) => (
-                <tr key={r.id} className="border-border border-t">
-                  <td className="text-body px-4 py-3 font-semibold">
-                    {r.receiptNumber}
-                  </td>
-                  <td className="text-body px-4 py-3 text-right tabular-nums">
-                    {formatPaise(r.amountPaise)}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <Link
-                      href={`/student/receipt/${r.id}`}
-                      className="text-meta font-semibold text-blue-700"
-                    >
-                      Receipt
-                    </Link>
-                  </td>
-                </tr>
+                <MobileListItem
+                  key={r.id}
+                  title={r.receiptNumber}
+                  href={`/student/receipt/${r.id}`}
+                  fields={[
+                    { label: "Amount", value: formatPaise(r.amountPaise) },
+                  ]}
+                />
               ))}
-            </tbody>
-          </table>
-        </div>
+            </MobileList>
+          }
+          table={
+            <div className="border-border mt-3 rounded-[var(--radius-card)] border">
+              <table className="w-full text-left">
+                <thead className="bg-surface-subtle">
+                  <tr>
+                    <th scope="col" className="text-label px-4 py-3">
+                      Receipt no.
+                    </th>
+                    <th scope="col" className="text-label px-4 py-3 text-right">
+                      Amount
+                    </th>
+                    <th scope="col" className="text-label px-4 py-3"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {overview.receipts.map((r) => (
+                    <tr key={r.id} className="border-border border-t">
+                      <td className="text-body px-4 py-3 font-semibold">
+                        {r.receiptNumber}
+                      </td>
+                      <td className="text-body px-4 py-3 text-right tabular-nums">
+                        {formatPaise(r.amountPaise)}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <Link
+                          href={`/student/receipt/${r.id}`}
+                          className="text-meta font-semibold text-blue-700"
+                        >
+                          Receipt
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          }
+        />
       )}
 
       <h2 className="text-section text-navy-900 mt-10">Attendance history</h2>

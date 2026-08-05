@@ -2,6 +2,11 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { StatusBadge } from "@/components/ui/badge";
+import {
+  MobileList,
+  MobileListItem,
+  ResponsiveCollection,
+} from "@/components/tables/mobile-list";
 import { createClient } from "@/lib/db/server";
 import { formatPaise } from "@/lib/money";
 import { getCurrentCentreContext } from "@/features/centres/current-membership";
@@ -73,40 +78,71 @@ export default async function StudentFeesPage({ params }: PageProps) {
           </div>
 
           <h2 className="text-section text-navy-900 mt-8">Instalments</h2>
-          <div className="border-border mt-3 overflow-x-auto rounded-[var(--radius-card)] border">
-            <table className="w-full text-left">
-              <thead className="bg-surface-subtle">
-                <tr>
-                  <th className="text-label px-4 py-3">#</th>
-                  <th className="text-label px-4 py-3">Due date</th>
-                  <th className="text-label px-4 py-3 text-right">Amount</th>
-                  <th className="text-label px-4 py-3 text-right">Paid</th>
-                  <th className="text-label px-4 py-3">Status</th>
-                </tr>
-              </thead>
-              <tbody>
+          <ResponsiveCollection
+            list={
+              <MobileList className="mt-3" label="Instalments">
                 {detail.instalments.map((instalment) => (
-                  <tr key={instalment.id} className="border-border border-t">
-                    <td className="text-body px-4 py-3">
-                      {instalment.sequence}
-                    </td>
-                    <td className="text-body px-4 py-3">
-                      {instalment.dueDate}
-                    </td>
-                    <td className="text-body px-4 py-3 text-right tabular-nums">
-                      {formatPaise(instalment.amountPaise)}
-                    </td>
-                    <td className="text-body px-4 py-3 text-right tabular-nums">
-                      {formatPaise(instalment.allocatedPaise)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <StatusBadge status={instalment.status} />
-                    </td>
-                  </tr>
+                  <MobileListItem
+                    key={instalment.id}
+                    title={`Instalment ${instalment.sequence}`}
+                    subtitle={`Due ${instalment.dueDate}`}
+                    status={<StatusBadge status={instalment.status} />}
+                    fields={[
+                      {
+                        label: "Amount",
+                        value: formatPaise(instalment.amountPaise),
+                      },
+                      {
+                        label: "Paid",
+                        value: formatPaise(instalment.allocatedPaise),
+                      },
+                    ]}
+                  />
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </MobileList>
+            }
+            table={
+              <div className="border-border mt-3 rounded-[var(--radius-card)] border">
+                <table className="w-full text-left">
+                  <thead className="bg-surface-subtle">
+                    <tr>
+                      <th className="text-label px-4 py-3">#</th>
+                      <th className="text-label px-4 py-3">Due date</th>
+                      <th className="text-label px-4 py-3 text-right">
+                        Amount
+                      </th>
+                      <th className="text-label px-4 py-3 text-right">Paid</th>
+                      <th className="text-label px-4 py-3">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {detail.instalments.map((instalment) => (
+                      <tr
+                        key={instalment.id}
+                        className="border-border border-t"
+                      >
+                        <td className="text-body px-4 py-3">
+                          {instalment.sequence}
+                        </td>
+                        <td className="text-body px-4 py-3">
+                          {instalment.dueDate}
+                        </td>
+                        <td className="text-body px-4 py-3 text-right tabular-nums">
+                          {formatPaise(instalment.amountPaise)}
+                        </td>
+                        <td className="text-body px-4 py-3 text-right tabular-nums">
+                          {formatPaise(instalment.allocatedPaise)}
+                        </td>
+                        <td className="px-4 py-3">
+                          <StatusBadge status={instalment.status} />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            }
+          />
 
           <h2 className="text-section text-navy-900 mt-8">Collect a payment</h2>
           <div className="mt-3 max-w-3xl">
@@ -122,39 +158,76 @@ export default async function StudentFeesPage({ params }: PageProps) {
               No payments posted yet.
             </p>
           ) : (
-            <div className="border-border mt-3 overflow-x-auto rounded-[var(--radius-card)] border">
-              <table className="w-full text-left">
-                <thead className="bg-surface-subtle">
-                  <tr>
-                    <th className="text-label px-4 py-3">Receipt no.</th>
-                    <th className="text-label px-4 py-3">Method</th>
-                    <th className="text-label px-4 py-3"></th>
-                    <th className="text-label px-4 py-3 text-right">Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
+            <ResponsiveCollection
+              list={
+                <MobileList className="mt-3" label="Receipts">
                   {detail.payments.map((payment) => (
-                    <tr key={payment.id} className="border-border border-t">
-                      <td className="text-body px-4 py-3 font-semibold">
-                        {payment.receiptNumber}
-                      </td>
-                      <td className="text-body px-4 py-3">{payment.method}</td>
-                      <td className="text-body px-4 py-3 text-right tabular-nums">
-                        {formatPaise(payment.amountPaise)}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <Link
-                          href={`/centre/fees/receipt/${payment.id}`}
-                          className="text-meta font-semibold text-blue-700"
-                        >
-                          Receipt
-                        </Link>
-                      </td>
-                    </tr>
+                    <MobileListItem
+                      key={payment.id}
+                      title={payment.receiptNumber}
+                      href={`/centre/fees/receipt/${payment.id}`}
+                      fields={[
+                        {
+                          label: "Amount",
+                          value: formatPaise(payment.amountPaise),
+                        },
+                        { label: "Method", value: payment.method },
+                      ]}
+                    />
                   ))}
-                </tbody>
-              </table>
-            </div>
+                </MobileList>
+              }
+              table={
+                <div className="border-border mt-3 rounded-[var(--radius-card)] border">
+                  <table className="w-full text-left">
+                    <thead className="bg-surface-subtle">
+                      <tr>
+                        {/* Header order matches the body. It did not: "Amount"
+                            sat above the receipt link and the money column had
+                            an empty header, so a screen reader announced the
+                            amount unlabelled and the link as "Amount". */}
+                        <th scope="col" className="text-label px-4 py-3">
+                          Receipt no.
+                        </th>
+                        <th scope="col" className="text-label px-4 py-3">
+                          Method
+                        </th>
+                        <th
+                          scope="col"
+                          className="text-label px-4 py-3 text-right"
+                        >
+                          Amount
+                        </th>
+                        <th scope="col" className="text-label px-4 py-3"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {detail.payments.map((payment) => (
+                        <tr key={payment.id} className="border-border border-t">
+                          <td className="text-body px-4 py-3 font-semibold">
+                            {payment.receiptNumber}
+                          </td>
+                          <td className="text-body px-4 py-3">
+                            {payment.method}
+                          </td>
+                          <td className="text-body px-4 py-3 text-right tabular-nums">
+                            {formatPaise(payment.amountPaise)}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <Link
+                              href={`/centre/fees/receipt/${payment.id}`}
+                              className="text-meta font-semibold text-blue-700"
+                            >
+                              Receipt
+                            </Link>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              }
+            />
           )}
         </>
       ) : detail.enrolmentId ? (

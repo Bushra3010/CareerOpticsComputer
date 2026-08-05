@@ -55,3 +55,6 @@ supabase/.branches
 /test-results
 /playwright-report
 /coverage
+
+# Playwright storage state — real sessions, never committed
+/playwright/.auth/

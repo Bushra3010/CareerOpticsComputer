@@ -10,6 +10,21 @@ import { defineConfig, devices } from "@playwright/test";
  * re-prove the same DOM. PRD §13.4's browser support matrix is a manual
  * checklist, not something a headless run establishes.
  */
+type Project = NonNullable<
+  Parameters<typeof defineConfig>[0]["projects"]
+>[number];
+
+/** Drops the sign-in projects when E2E_PASSWORD is absent, with a reason. */
+function portalProjects(all: Project[]): Project[] {
+  if (process.env.E2E_PASSWORD) return all;
+  const needsAuth = new Set(["setup", "desktop-auth", "mobile-360-auth"]);
+  console.warn(
+    "[playwright] E2E_PASSWORD is not set — running the public scan only. " +
+      "Run `npm run db:seed:dev` and put the printed password in .env.local.",
+  );
+  return all.filter((p) => !needsAuth.has(p.name ?? ""));
+}
+
 export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: true,
@@ -25,21 +40,46 @@ export default defineConfig({
   use: {
     baseURL: process.env.E2E_BASE_URL ?? "http://localhost:3000",
     trace: "on-first-retry",
+    // Without this, headless Chrome reserves a 34px classic scrollbar, so
+    // `window.innerWidth` is 34px wider than `documentElement.clientWidth`.
+    // A `position: fixed; inset-x-0` element — the mobile bottom navigation —
+    // then lays out to the wider figure and the overflow check reports 37px of
+    // horizontal scroll that does not exist on a real phone, where scrollbars
+    // are overlays and the two measurements agree. Hiding them makes the
+    // measurement mean what it says.
+    launchOptions: { args: ["--hide-scrollbars"] },
   },
 
+  // The portal projects are only defined when there is a password to sign in
+  // with. Defining them unconditionally would not skip cleanly: `storageState`
+  // is resolved when the browser context is created, before any test body
+  // runs, so a missing auth file is a hard error rather than a skip. CI
+  // without the secret should run the public scan and say why it stopped
+  // there, not fail on a file it was never going to have.
+  //
   // The installed Google Chrome rather than Playwright's bundled Chromium.
   // Chrome is first in PRD §13.4's support matrix, and this avoids a ~150 MB
   // download of a second browser engine that would test the same DOM. CI needs
   // `npx playwright install --with-deps chrome` before `npm run test:e2e`.
-  projects: [
+  projects: portalProjects([
+    // Signs in once per role and hands the session to the portal projects.
+    { name: "setup", testMatch: /auth\.setup\.ts/, use: { channel: "chrome" } },
+
     {
       name: "desktop",
+      testIgnore: /portal\.spec\.ts/,
       use: { ...devices["Desktop Chrome"], channel: "chrome" },
     },
-    // 360px is the width style guide §16 and PRD §8.4 make the floor: every
-    // centre daily operation has to work there. Pixel 5 is 393; this is not.
     {
-      name: "mobile-360",
+      name: "desktop-auth",
+      testMatch: /portal\.spec\.ts/,
+      dependencies: ["setup"],
+      use: { ...devices["Desktop Chrome"], channel: "chrome" },
+    },
+    {
+      name: "mobile-360-auth",
+      testMatch: /portal\.spec\.ts/,
+      dependencies: ["setup"],
       use: {
         ...devices["Desktop Chrome"],
         channel: "chrome",
@@ -47,7 +87,19 @@ export default defineConfig({
         isMobile: false,
       },
     },
-  ],
+    // 360px is the width style guide §16 and PRD §8.4 make the floor: every
+    // centre daily operation has to work there. Pixel 5 is 393; this is not.
+    {
+      name: "mobile-360",
+      testIgnore: /portal\.spec\.ts/,
+      use: {
+        ...devices["Desktop Chrome"],
+        channel: "chrome",
+        viewport: { width: 360, height: 780 },
+        isMobile: false,
+      },
+    },
+  ]),
 
   // Reuses a dev server if one is already up, which is what happens locally.
   // The production build is closer to what ships, but `next dev` is what a

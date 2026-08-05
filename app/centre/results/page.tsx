@@ -2,6 +2,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { StatusBadge } from "@/components/ui/badge";
+import {
+  MobileList,
+  MobileListItem,
+  ResponsiveCollection,
+} from "@/components/tables/mobile-list";
 import { EmptyState } from "@/components/states";
 import { createClient } from "@/lib/db/server";
 import { getCurrentCentreContext } from "@/features/centres/current-membership";
@@ -41,56 +46,82 @@ export default async function ResultsPage() {
           description="Create one above to start entering marks."
         />
       ) : (
-        <div className="border-border mt-3 overflow-x-auto rounded-[var(--radius-card)] border">
-          <table className="w-full text-left">
-            <thead className="bg-surface-subtle">
-              <tr>
-                <th scope="col" className="text-label px-4 py-3">
-                  Course
-                </th>
-                <th scope="col" className="text-label px-4 py-3">
-                  Term
-                </th>
-                <th scope="col" className="text-label px-4 py-3">
-                  Version
-                </th>
-                <th scope="col" className="text-label px-4 py-3">
-                  Marked
-                </th>
-                <th scope="col" className="text-label px-4 py-3">
-                  Status
-                </th>
-              </tr>
-            </thead>
-            <tbody>
+        <ResponsiveCollection
+          list={
+            <MobileList className="mt-3" label="Result sets">
               {publications.map((p) => (
-                <tr key={p.id} className="border-border border-t">
-                  <td className="text-body px-4 py-3">
-                    <Link
-                      href={`/centre/results/${p.id}`}
-                      className="font-semibold text-blue-700"
-                    >
-                      {p.courseName ?? "Course"}
-                    </Link>
-                  </td>
-                  <td className="text-body px-4 py-3">{p.termLabel}</td>
-                  <td className="text-body px-4 py-3 tabular-nums">
-                    v{p.version}
-                  </td>
-                  <td className="text-body px-4 py-3 tabular-nums">
-                    {p.resultCount}
-                  </td>
-                  <td className="px-4 py-3">
+                <MobileListItem
+                  key={p.id}
+                  title={p.courseName ?? "Course"}
+                  subtitle={p.termLabel}
+                  href={`/centre/results/${p.id}`}
+                  status={
                     <StatusBadge
                       status={p.publishedAt ? "published" : "draft"}
                       label={p.publishedAt ? "Published" : "Draft"}
                     />
-                  </td>
-                </tr>
+                  }
+                  fields={[
+                    { label: "Version", value: `v${p.version}`, numeric: true },
+                    { label: "Marked", value: p.resultCount, numeric: true },
+                  ]}
+                />
               ))}
-            </tbody>
-          </table>
-        </div>
+            </MobileList>
+          }
+          table={
+            <div className="border-border mt-3 rounded-[var(--radius-card)] border">
+              <table className="w-full text-left">
+                <thead className="bg-surface-subtle">
+                  <tr>
+                    <th scope="col" className="text-label px-4 py-3">
+                      Course
+                    </th>
+                    <th scope="col" className="text-label px-4 py-3">
+                      Term
+                    </th>
+                    <th scope="col" className="text-label px-4 py-3">
+                      Version
+                    </th>
+                    <th scope="col" className="text-label px-4 py-3">
+                      Marked
+                    </th>
+                    <th scope="col" className="text-label px-4 py-3">
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {publications.map((p) => (
+                    <tr key={p.id} className="border-border border-t">
+                      <td className="text-body px-4 py-3">
+                        <Link
+                          href={`/centre/results/${p.id}`}
+                          className="font-semibold text-blue-700"
+                        >
+                          {p.courseName ?? "Course"}
+                        </Link>
+                      </td>
+                      <td className="text-body px-4 py-3">{p.termLabel}</td>
+                      <td className="text-body px-4 py-3 tabular-nums">
+                        v{p.version}
+                      </td>
+                      <td className="text-body px-4 py-3 tabular-nums">
+                        {p.resultCount}
+                      </td>
+                      <td className="px-4 py-3">
+                        <StatusBadge
+                          status={p.publishedAt ? "published" : "draft"}
+                          label={p.publishedAt ? "Published" : "Draft"}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          }
+        />
       )}
     </div>
   );
