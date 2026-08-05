@@ -31,7 +31,7 @@ work stands_ and _what to do next_.
 | Supabase clients | Browser, server (anon key), service-role (guarded + audited)                                                                                                                | `lib/db/`                     |
 | Authorisation    | `authorize()`, `hasPermission()`, step-up registry                                                                                                                          | `lib/permissions/`            |
 | Audit            | App-layer writer alongside the DB trigger                                                                                                                                   | `lib/audit/`                  |
-| Migrations       | 19 files, applied through `0018`; `0019` written and not yet applied                                                                                                        | `supabase/migrations/`        |
+| Migrations       | 20 files, **all applied** — confirmed against the live database on 6 August                                                                                                 | `supabase/migrations/`        |
 | Dashboards       | Super Admin, Centre Admin and Student, from the owner's mockups                                                                                                             | `app/{admin,centre,student}/` |
 
 **Also working end to end** (added after this file was first written): the
@@ -151,7 +151,13 @@ not exist** — see the correction in §2.1. If either helper still exists on th
 machine that applied the migrations, committing it would be worth more than
 this paragraph.
 
-**Status of that application: confirmed for `0001`–`0018`.** Not by reading the
+**Superseded, 6 August: the CLI now owns this.** `supabase_migrations.schema_migrations`
+did not exist at all — nothing had ever recorded a migration, so a plain
+`supabase db push` would have tried to re-run all twenty. `migration repair
+--status applied` backfilled `0001`–`0019` without re-running their SQL, and
+`0020` then pushed normally. Migrations no longer need pasting by hand.
+
+The original assessment, for the record: **confirmed for `0001`–`0018`.** Not by reading the
 verification script's output, but by querying the live database directly during
 the feature build — every table, policy and function those migrations create has
 been exercised by the integration suite. **`0019` (private student files) is
@@ -202,16 +208,22 @@ year, no payment gateway before Phase 5, in-app notifications only in V1.
 Steps 1–9 of the old Phase 1 list below are **done**. What is actually next, in
 priority order:
 
-1. **Apply migration `0019`** in the SQL editor, then `npm run test:integration`
-   to run the eight storage checks. Until that happens the private-file slice is
-   code that has never touched the database it was written for.
+1. ~~Apply migration `0019`~~ — **done, 6 August.** All twenty migrations are
+   applied and the CLI's migration history is repaired, so `supabase db push`
+   works normally from here. The integration suite runs green against the live
+   project: **33 tests**, including the eight storage checks and the `P1c`
+   security proof, both of which had never executed before.
 2. **Rotate the `service_role` key** (see §5). This has been outstanding since
    4 August and the repository is public.
 3. **Switch on secret scanning and push protection.** Free on a public
    repository; `README.md`'s old claim that they needed Advanced Security was
    wrong.
-4. **Get `SUPABASE_DB_URL` populated.** It unblocks `npm run db:types`, real
-   `supabase db push`, pgTAP, and it retires the hand-application habit in §2.2.
+4. ~~Get `SUPABASE_DB_URL` populated~~ — **done, 6 August.** Over the session
+   pooler (`aws-1-ap-south-1`), because the direct host is IPv6-only and started
+   refusing connections. `supabase db push` and `npm run db:types` both work.
+   What remains here is `npm run db:types` itself: the types file is still
+   hand-written, and regenerating it is what finally removes `lib/db/rpc.ts`'s
+   `callRpc` escape hatch and the duplicated `one<T>` helpers.
 5. **Tests in CI.** The integration suite and the portal half of the
    accessibility scan both pass locally and run nowhere else, which the day
    somebody else pushes is the same as not having them. Both need only

@@ -25,6 +25,7 @@
     "db:push": "supabase db push",
     "db:diff": "supabase db diff",
     "db:types": "supabase gen types typescript --local > types/database.generated.ts",
+    "db:types:check": "node scripts/check-types-drift.mjs",
     "db:seed:dev": "node scripts/seed-dev-data.mjs",
     "db:seed:dev:remove": "node scripts/seed-dev-data.mjs --remove",
     "db:test": "supabase test db",

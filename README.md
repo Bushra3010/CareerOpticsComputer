@@ -4,7 +4,7 @@ Multi-tenant computer education, franchise and training-centre management
 platform for **Career Optics Computer Academy**.
 
 > **Status: Phase 1 substantially complete, running against a hosted Supabase
-> project.** Migrations `0001`–`0019`. Working end to end: the public site and
+> project.** Migrations `0001`–`0020`, all applied. Working end to end: the public site and
 > course catalogue, admission enquiries, the centre franchise application and
 > its atomic head-office approval, authentication for three portals, five
 > centre roles with staff invitations, student admission and the student
@@ -77,19 +77,20 @@ style guide §16.
 
 ## Scripts
 
-| Command               | Purpose                                                                   |
-| --------------------- | ------------------------------------------------------------------------- |
-| `npm run dev`         | Development server                                                        |
-| `npm run build`       | Production build                                                          |
-| `npm run verify`      | Format check, lint, type-check and unit tests — run before pushing        |
-| `npm run typecheck`   | `tsc --noEmit`                                                            |
-| `npm run test`        | Unit tests (Vitest)                                                       |
-| `npm run test:e2e`    | Accessibility scan over the public routes (Playwright + axe)              |
-| `npm run db:start`    | Start local Supabase (requires Docker)                                    |
-| `npm run db:reset`    | Drop and re-apply every migration from scratch                            |
-| `npm run db:test`     | `supabase test db` — no pgTAP suite is written yet, so this finds nothing |
-| `npm run db:types`    | Regenerate `types/database.generated.ts`                                  |
-| `npm run db:seed:dev` | Fill an empty database with development data (see below)                  |
+| Command                  | Purpose                                                                   |
+| ------------------------ | ------------------------------------------------------------------------- |
+| `npm run dev`            | Development server                                                        |
+| `npm run build`          | Production build                                                          |
+| `npm run verify`         | Format check, lint, type-check and unit tests — run before pushing        |
+| `npm run typecheck`      | `tsc --noEmit`                                                            |
+| `npm run test`           | Unit tests (Vitest)                                                       |
+| `npm run test:e2e`       | Accessibility scan over the public routes (Playwright + axe)              |
+| `npm run db:start`       | Start local Supabase (requires Docker)                                    |
+| `npm run db:reset`       | Drop and re-apply every migration from scratch                            |
+| `npm run db:test`        | `supabase test db` — no pgTAP suite is written yet, so this finds nothing |
+| `npm run db:types`       | Regenerate `types/database.generated.ts` (needs Docker)                   |
+| `npm run db:types:check` | Check the hand-written types against the live schema                      |
+| `npm run db:seed:dev`    | Fill an empty database with development data (see below)                  |
 
 ## Architecture
 
@@ -241,21 +242,31 @@ decision. None of them came from review.
 
 ## Known limitations
 
-- **Database types are hand-maintained.** `types/database.generated.ts` is
-  written by hand, not generated, because `npm run db:types` needs a reachable
-  Postgres connection (`SUPABASE_DB_URL`), which isn't configured yet — only
-  the REST-facing anon/service-role keys are. Once the DB URL is available,
-  regenerate it and delete `lib/db/rpc.ts`'s `callRpc` escape hatch, which
-  exists only because postgrest-js's RPC generics need the fully generated
-  shape to type-check.
+- **Database types are hand-maintained, and now checked.**
+  `types/database.generated.ts` is written by hand. `SUPABASE_DB_URL` is
+  configured, so that is no longer the blocker — `supabase gen types` shells
+  out to Docker even when given `--db-url`, and Docker is not installed here.
+
+  A hand-maintained type map that drifts is worse than no types: `tsc` keeps
+  passing while the shape it checks against stops being true, and the failure
+  surfaces at runtime as a column nobody expected. So `npm run db:types:check`
+  compares the file's table and column names against the live schema and fails
+  on any difference. It currently reports **29 tables, 257 columns, no drift**.
+
+  Still outstanding: `lib/db/rpc.ts`'s `callRpc` escape hatch and the
+  duplicated `one<T>` helpers, both of which exist only because postgrest-js's
+  generics need the genuinely generated shape. Those go when Docker does.
+
 - **P6 (idempotent wallet debit) is proven against `idempotency_keys`, not
   `wallet_entries`** — the wallet ledger lands in migration `0009` (Phase 3).
   Re-point `tests/integration/rls-proof.test.ts` at it then.
 - **No local Supabase / pgTAP.** Docker isn't available on the dev machine, so
   the database tests run as Vitest integration tests against the hosted project
-  (`npm run test:integration`) instead of pgTAP in CI. Two suites live there:
+  (`npm run test:integration`) instead of pgTAP in CI. Migrations themselves no
+  longer need Docker — `SUPABASE_DB_URL` is set over the session pooler and
+  `supabase db push` works. Two suites live there:
   `rls-proof.test.ts` (the P1–P6 gate from build plan §5.3) and
-  `feature-invariants.test.ts` (24 tests total), which covers the role matrix
+  `feature-invariants.test.ts` (16), which covers the role matrix
   including proof test R13, attendance re-save and cross-centre marking, the
   fee split and allocation arithmetic, overpayment rollback, result
   publication immutability, and certificate issuance and public verification.

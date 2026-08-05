@@ -26,9 +26,15 @@ const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const hasCredentials = Boolean(url && anonKey && serviceKey);
 
 describe.skipIf(!hasCredentials)("RLS proof tests (P1-P6)", () => {
-  const admin: AnyClient = createClient(url!, serviceKey!, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
+  // Built lazily. `describe.skipIf` skips the *tests*, not the describe body,
+  // so constructing the client here at module evaluation crashed the whole
+  // file with "supabaseUrl is required" whenever credentials were absent —
+  // a missing-secrets run failed loudly instead of skipping quietly.
+  const admin: AnyClient = hasCredentials
+    ? createClient(url!, serviceKey!, {
+        auth: { autoRefreshToken: false, persistSession: false },
+      })
+    : (undefined as unknown as AnyClient);
 
   const suffix = crypto.randomUUID().slice(0, 8);
   const password = `Pw-${crypto.randomUUID()}`;

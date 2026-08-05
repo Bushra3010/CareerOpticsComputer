@@ -121,11 +121,15 @@ true}` — both would score zero, or take the negative mark, every time.
 
 ## What will not be verifiable on merge
 
-Migrations are pasted into the Supabase SQL editor by hand — `SUPABASE_DB_URL`
-is still empty, Docker is not installed, and `npm run db:test` runs against a
-directory with no suites. `0019` and `0020` are both written and unapplied
-today, and exam migrations will land the same way: **written, merged, untested**
-until somebody applies them.
+**This section improved on 6 August and the improvement is worth understanding.**
+`SUPABASE_DB_URL` is now configured over the session pooler, the CLI's migration
+history is repaired, and `supabase db push` works — so exam migrations can be
+applied and tested the day they are written rather than merged untested. All
+twenty existing migrations are applied and the integration suite runs green
+against the live project.
+
+What has _not_ changed: Docker is still absent, so `npm run db:test` still runs
+against a directory with no pgTAP suites.
 
 The real harness is `tests/integration/*.test.ts` over PostgREST with anon-key
 sessions, and it is excluded from `npm run verify`, so **CI runs none of it**.
@@ -133,5 +137,6 @@ Two things cannot be expressed there at all: `set local role` with forged JWT
 claims, and `EXPLAIN (ANALYZE, BUFFERS)` for build plan R3's per-row RLS cost on
 the highest-QPS path in the product — exam autosave.
 
-Getting `SUPABASE_DB_URL` populated is worth more before Phase 4 than it was
-before Phase 1.
+That last point is the one to fix before Phase 4: autosave is the highest-QPS
+authenticated path in the product, and R3's per-row RLS cost is the risk nobody
+has measured.
