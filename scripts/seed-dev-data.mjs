@@ -389,6 +389,66 @@ const LEADS = [
   },
 ];
 
+/**
+ * Logins, so the centre and student portals can actually be opened.
+ *
+ * Without these the seed produces eighteen centres nobody can sign in to —
+ * build plan §6 step 9 asks for "staff for every role" and it means it. The
+ * second centre's owner exists specifically so cross-centre isolation is
+ * something you can see by logging in as the wrong person, rather than
+ * something you have to take on trust from a test run.
+ *
+ * The password is generated per run and printed once. It is deliberately not
+ * a constant in this file: the repository is public, and a working credential
+ * for a live project does not belong in it even when the project holds
+ * nothing worth taking. Set SEED_PASSWORD to choose your own.
+ */
+const STAFF = [
+  {
+    email: "owner.lucknow@example.test",
+    name: "Rajeev Srivastava",
+    role: "centre_owner",
+    centre: "CO-LKO01",
+  },
+  {
+    email: "manager.lucknow@example.test",
+    name: "Meenakshi Rawat",
+    role: "centre_manager",
+    centre: "CO-LKO01",
+  },
+  {
+    email: "counsellor.lucknow@example.test",
+    name: "Fatima Sheikh",
+    role: "counsellor",
+    centre: "CO-LKO01",
+  },
+  {
+    email: "faculty.lucknow@example.test",
+    name: "Devendra Bhatt",
+    role: "faculty",
+    centre: "CO-LKO01",
+  },
+  {
+    email: "accountant.lucknow@example.test",
+    name: "Harpreet Kaur",
+    role: "accountant",
+    centre: "CO-LKO01",
+  },
+  // A different centre, so "centre A cannot see centre B" is demonstrable.
+  {
+    email: "owner.patna@example.test",
+    name: "Anand Jha",
+    role: "centre_owner",
+    centre: "CO-PAT01",
+  },
+];
+
+/** One student login, attached to the first student at the flagship centre. */
+const STUDENT_LOGIN = {
+  email: "student.lucknow@example.test",
+  centre: "CO-LKO01",
+};
+
 const METHODS = ["cash", "upi", "upi", "upi", "bank_transfer", "card"];
 
 // Deterministic pseudo-randomness. Math.random() would make two runs disagree
@@ -430,79 +490,140 @@ async function insert(table, rows, opts = {}) {
 // --- removal ---------------------------------------------------------------
 
 async function remove() {
+  // Every filter here goes through `chunked`. An earlier version passed all
+  // 582 fee-plan ids to a single `.in()`, which PostgREST puts in the query
+  // string — the request failed on URL length, the error was not checked, and
+  // the script printed "Removed" over a database that still had everything in
+  // it. Both halves of that were bugs: the batching and the silence.
+  const IN_LIMIT = 100;
+
+  const chunked = async (values, fn) => {
+    for (const part of chunk(values, IN_LIMIT)) await fn(part);
+  };
+
+  const collect = async (table, col, filterCol, values) => {
+    const out = [];
+    await chunked(values, async (part) => {
+      const { data, error } = await db
+        .from(table)
+        .select(col)
+        .in(filterCol, part);
+      if (error) throw new Error(`read ${table}: ${error.message}`);
+      out.push(...(data ?? []).map((r) => r[col]));
+    });
+    return out;
+  };
+
+  const purge = async (table, filterCol, values) => {
+    if (!values.length) return;
+    await chunked(values, async (part) => {
+      const { error } = await db.from(table).delete().in(filterCol, part);
+      if (error) throw new Error(`delete ${table}: ${error.message}`);
+    });
+  };
+
   const codes = CENTRES.map((c) => c.code);
-  const { data: centres } = await db
+  const { data: centres, error: centreErr } = await db
     .from("centres")
     .select("id")
     .in("code", codes);
+  if (centreErr) throw new Error(`read centres: ${centreErr.message}`);
   const centreIds = (centres ?? []).map((c) => c.id);
 
   if (centreIds.length === 0) {
-    console.log("Nothing to remove — no seeded centres found.");
+    console.log("No seeded centres found.");
   } else {
     console.log(
       `Removing ${centreIds.length} seeded centres and everything under them…`,
     );
 
-    const ids = async (table, col, filterCol, vals) => {
-      if (!vals.length) return [];
-      const { data } = await db.from(table).select(col).in(filterCol, vals);
-      return (data ?? []).map((r) => r[col]);
-    };
-
-    const pubIds = await ids(
+    const pubIds = await collect(
       "result_publications",
       "id",
       "centre_id",
       centreIds,
     );
-    const planIds = await ids("fee_plans", "id", "centre_id", centreIds);
-    const instIds = await ids("fee_instalments", "id", "fee_plan_id", planIds);
+    const planIds = await collect("fee_plans", "id", "centre_id", centreIds);
+    const instIds = await collect(
+      "fee_instalments",
+      "id",
+      "fee_plan_id",
+      planIds,
+    );
+    const payIds = await collect("payments", "id", "centre_id", centreIds);
 
-    // Foreign keys are RESTRICT, so children first, and issued_documents
+    // Foreign keys are RESTRICT, so children first. issued_documents goes
     // before student_results because it references both that and students.
-    await db.from("issued_documents").delete().in("centre_id", centreIds);
-    if (instIds.length)
+    await purge("issued_documents", "centre_id", centreIds);
+    await purge("payment_allocations", "payment_id", payIds);
+    await purge("payments", "centre_id", centreIds);
+    await purge("student_results", "publication_id", pubIds);
+    await purge("result_publications", "centre_id", centreIds);
+    await purge("fee_instalments", "fee_plan_id", planIds);
+    await purge("fee_plans", "centre_id", centreIds);
+    await purge("student_documents", "centre_id", centreIds);
+    await purge("enrolments", "centre_id", centreIds);
+    await purge("students", "centre_id", centreIds);
+    await purge("memberships", "centre_id", centreIds);
+    await purge("document_sequences", "centre_id", centreIds);
+
+    // An approved application points at the centre it created; break that
+    // link before the centre goes, or the delete is refused.
+    await chunked(centreIds, async (part) => {
       await db
-        .from("payment_allocations")
-        .delete()
-        .in("fee_instalment_id", instIds);
-    await db.from("payments").delete().in("centre_id", centreIds);
-    if (pubIds.length)
-      await db.from("student_results").delete().in("publication_id", pubIds);
-    await db.from("result_publications").delete().in("centre_id", centreIds);
-    if (planIds.length)
-      await db.from("fee_instalments").delete().in("fee_plan_id", planIds);
-    await db.from("fee_plans").delete().in("centre_id", centreIds);
-    await db.from("student_documents").delete().in("centre_id", centreIds);
-    await db.from("enrolments").delete().in("centre_id", centreIds);
-    await db.from("students").delete().in("centre_id", centreIds);
-    await db.from("memberships").delete().in("centre_id", centreIds);
-    await db.from("document_sequences").delete().in("centre_id", centreIds);
-    // An application that was approved points at its centre; break that first.
-    await db
-      .from("centre_applications")
-      .update({ centre_id: null })
-      .in("centre_id", centreIds);
-    await db.from("centres").delete().in("id", centreIds);
+        .from("centre_applications")
+        .update({ centre_id: null })
+        .in("centre_id", part);
+    });
+
+    await purge("centres", "id", centreIds);
   }
 
-  await db
-    .from("centre_applications")
-    .delete()
-    .in(
-      "application_number",
-      APPLICATIONS.map((_, i) => `APP-DEV-${String(i + 1).padStart(4, "0")}`),
-    );
-  await db
-    .from("leads")
-    .delete()
-    .in(
-      "phone",
-      LEADS.map((l) => l.phone),
-    );
+  // Auth users last: a membership pointing at one would have blocked the
+  // centre delete above, and deleting the user cascades to its profile.
+  const emails = [...STAFF.map((p) => p.email), STUDENT_LOGIN.email];
+  const { data: userList } = await db.auth.admin.listUsers({ perPage: 1000 });
+  let removedUsers = 0;
+  for (const u of userList?.users ?? []) {
+    if (emails.includes(u.email ?? "")) {
+      await db.auth.admin.deleteUser(u.id).catch(() => undefined);
+      removedUsers += 1;
+    }
+  }
 
-  console.log("Removed.");
+  await purge(
+    "centre_applications",
+    "application_number",
+    APPLICATIONS.map((_, i) => `APP-DEV-${String(i + 1).padStart(4, "0")}`),
+  );
+  await purge(
+    "leads",
+    "phone",
+    LEADS.map((l) => l.phone),
+  );
+
+  // Say what is actually left rather than asserting success. The bug this
+  // replaces was a confident "Removed." over a full database.
+  const left = [];
+  for (const t of [
+    "centres",
+    "students",
+    "enrolments",
+    "fee_plans",
+    "payments",
+    "memberships",
+  ]) {
+    const { count } = await db
+      .from(t)
+      .select("*", { count: "exact", head: true });
+    if (count) left.push(`${t}: ${count}`);
+  }
+  console.log(`Removed. ${removedUsers} logins deleted.`);
+  console.log(
+    left.length
+      ? `Still in the database: ${left.join(", ")}`
+      : "Database is clear.",
+  );
 }
 
 // --- creation --------------------------------------------------------------
@@ -702,9 +823,16 @@ async function seed() {
 
   // The instalments those payments settled are no longer pending. Done in one
   // statement rather than per row.
+  // Batches of 100, not 400: `.in()` becomes a query string, and 400 UUIDs
+  // overflow the URL. The same mistake in the removal path silently left a
+  // full database behind while reporting success.
   const settled = paymentRows.map((r) => r._instalment);
-  for (const part of chunk(settled, 400)) {
-    await db.from("fee_instalments").update({ status: "paid" }).in("id", part);
+  for (const part of chunk(settled, 100)) {
+    const { error } = await db
+      .from("fee_instalments")
+      .update({ status: "paid" })
+      .in("id", part);
+    if (error) throw new Error(`fee_instalments: ${error.message}`);
   }
   console.log(`  ${plans.length} plans, ${payments.length} payments`);
 
@@ -805,7 +933,79 @@ async function seed() {
   );
   console.log(`  ${results.length} results, ${passed.length} certificates`);
 
-  console.log("\nDone. Sign in at /admin to see it.");
+  // 6. Logins. Last, because a membership needs its centre to exist and the
+  //    student link needs the students to exist.
+  console.log("Staff and student logins…");
+  const password =
+    process.env.SEED_PASSWORD ??
+    `Dev-${Math.random().toString(36).slice(2, 8)}-${Math.random().toString(36).slice(2, 8)}!1`;
+
+  const { data: roleRows } = await db
+    .from("roles")
+    .select("id, code")
+    .eq("organization_id", orgId);
+  const roleByCode = new Map((roleRows ?? []).map((r) => [r.code, r.id]));
+
+  const made = [];
+  for (const person of STAFF) {
+    const { data: created, error } = await db.auth.admin.createUser({
+      email: person.email,
+      password,
+      email_confirm: true,
+    });
+    if (error || !created.user) {
+      console.log(`  skipped ${person.email}: ${error?.message}`);
+      continue;
+    }
+    await db
+      .from("profiles")
+      .insert({ id: created.user.id, full_name: person.name });
+    await db.from("memberships").insert({
+      user_id: created.user.id,
+      organization_id: orgId,
+      centre_id: byCode.get(person.centre).id,
+      role_id: roleByCode.get(person.role),
+      status: "active",
+    });
+    made.push(`${person.role.padEnd(15)} ${person.email}`);
+  }
+
+  const { data: firstStudent } = await db
+    .from("students")
+    .select("id, full_name")
+    .eq("centre_id", byCode.get(STUDENT_LOGIN.centre).id)
+    .order("registration_number")
+    .limit(1)
+    .maybeSingle();
+
+  if (firstStudent) {
+    const { data: created, error } = await db.auth.admin.createUser({
+      email: STUDENT_LOGIN.email,
+      password,
+      email_confirm: true,
+    });
+    if (error || !created.user) {
+      console.log(`  skipped ${STUDENT_LOGIN.email}: ${error?.message}`);
+    } else {
+      await db
+        .from("profiles")
+        .insert({ id: created.user.id, full_name: firstStudent.full_name });
+      await db
+        .from("students")
+        .update({ user_id: created.user.id })
+        .eq("id", firstStudent.id);
+      made.push(`${"student".padEnd(15)} ${STUDENT_LOGIN.email}`);
+    }
+  }
+
+  console.log(`  ${made.length} logins`);
+
+  console.log("\nDone.\n");
+  console.log("  Sign in at /admin as your existing platform admin.");
+  console.log("  Centre and student portals:\n");
+  for (const line of made) console.log(`    ${line}`);
+  console.log(`\n  Password for all of the above: ${password}`);
+  console.log("  Printed once and stored nowhere. Re-seed to get a new one.");
 }
 
 try {

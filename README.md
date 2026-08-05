@@ -171,10 +171,18 @@ npm run db:seed:dev            # 18 centres, ~580 students, fees, payments,
 npm run db:seed:dev:remove     # take all of it back out
 ```
 
+It also creates seven logins — the five centre roles at the flagship centre, a
+second centre's owner so cross-centre isolation is something you can _see_ by
+signing in as the wrong person, and one student. The password is generated per
+run and printed once; it is deliberately not a constant in the repository,
+because this is a public repository and a working credential for a live project
+does not belong in it. Set `SEED_PASSWORD` to choose your own.
+
 The data is deterministic, so the script is its own manifest — removal deletes
 exactly what creation made, with no marker column to keep in step and nothing
 synthetic leaking into the UI. It refuses to run when `NEXT_PUBLIC_APP_ENV` is
-`production`.
+`production`, and it reports what is still in the database afterwards rather
+than asserting success.
 
 It deliberately does **not** reproduce the mockup's 128 centres and 12,840
 students. Inserting thirteen thousand rows so a screenshot matches would be
