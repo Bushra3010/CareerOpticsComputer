@@ -21,8 +21,6 @@ const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 const KNOWN_CONTRAST_FAILURES = [
   { conflict: "C1", foreground: "#ffffff", background: "#ef6605" },
   { conflict: "C5", foreground: "#ef6605", background: "#f7f9fc" },
-  { conflict: "C6", foreground: "#8a94a6", background: "#f7f9fc" },
-  { conflict: "C6", foreground: "#8a94a6", background: "#ffffff" },
 ];
 
 function isKnownContrast(summary: string): boolean {

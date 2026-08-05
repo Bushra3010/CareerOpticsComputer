@@ -224,7 +224,7 @@ export default function StudentDashboardPreview() {
                     {c.startTime} – {c.endTime}
                   </p>
                 </div>
-                <span className="text-meta text-text-muted shrink-0">
+                <span className="text-meta text-text-secondary shrink-0">
                   {c.room}
                 </span>
               </li>

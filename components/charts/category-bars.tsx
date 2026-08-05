@@ -67,7 +67,7 @@ export function CategoryBars({
               <span
                 className={cn(
                   "text-[11px] leading-tight font-semibold",
-                  missing ? "text-text-muted" : "text-text",
+                  missing ? "text-text-secondary" : "text-text",
                 )}
               >
                 {missing || value === null ? "—" : formatValue(value)}
@@ -92,7 +92,7 @@ export function CategoryBars({
                   {bar.label}
                 </p>
                 {bar.sublabel ? (
-                  <p className="text-text-muted truncate text-[10px] leading-tight">
+                  <p className="text-text-secondary truncate text-[10px] leading-tight">
                     {bar.sublabel}
                   </p>
                 ) : null}

@@ -146,7 +146,7 @@ export function ErrorState({
           {copy.body}
         </p>
         {requestId ? (
-          <p className="text-meta text-text-muted mt-2" data-numeric>
+          <p className="text-meta text-text-secondary mt-2" data-numeric>
             Reference: {requestId}
           </p>
         ) : null}

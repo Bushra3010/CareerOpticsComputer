@@ -223,10 +223,11 @@ Three things about how it is written:
   `storageState` when it creates the browser context, before any test body
   runs, so a missing auth file is a hard error rather than a skip.
 
-What the scan found on its first run, all since fixed: the `/centres`
-middleware redirect, nine portal pages scrolling a raw table sideways at 360px
-against CLAUDE.md's explicit rule, a `<thead>` whose column order did not match
-its `<tbody>`, and two unrecorded contrast failures now logged as C5 and C6.
+What the scan found on its first runs: the `/centres` middleware redirect, nine
+portal pages scrolling a raw table sideways at 360px against CLAUDE.md's
+explicit rule, a `<thead>` whose column order did not match its `<tbody>`, and
+two unrecorded contrast failures. All fixed except C5, which needs a brand
+decision. None of them came from review.
 
 ## Known limitations
 

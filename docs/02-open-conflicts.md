@@ -202,45 +202,37 @@ fails the build rather than joining them quietly.
 
 ---
 
-## C6 — The muted text token fails contrast wherever it carries meaning
+## C6 — The muted text token failed contrast wherever it carried meaning
 
-**Status:** open · **Raised:** 5 August 2026 · **Severity:** same gate as C1 and
-C5, but this one is not a brand question
+**Status:** resolved · **Raised and resolved:** 5 August 2026
 
-**The measurement.** `--color-text-muted` (`#8A94A6`) measures **2.90:1** on the
-light surface (`#F7F9FC`) and **3.06:1** on white. Style guide §14 wants 4.5:1
-for normal text. It is used in 25 places, mostly at 13px, which is nowhere near
-the 18.66px-bold threshold where 3:1 would be enough.
+**The measurement.** `--color-text-muted` (`#8A94A6`) is **2.90:1** on the light
+surface (`#F7F9FC`) and **3.06:1** on white, against style guide §14's 4.5:1.
+It was used in 25 places, mostly at 13px — nowhere near the 18.66px-bold
+threshold where 3:1 would be enough.
 
-`--color-text-secondary` (`#5E687B`) measures **5.32:1** on the same surface and
-already exists in the `@theme` block.
+**Why it was not a conflict like C1 and C5.** Those two are brand questions:
+the guide specifies orange, orange is too light, and only the brand owner can
+choose between amending the guide and accepting the failure. This one was not.
+Nothing in the guide asks for the lightest grey anywhere — `text-muted` was
+picked page by page, and `--color-text-secondary` (`#5E687B`, **5.32:1**) was
+already in the theme block next to it. So it was a defect with an obvious fix,
+recorded here only because the fix needed judgement rather than a decision.
 
-**Why this differs from C1 and C5.** Those two are brand questions: the guide
-specifies orange, orange is too light, and only the brand owner can choose
-between changing the guide and accepting the failure. This one is not. Nothing
-in the guide says "use the lightest grey for this label" — `text-muted` was
-picked page by page, and a token that passes is sitting right next to it.
+**The resolution.** Ten sites moved to `text-text-secondary` — an activity-feed
+timestamp, a document's "Unavailable" state, the `<dt>` labels on mobile
+`PanelTable` cards, the reference number on the error state, a dashboard
+timestamp, two chart labels, and three in the `/dev` shells so the showcase
+stops teaching the wrong token.
 
-**The one legitimate use.** WCAG 2.2 exempts disabled controls and purely
-decorative text from contrast. Where `text-muted` marks something genuinely
-inert — a disabled field, a placeholder — it is correct and should stay. Where
-it renders a value someone has to read, it is a defect.
+Fifteen uses stay, and are correct: WCAG 2.2 exempts disabled controls,
+placeholders and decorative graphics from contrast, and every remaining use is
+one of those — `disabled:` variants on `Input` and `Tabs`, placeholder colour,
+chevrons and empty-state icons, and the `aria-hidden` separator in the top bar.
+The token now carries a comment in `app/globals.css` saying exactly that, so it
+is not mistaken for a quieter shade of body text again.
 
-**Options.**
-
-| Option                                                                       | Result                   | Cost                                                                                                         |
-| ---------------------------------------------------------------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------ |
-| **A. Audit the 25 uses; switch informational ones to `text-text-secondary`** | Passes.                  | An hour of judgement, one call per site. No token changes, no visual system change.                          |
-| **B. Darken `--color-text-muted` until it passes**                           | Needs roughly `#6B7484`. | Then it is barely distinguishable from `text-secondary`, and the scale loses a step it was meant to provide. |
-| **C. Delete the token and keep two greys**                                   | Passes, simplest system. | Loses the disabled/placeholder tier that WCAG actually permits.                                              |
-
-**Recommendation: A.** It needs no brand decision — only someone deciding, per
-site, whether the text is information or decoration.
-
-**What is implemented.** Unchanged. Found by the axe scan on 5 August, which
-now asserts contrast against an allowlist of exactly C1, C5 and this, so a
-fourth failure fails the run.
-
-**Decision needed from:** nobody, strictly — this is a defect with an obvious
-fix. Recorded here rather than fixed in the same commit because the audit is
-the work, and doing it blind would replace one unconsidered token with another.
+**How it was found.** The axe scan added the same day, not review. The scan
+asserts contrast against an allowlist of known failures, and C6 has been taken
+back out of that list — an allowlist entry for something that no longer happens
+hides the regression when it comes back.

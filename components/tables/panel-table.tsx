@@ -111,7 +111,7 @@ export function PanelTable({
                   .filter((c) => !c.desktopOnly)
                   .map((cell) => (
                     <div key={cell.label} className="flex items-baseline gap-1">
-                      <dt className="text-meta text-text-muted">
+                      <dt className="text-meta text-text-secondary">
                         {cell.label}
                       </dt>
                       <dd

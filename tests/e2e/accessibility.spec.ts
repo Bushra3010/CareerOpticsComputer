@@ -70,21 +70,19 @@ for (const route of PUBLIC_ROUTES) {
 }
 
 /**
- * Every contrast failure recorded in docs/02-open-conflicts.md. C1 and C5 are
- * brand-orange too light to carry 4.5:1 against white and against the light
- * surface; C6 is the muted grey text token, which is a plain defect rather
- * than a brand question.
+ * The contrast failures still open in docs/02-open-conflicts.md: C1 and C5,
+ * both brand-orange being too light to carry 4.5:1 — against white on the
+ * primary button, and as text on the light surface. Only the brand owner can
+ * resolve either.
  *
- * This is an allowlist, not a mute. A contrast failure that is not one of
- * these fails the test, so the next one cannot arrive unnoticed the way C5 and
- * C6 did — C1 was logged in August, the other two were not, and nothing was
- * watching.
+ * This is an allowlist, not a mute, and it is kept short deliberately. C6 was
+ * here for a few hours and has been removed because it is fixed; an entry for
+ * something that no longer happens would hide the regression when it returns.
+ * Any contrast failure that is not C1 or C5 fails this test.
  */
 const KNOWN_CONTRAST_FAILURES = [
   { conflict: "C1", foreground: "#ffffff", background: "#ef6605" },
   { conflict: "C5", foreground: "#ef6605", background: "#f7f9fc" },
-  { conflict: "C6", foreground: "#8a94a6", background: "#f7f9fc" },
-  { conflict: "C6", foreground: "#8a94a6", background: "#ffffff" },
 ];
 
 function isKnown(summary: string): boolean {

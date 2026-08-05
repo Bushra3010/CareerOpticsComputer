@@ -185,7 +185,7 @@ export default async function StudentDetailPage({
                       Open
                     </a>
                   ) : (
-                    <span className="text-meta text-text-muted">
+                    <span className="text-meta text-text-secondary">
                       Unavailable
                     </span>
                   )}

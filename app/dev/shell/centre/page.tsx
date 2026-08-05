@@ -93,7 +93,7 @@ export default function CentreDashboardPreview() {
           Good morning, Centre Admin
         </h1>
         <p className="text-body text-text-secondary mt-1">{CENTRE_SUBTITLE}</p>
-        <p className="text-meta text-text-muted mt-0.5">{DEMO_DATE}</p>
+        <p className="text-meta text-text-secondary mt-0.5">{DEMO_DATE}</p>
       </div>
 
       {/* --- KPIs (§11.1: four to six) ------------------------------------ */}
@@ -213,7 +213,7 @@ export default function CentreDashboardPreview() {
                   <p className="text-meta tabular text-navy-900 font-semibold">
                     {c.startTime}
                   </p>
-                  <p className="text-meta text-text-muted">{c.room}</p>
+                  <p className="text-meta text-text-secondary">{c.room}</p>
                 </div>
               </li>
             ))}

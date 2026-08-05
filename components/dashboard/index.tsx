@@ -130,7 +130,9 @@ export function ActivityStrip({ items }: { items: ActivityItem[] }) {
             <div className="min-w-0">
               <p className="text-label text-text font-semibold">{item.title}</p>
               <p className="text-meta text-text-secondary">{item.detail}</p>
-              <p className="text-meta text-text-muted mt-0.5">{item.when}</p>
+              <p className="text-meta text-text-secondary mt-0.5">
+                {item.when}
+              </p>
             </div>
           </li>
         );

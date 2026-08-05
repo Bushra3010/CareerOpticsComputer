@@ -28,6 +28,13 @@
   /* --- Neutrals (§3.2) ----------------------------------------------------- */
   --color-text: #172033;
   --color-text-secondary: #5e687b;
+  /* 2.90:1 on the light surface, against §14's 4.5:1 — so this is NOT a
+     quieter shade of body text. It is only for what WCAG exempts from
+     contrast: disabled controls, placeholders, decorative icons and
+     aria-hidden ornament. Anything a person has to read takes
+     --color-text-secondary, which measures 5.32:1. See C6 in
+     docs/02-open-conflicts.md; ten sites were moved off this token on
+     5 August after an axe scan found them. */
   --color-text-muted: #8a94a6;
   --color-border: #dde3ec;
   --color-border-strong: #b8c2d1;

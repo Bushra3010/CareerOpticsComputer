@@ -415,7 +415,7 @@ export default async function AdminDashboardPage() {
                   <p className="text-meta text-text-secondary truncate">
                     {a.reason ?? a.tableName}
                   </p>
-                  <p className="text-meta text-text-muted mt-0.5">
+                  <p className="text-meta text-text-secondary mt-0.5">
                     {shortDateTime(a.occurredAt)}
                   </p>
                 </div>
