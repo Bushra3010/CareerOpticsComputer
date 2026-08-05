@@ -215,6 +215,22 @@ describe.skipIf(!hasCredentials)("RLS proof tests (P1-P6)", () => {
     expect(data).toBe(true);
   });
 
+  it("P1c — a centre-scoped grant does not answer an ORGANISATION-level question", async () => {
+    // Migration 0020. The old predicate began `centre is null or …`, so asking
+    // the org-wide question with no centre short-circuited to true for any
+    // membership — a centre owner answered "yes" to "may you act across the
+    // whole organisation?". Never exploitable, because none of the five
+    // org-level permission codes was ever granted to a role; this test is what
+    // stops that luck from being load-bearing.
+    const client = await signedInClient(ownerAEmail);
+    const { data } = await client.rpc("has_permission", {
+      perm: "student.read",
+      org: orgA,
+      centre: null,
+    });
+    expect(data).toBe(false);
+  });
+
   it("P2 — anon cannot read organizations or memberships", async () => {
     const anon: AnyClient = createClient(url!, anonKey!);
     const [orgs, memberships] = await Promise.all([

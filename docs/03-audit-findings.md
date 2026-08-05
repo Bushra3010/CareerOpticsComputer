@@ -69,6 +69,53 @@ allocation loop actually mutates and which does have an UPDATE policy.
 The lesson worth keeping: 0012 was written from a passing security probe alone.
 A fix migration needs the happy path re-probed too, not just the attack.
 
+## Confirmed later, by reading rather than probing
+
+### An organisation-level permission check accepted a centre-scoped grant
+
+**Found:** 6 August 2026 · **Fixed:** migration `0020` · **Severity:** privilege
+escalation, latent
+
+`app.has_permission(perm, org, centre)` decides every RLS policy and every
+`authorize()` call. Its predicate, unchanged since migration `0003`, was:
+
+```sql
+and (centre is null or m.centre_id is null or m.centre_id = centre)
+```
+
+The first disjunct is the bug. Asking the **organisation-level** question —
+`has_permission('centre.create', org)` with no centre — makes `centre is null`
+true, the predicate short-circuits, and every membership row matches whatever
+centre it belongs to. A user scoped to one centre answers "yes" to a question
+about authority across the whole organisation.
+
+Five applied policies ask that question: `centres_write_platform`
+(`centre.create`), `audit_logs_select` (`audit.read`), `system_settings_write`
+(`settings.update`, twice), and the two `leads` policies (`lead.read`,
+`lead.create`).
+
+**It was never exploitable, by luck rather than design.** None of those five
+permission codes is granted to any role — checked against the live
+`role_permissions` table, not inferred from the seed file. The bug arms itself
+the first time somebody does the obvious thing and grants `lead.read` to
+counsellors, at which point every counsellor at every centre reads every lead in
+the organisation and the policy still reads as correct.
+
+Fixed by distinguishing the two questions: a null centre now requires an
+org-level membership (`m.centre_id is null`); a given centre is satisfied by an
+org-level membership or one at exactly that centre. Head office reaching every
+centre is deliberate and kept. No application code depended on the old
+behaviour — every `authorize()` call site passes a real `context.centreId`.
+Proof test **P1c** in `tests/integration/rls-proof.test.ts` fails against the
+old function and passes against the new one.
+
+**How it was found matters.** Not by this audit's six auditors, and not by
+review. It came out of an automated review of the Phase 4 exam designs whose
+brief was to check claims against the repository rather than against the prose —
+the same pass that found four documentation claims naming files that do not
+exist. The lesson generalises: this file's unverified backlog below was produced
+by reading code for _smells_; this finding came from reading it for _facts_.
+
 ## Unverified backlog
 
 Not reproduced. Ordered by the auditors' claimed severity within each group.
