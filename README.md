@@ -76,19 +76,19 @@ style guide §16.
 
 ## Scripts
 
-| Command               | Purpose                                                            |
-| --------------------- | ------------------------------------------------------------------ |
-| `npm run dev`         | Development server                                                 |
-| `npm run build`       | Production build                                                   |
-| `npm run verify`      | Format check, lint, type-check and unit tests — run before pushing |
-| `npm run typecheck`   | `tsc --noEmit`                                                     |
-| `npm run test`        | Unit tests (Vitest)                                                |
-| `npm run test:e2e`    | Accessibility scan over the public routes (Playwright + axe)       |
-| `npm run db:start`    | Start local Supabase (requires Docker)                             |
-| `npm run db:reset`    | Drop and re-apply every migration from scratch                     |
-| `npm run db:test`     | pgTAP RLS and integration suites                                   |
-| `npm run db:types`    | Regenerate `types/database.generated.ts`                           |
-| `npm run db:seed:dev` | Fill an empty database with development data (see below)           |
+| Command               | Purpose                                                                   |
+| --------------------- | ------------------------------------------------------------------------- |
+| `npm run dev`         | Development server                                                        |
+| `npm run build`       | Production build                                                          |
+| `npm run verify`      | Format check, lint, type-check and unit tests — run before pushing        |
+| `npm run typecheck`   | `tsc --noEmit`                                                            |
+| `npm run test`        | Unit tests (Vitest)                                                       |
+| `npm run test:e2e`    | Accessibility scan over the public routes (Playwright + axe)              |
+| `npm run db:start`    | Start local Supabase (requires Docker)                                    |
+| `npm run db:reset`    | Drop and re-apply every migration from scratch                            |
+| `npm run db:test`     | `supabase test db` — no pgTAP suite is written yet, so this finds nothing |
+| `npm run db:types`    | Regenerate `types/database.generated.ts`                                  |
+| `npm run db:seed:dev` | Fill an empty database with development data (see below)                  |
 
 ## Architecture
 
@@ -101,14 +101,23 @@ app/student       Student portal
 app/exam          Distraction-free exam runner (no portal chrome, by design)
 app/api           Versioned route handlers, webhooks, cron
 
+                  app/exam and app/api are PLANNED, not present. They are here
+                  because the build plan's route map puts them here; the exam
+                  route handlers will be the first thing in app/api.
+
 components/ui     Primitives    components/layout  Shells
 components/tables Data table + its designed mobile equivalent
 components/states Empty, loading, error, permission-denied
 
-features/         Domain modules (actions, queries, schema, service, tests)
-lib/              auth · db · permissions · validation · money · audit ·
-                  numbering · idempotency · notifications · pdf · jobs · storage
-supabase/         migrations · pgTAP tests · seed
+features/         Domain modules. In practice: actions.ts, queries.ts, and
+                  components/ — schema.ts where there is a form worth
+                  validating. No module has grown a service.ts yet; when one
+                  does, that is the signal an action has too much in it.
+lib/              audit · auth · brand · dates · db · errors · money ·
+                  navigation · notifications · permissions · qr · rate-limit ·
+                  storage · utils · validation
+                  Planned but absent: numbering, idempotency, pdf, jobs.
+supabase/         migrations · seed        (no pgTAP suite exists — see below)
 ```
 
 Full route map and table plan: [`docs/00-build-plan.md`](docs/00-build-plan.md)

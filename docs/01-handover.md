@@ -79,10 +79,21 @@ the same PostgREST path the application uses rather than a superuser SQL
 session. It is worse in one way: it cannot test anything RLS does to a role the
 anon key cannot assume.
 
+> **Correction, 5 August.** The original text below says
+> `supabase/tests/00_tenancy_rls.sql` holds 25 assertions. **That file does not
+> exist and there is no evidence it ever did** — `supabase/` contains only
+> `config.toml`, `migrations/`, `seed.sql` and a `.gitignore`. The same goes for
+> `supabase/tests/verify-structure-sqleditor.sql` in §2.2 below. Both were
+> checked against the filesystem on 5 August, after an automated review flagged
+> them; nobody had checked before, and this file was edited earlier the same day
+> without checking either. The pgTAP suite was planned, described, and never
+> written. What does exist is `tests/integration/` — `rls-proof.test.ts` (8
+> tests, P1–P6), `feature-invariants.test.ts` (16) and `storage.test.ts` (8).
+
 The original unblocking options, still valid if you want real pgTAP:
 
 <details>
-<summary>Original section 2.1, kept for the record</summary>
+<summary>Original section 2.1, kept for the record — see the correction above</summary>
 
 `supabase/tests/00_tenancy_rls.sql` holds 25 assertions covering the mandatory
 early proofs from PRD §20.4:
@@ -134,8 +145,11 @@ than the CLI. Two generated helper files support that path and are **gitignored*
   `supabase_migrations.schema_migrations` rows so the CLI stays in sync
 - `verify-phase-0.sql` — 14 structural assertions, returns one PASS/FAIL table
 
-The committed copy of the verification script is
-`supabase/tests/verify-structure-sqleditor.sql`.
+The text here originally said the committed copy of the verification script is
+`supabase/tests/verify-structure-sqleditor.sql`. **It is not committed and does
+not exist** — see the correction in §2.1. If either helper still exists on the
+machine that applied the migrations, committing it would be worth more than
+this paragraph.
 
 **Status of that application: confirmed for `0001`–`0018`.** Not by reading the
 verification script's output, but by querying the live database directly during
