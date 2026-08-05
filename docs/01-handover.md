@@ -31,7 +31,7 @@ work stands_ and _what to do next_.
 | Supabase clients | Browser, server (anon key), service-role (guarded + audited)                                                                                                                | `lib/db/`                     |
 | Authorisation    | `authorize()`, `hasPermission()`, step-up registry                                                                                                                          | `lib/permissions/`            |
 | Audit            | App-layer writer alongside the DB trigger                                                                                                                                   | `lib/audit/`                  |
-| Migrations       | 20 files, **all applied** — confirmed against the live database on 6 August                                                                                                 | `supabase/migrations/`        |
+| Migrations       | 21 files, **all applied** — confirmed against the live database on 6 August                                                                                                 | `supabase/migrations/`        |
 | Dashboards       | Super Admin, Centre Admin and Student, from the owner's mockups                                                                                                             | `app/{admin,centre,student}/` |
 
 **Also working end to end** (added after this file was first written): the
@@ -230,7 +230,11 @@ priority order:
    repository secrets — `NEXT_PUBLIC_SUPABASE_URL`,
    `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `E2E_PASSWORD` for the portals. The
    service-role key is not needed for either and must not be added.
-6. **Phase 4 — exams.** The largest unbuilt vertical: question banks, exam
+6. **Phase 4 — exams. Started.** The question-bank slice is built, applied and
+   tested (migration `0021`, `/admin/exams/question-banks`, 11 integration
+   tests). It was deliberately first: proof R19 needs the answer key revoked at
+   the privilege level _before_ anything reads it, and that cannot be
+   retrofitted once the runner exists. What is left of Phase 4: The largest unbuilt vertical: question banks, exam
    setup, the distraction-free attempt runner at `app/exam/`, autosave and
    heartbeat route handlers, auto-grading and the evaluation queue. It carries
    the one High risk with no mitigation yet built (build plan R6: clock

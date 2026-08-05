@@ -558,6 +558,71 @@ export interface Database {
         Update: Partial<Database['public']['Tables']['student_documents']['Row']>;
         Relationships: [];
       };
+      question_banks: {
+        Row: {
+          id: string;
+          organization_id: string;
+          course_id: string | null;
+          name: string;
+          description: string | null;
+          status: 'draft' | 'active' | 'retired';
+          created_at: string;
+          created_by: string | null;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: Partial<Database['public']['Tables']['question_banks']['Row']> & {
+          organization_id: string;
+          name: string;
+        };
+        Update: Partial<Database['public']['Tables']['question_banks']['Row']>;
+        Relationships: [];
+      };
+      questions: {
+        Row: {
+          id: string;
+          bank_id: string;
+          organization_id: string;
+          type: Database['public']['Enums']['question_type'];
+          body: string;
+          marks: number;
+          negative_marks: number;
+          difficulty: 'easy' | 'medium' | 'hard';
+          explanation: string | null;
+          status: 'draft' | 'active' | 'retired';
+          created_at: string;
+          created_by: string | null;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: Partial<Database['public']['Tables']['questions']['Row']> & {
+          bank_id: string;
+          organization_id: string;
+          type: Database['public']['Enums']['question_type'];
+          body: string;
+        };
+        Update: Partial<Database['public']['Tables']['questions']['Row']>;
+        Relationships: [];
+      };
+      /**
+       * `is_correct` is deliberately absent from Row. It is revoked from
+       * `authenticated` at the privilege level (migration 0021, proof R19), so
+       * selecting it fails with 42501 rather than returning null. Leaving it
+       * out of the type is what stops someone writing that select in the first
+       * place — read the key with `question_answer_key` instead.
+       */
+      question_options: {
+        Row: {
+          id: string;
+          question_id: string;
+          organization_id: string;
+          body: string;
+          display_order: number;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       public_verification_logs: {
         Row: {
           id: string;
@@ -601,6 +666,14 @@ export interface Database {
           p_doc_type: string;
           p_period: string;
         };
+        Returns: number;
+      };
+      question_answer_key: {
+        Args: { p_question_id: string };
+        Returns: { option_id: string }[];
+      };
+      save_question_options: {
+        Args: { p_question_id: string; p_options: unknown };
         Returns: number;
       };
       has_permission: {
@@ -774,6 +847,16 @@ export interface Database {
       membership_status: 'active' | 'suspended' | 'revoked';
       centre_status: 'active' | 'suspended' | 'closed';
       student_document_kind: 'photo' | 'id_proof' | 'other';
+      question_type:
+        | 'single_choice'
+        | 'multiple_choice'
+        | 'true_false'
+        | 'fill_in'
+        | 'short_answer'
+        | 'long_answer'
+        | 'file_upload';
+      question_status: 'draft' | 'active' | 'retired';
+      question_difficulty: 'easy' | 'medium' | 'hard';
     };
     CompositeTypes: Record<string, never>;
   };

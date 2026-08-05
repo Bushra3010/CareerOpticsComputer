@@ -51,7 +51,11 @@ and it is a question about how the academy issues results, not one the schema
 can answer. C8 is five grading rules the PRD never states. Neither should be
 guessed at; PRD §20.1 is explicit about that.
 
-## The slice that should ship first
+## The slice that should ship first — done, 6 August
+
+Migration `0021`, `/admin/exams/question-banks`, `features/exams/`, 11
+integration tests. The rest of this section is kept because it explains why it
+went first, which is the part worth remembering.
 
 Not the runner. **The question bank, admin-only** — three screens, no exams, no
 attempts.

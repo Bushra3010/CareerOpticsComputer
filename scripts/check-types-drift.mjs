@@ -55,11 +55,25 @@ try {
       dbUrl,
       "-tAF|",
       "-c",
+      // Columns `authenticated` may SELECT, not every column in the table.
+      //
+      // The types file describes what the application can read through
+      // PostgREST, and that is not the same as the schema. `question_options`
+      // has `is_correct`, but it is revoked at the privilege level (migration
+      // 0021, proof R19) so selecting it fails — it is deliberately absent from
+      // the type, and comparing against raw `information_schema.columns` would
+      // report that as drift forever. Asking the privilege system instead means
+      // the check stays right without an allowlist to maintain: revoke a column
+      // and the type is expected to lose it; grant one and the type must gain
+      // it.
       `select c.table_name, c.column_name
-         from information_schema.columns c
+         from information_schema.column_privileges c
          join information_schema.tables t
            on t.table_schema = c.table_schema and t.table_name = c.table_name
-        where c.table_schema = 'public' and t.table_type = 'BASE TABLE'
+        where c.table_schema = 'public'
+          and t.table_type = 'BASE TABLE'
+          and c.grantee = 'authenticated'
+          and c.privilege_type = 'SELECT'
         order by 1, 2`,
     ],
     { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },

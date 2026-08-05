@@ -443,6 +443,20 @@ const STAFF = [
   },
 ];
 
+/**
+ * Head office. `centre: null` is the whole point — an organisation-level
+ * membership is the only kind that satisfies an organisation-level permission
+ * check since migration 0020, and question banks are organisation-scoped. A
+ * centre owner signing in to /admin/exams/question-banks gets the
+ * permission-denied state, which is the behaviour worth being able to see.
+ */
+const HEAD_OFFICE = {
+  email: "exams.ho@example.test",
+  name: "Nandita Iyer",
+  role: "exam_controller",
+  centre: null,
+};
+
 /** One student login, attached to the first student at the flagship centre. */
 const STUDENT_LOGIN = {
   email: "student.lucknow@example.test",
@@ -581,7 +595,11 @@ async function remove() {
 
   // Auth users last: a membership pointing at one would have blocked the
   // centre delete above, and deleting the user cascades to its profile.
-  const emails = [...STAFF.map((p) => p.email), STUDENT_LOGIN.email];
+  const emails = [
+    ...STAFF.map((p) => p.email),
+    HEAD_OFFICE.email,
+    STUDENT_LOGIN.email,
+  ];
   const { data: userList } = await db.auth.admin.listUsers({ perPage: 1000 });
   let removedUsers = 0;
   for (const u of userList?.users ?? []) {
@@ -946,8 +964,36 @@ async function seed() {
     .eq("organization_id", orgId);
   const roleByCode = new Map((roleRows ?? []).map((r) => [r.code, r.id]));
 
+  // The exam-controller role does not exist in seed.sql — the five seeded roles
+  // are all centre-scoped. Created here so the question-bank slice has somebody
+  // who can actually use it.
+  let examRoleId = roleByCode.get("exam_controller");
+  if (!examRoleId) {
+    const { data: created } = await db
+      .from("roles")
+      .insert({
+        organization_id: orgId,
+        code: "exam_controller",
+        name: "Exam Controller",
+        is_system_role: false,
+      })
+      .select("id")
+      .single();
+    examRoleId = created?.id;
+    if (examRoleId) {
+      roleByCode.set("exam_controller", examRoleId);
+      await db
+        .from("role_permissions")
+        .insert(
+          ["question.read", "question.manage", "exam.read", "exam.manage"].map(
+            (permission_code) => ({ role_id: examRoleId, permission_code }),
+          ),
+        );
+    }
+  }
+
   const made = [];
-  for (const person of STAFF) {
+  for (const person of [...STAFF, HEAD_OFFICE]) {
     const { data: created, error } = await db.auth.admin.createUser({
       email: person.email,
       password,
@@ -963,7 +1009,7 @@ async function seed() {
     await db.from("memberships").insert({
       user_id: created.user.id,
       organization_id: orgId,
-      centre_id: byCode.get(person.centre).id,
+      centre_id: person.centre ? byCode.get(person.centre).id : null,
       role_id: roleByCode.get(person.role),
       status: "active",
     });
