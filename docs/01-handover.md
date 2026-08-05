@@ -198,17 +198,28 @@ priority order:
    wrong.
 4. **Get `SUPABASE_DB_URL` populated.** It unblocks `npm run db:types`, real
    `supabase db push`, pgTAP, and it retires the hand-application habit in §2.2.
-5. **Integration tests in CI.** They pass locally and run nowhere else, which is
-   the same as not having them the day somebody else pushes.
+5. **Tests in CI.** The integration suite and the portal half of the
+   accessibility scan both pass locally and run nowhere else, which the day
+   somebody else pushes is the same as not having them. Both need only
+   repository secrets — `NEXT_PUBLIC_SUPABASE_URL`,
+   `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `E2E_PASSWORD` for the portals. The
+   service-role key is not needed for either and must not be added.
 6. **Phase 4 — exams.** The largest unbuilt vertical: question banks, exam
    setup, the distraction-free attempt runner at `app/exam/`, autosave and
    heartbeat route handlers, auto-grading and the evaluation queue. It carries
    the one High risk with no mitigation yet built (build plan R6: clock
    tampering, duplicate attempts, lost answers on flaky networks) and a genuine
-   schema conflict with the already-shipped `0015` — see the exam entries in
-   `docs/02-open-conflicts.md`.
-7. **E2E.** `npm run test:e2e` exists and has no exam or admission flow behind
-   it yet, and no axe scan has run.
+   schema conflict with the already-shipped `0015`: the PRD scopes a result
+   publication to an **exam** and keys results to a **student**, while `0015`
+   shipped them scoped to `(centre, course, term)` and keyed to an
+   **enrolment**. That is a product decision, not a schema detail — settle it
+   before writing the migration.
+7. **A real E2E flow.** `npm run test:e2e` is no longer empty — it runs an axe
+   scan over 27 routes at two breakpoints, 96 checks, and it found the
+   `/centres` redirect, nine pages scrolling sideways at 360px, a mismatched
+   table header and two contrast failures. What it still does not do is walk a
+   _journey_: build plan §6 step 10 wants onboarding → approval → first login →
+   dashboard as one flow, and no test does that.
 
 Still unbuilt beyond exams: wallet, inventory and orders, notifications,
 reports, CMS, referrals, support tickets, the leads UI, batches and timetable,
@@ -243,7 +254,8 @@ Phase 1 does not start until P1–P6 pass.
 
 </details>
 
-Step 10 is the one that did not happen. There is no E2E flow and no axe scan.
+Of that list, step 10 is the one still open — the axe scan now exists, the
+end-to-end journey does not.
 
 ---
 
