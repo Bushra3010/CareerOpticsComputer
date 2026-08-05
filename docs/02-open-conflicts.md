@@ -236,3 +236,92 @@ is not mistaken for a quieter shade of body text again.
 asserts contrast against an allowlist of known failures, and C6 has been taken
 back out of that list — an allowlist entry for something that no longer happens
 hides the regression when it comes back.
+
+---
+
+## C7 — What is a result publication scoped to?
+
+**Status:** open · **Raised:** 6 August 2026 · **Severity:** blocks the Phase 4
+exam migration entirely
+
+**The conflict.** PRD §10.5 describes `result_publications` as scoped to an
+**exam** ("exam/scope, version, status, published by/time") and `student_results`
+as keyed to a **student**, carrying marks, percentage, grade and optional rank.
+
+Migration `0015` is applied and shipped neither. It scopes a publication to
+`(centre_id, course_id, term_label, version)` with **no `exam_id`**, keys each
+result to an **`enrolment_id`**, and stores `max_marks`, `obtained_marks` and an
+`outcome` enum — no percentage, no grade, no rank. Its own header explains why:
+no exam pipeline existed, so a result was marks recorded directly against an
+enrolment, deliberately shaped so the exam pipeline could later feed it.
+
+Both cannot be the natural key, and CLAUDE.md forbids rewriting `0015`.
+
+**Why it is a decision and not a schema detail.** It is the question "when a
+student sits three exams for one course in one term, is that three publications
+or one?" — and that is how the academy actually issues results, not something
+the database can be asked.
+
+| Option                                                                          | Result                                                                                                                                                     | Cost                                                                                                                                                                                                                                           |
+| ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **A. Keep `0015`'s shape. An exam attempt feeds the existing term publication** | One publication per course-term; each exam contributes marks. `record_student_result()` already takes exactly the two arguments a graded attempt produces. | Add one nullable `student_results.attempt_id` for traceability and nothing else. ~40 lines. Does not answer "show me the results of exam X" without a join through attempts.                                                                   |
+| **B. Add `exam_id` and `status` to `result_publications`**                      | Matches the PRD. One publication per exam.                                                                                                                 | Roughly 400 lines of migration and eight touched call sites: `publish_results()`, `issue_certificate()`, the single-draft partial index, every existing results query. The term-scoped rows already in the table would need an interpretation. |
+| **C. A separate `exam_result_publications` table**                              | Neither existing code nor the PRD is disturbed.                                                                                                            | Two result systems, two publish paths, two certificate sources. This is the option that looks cheapest today and is worst in a year.                                                                                                           |
+
+**Recommendation: A**, unless head office genuinely publishes per exam. It is
+the only option that ships the first exam slice without rewriting working,
+applied financial-adjacent code, and it is reversible — B remains possible later,
+whereas C is not undone.
+
+**Two riders, whichever is chosen.**
+
+`student_results` has no `percentage`, `grade` or `rank`, and the PRD asks for
+all three. Percentage is deliberate — `0015` compares `obtained * 100 >=
+pass_percent * max` in integers rather than storing a lossy float, and that
+should stand. Grade needs band boundaries nobody has supplied (PRD §21.9 lists
+it as an open owner decision). Rank should not be stored at all: it is stale the
+moment any mark in the cohort is corrected, and `0015`'s whole design is that a
+correction is a new version.
+
+`courses.pass_percent` and `courses.distinction_percent` sit on `courses`, but
+build plan A14 says thresholds are **per course-version, overridable**, and PRD
+§7.4 says an enrolment retains its assigned version. As placed, editing a pass
+mark retroactively changes outcomes already issued as certificates. That is a
+separate defect from the scoping question and worth fixing whichever way C7
+goes. `courses` also has no `organization_id`, so the threshold is currently
+platform-wide across every tenant.
+
+**Decision needed from:** head office, on how results are actually issued.
+
+---
+
+## C8 — Exam grading rules the specification does not state
+
+**Status:** open · **Raised:** 6 August 2026 · **Severity:** blocks grading, not
+the schema
+
+The PRD specifies that objective questions auto-evaluate (§6.7.6) and that
+questions carry negative marks (§10.5), and stops there. Five rules have to
+exist before a single paper can be marked, and none of them is written down.
+Each is cheap to choose now and expensive to change after real exams have run,
+because changing it retroactively alters results already published.
+
+| #   | Question                                                                     | Default if nobody chooses                                                                                                 |
+| --- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| a   | Multiple-choice with some correct options selected — partial credit or none? | **None.** All-or-nothing is the stricter reading and the easier one to loosen later.                                      |
+| b   | Does an unanswered question take the negative mark?                          | **No.** Negative marking is meant to discourage guessing, not silence.                                                    |
+| c   | Does a _cleared_ answer count as unanswered?                                 | **Yes** — otherwise a student is punished for changing their mind.                                                        |
+| d   | May a student retake an exam they have already passed?                       | **No**, unless the exam explicitly allows it.                                                                             |
+| e   | A centre is suspended mid-attempt. What happens to the attempt in progress?  | **It finishes.** Suspension blocks new attempts. Voiding work already done punishes the student for the centre's problem. |
+
+Assumption (b) and (c) are the pair that would be noticed: they differ only for
+a student who typed an answer and then removed it, and getting it wrong turns
+"changed my mind" into a penalty.
+
+There is a sixth question that is not a default but an authority: build plan
+§2.4 ships `/centre/exams/[id]/eligibility`, implying centres decide who sits
+an exam, while §4 gives centre roles **read-only** on `exam.*`. Either the
+route or the matrix is wrong. Until it is settled, eligibility should be a
+head-office field with a read-only centre view — the reversible choice.
+
+**Decision needed from:** the Exam Controller, or whoever will hold that role.

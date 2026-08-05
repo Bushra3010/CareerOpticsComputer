@@ -32,6 +32,7 @@ platform for **Career Optics Computer Academy**.
 | [`docs/01-handover.md`](docs/01-handover.md)                                           | Where the work stands and what to do next                                           |
 | [`docs/02-open-conflicts.md`](docs/02-open-conflicts.md)                               | Conflicts between the two documents awaiting a decision                             |
 | [`docs/03-audit-findings.md`](docs/03-audit-findings.md)                               | Confirmed defects and the unverified audit backlog                                  |
+| [`docs/04-exam-build-notes.md`](docs/04-exam-build-notes.md)                           | What to know before starting Phase 4                                                |
 
 Where the PRD and the style guide disagree on a visual question, **the style
 guide wins**. That resolution and its reasoning are recorded as C3 in the
