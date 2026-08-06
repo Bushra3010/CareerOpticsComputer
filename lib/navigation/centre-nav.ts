@@ -80,7 +80,6 @@ export const CENTRE_NAV: NavGroup[] = [
       {
         label: "Exams",
         href: "/centre/exams",
-        planned: true,
         icon: GraduationCap,
         permission: "exam.read",
         matchPrefix: true,

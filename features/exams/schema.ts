@@ -64,3 +64,29 @@ export const questionSchema = z
 
 export type BankInput = z.infer<typeof bankSchema>;
 export type QuestionInput = z.infer<typeof questionSchema>;
+
+export const examSchema = z
+  .object({
+    bankId: z.string().uuid("Choose a question bank."),
+    title: z
+      .string()
+      .trim()
+      .min(3, "Give the exam a title of at least three characters.")
+      .max(160),
+    instructions: z.string().trim().max(2000).optional().or(z.literal("")),
+    durationMinutes: z.coerce
+      .number()
+      .int()
+      .min(1, "An exam needs at least a minute.")
+      .max(600, "Ten hours is the ceiling."),
+    passPercent: z.coerce.number().int().min(0).max(100),
+    maxAttempts: z.coerce.number().int().min(1).max(10),
+    opensAt: z.string().min(1, "Choose when the exam opens."),
+    closesAt: z.string().min(1, "Choose when the exam closes."),
+  })
+  .refine((e) => new Date(e.closesAt) > new Date(e.opensAt), {
+    message: "The exam must close after it opens.",
+    path: ["closesAt"],
+  });
+
+export type ExamInput = z.infer<typeof examSchema>;

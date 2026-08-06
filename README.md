@@ -4,7 +4,7 @@ Multi-tenant computer education, franchise and training-centre management
 platform for **Career Optics Computer Academy**.
 
 > **Status: Phase 1 substantially complete, running against a hosted Supabase
-> project.** Migrations `0001`–`0021`, all applied. Working end to end: the public site and
+> project.** Migrations `0001`–`0023`, all applied. Working end to end: the public site and
 > course catalogue, admission enquiries, the centre franchise application and
 > its atomic head-office approval, authentication for three portals, five
 > centre roles with staff invitations, student admission and the student
@@ -13,12 +13,14 @@ platform for **Career Optics Computer Academy**.
 > publication, certificates with printable A4 documents and QR codes, and
 > public credential verification.
 >
-> Phase 4 has started: **question banks** are built and the answer key is
-> protected at the privilege level (proof R19). Exams, attempts and the runner
-> are not — and are blocked on C7 in
-> [`docs/02-open-conflicts.md`](docs/02-open-conflicts.md), a decision about
-> how results are issued. Not built at all: inventory, wallets, referrals,
-> notifications and reporting. Known defects and an
+> Phase 4 is under way: **question banks** and **exams** are built — the
+> answer key is protected at the privilege level (proof R19) and the paper is
+> time-windowed so a centre cannot read it before the exam opens (proof R18).
+> The attempt runner is next. It is **not** blocked on C7 in
+> [`docs/02-open-conflicts.md`](docs/02-open-conflicts.md), which turns out to
+> govern only the last slice — turning a graded attempt into a published
+> result. Not built at all: inventory, wallets, referrals, notifications and
+> reporting. Known defects and an
 > unverified audit backlog are in
 > [`docs/03-audit-findings.md`](docs/03-audit-findings.md) — read it before
 > treating any of this as production-ready. See
@@ -274,7 +276,7 @@ decision. None of them came from review.
   including proof test R13, attendance re-save and cross-centre marking, the
   fee split and allocation arithmetic, overpayment rollback, result
   publication immutability, and certificate issuance and public verification.
-  `exams.test.ts` (11) covers question banks, most of it aimed at one line of
+  `exams.test.ts` (18) covers question banks and exams, most of it aimed at one line of
   SQL — the privilege revoke that makes `question_options.is_correct`
   unselectable. A privilege grant is invisible in a schema diff and fails
   _open_ if the column list is ever widened, so nothing else would notice.

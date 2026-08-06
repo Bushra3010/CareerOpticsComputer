@@ -114,6 +114,7 @@ export const STATUS_TONES = {
   reversed: "neutral",
   // Exams and credentials
   retired: "neutral",
+  scheduled: "info",
   passed: "success",
   failed: "danger",
   published: "success",

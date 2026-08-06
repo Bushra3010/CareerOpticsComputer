@@ -140,3 +140,194 @@ export async function getQuestionBank(
     })),
   };
 }
+
+export interface ExamRow {
+  id: string;
+  title: string;
+  status: "draft" | "published" | "cancelled";
+  bankName: string;
+  durationMinutes: number;
+  opensAt: string;
+  closesAt: string;
+  questionCount: number;
+  centreCount: number;
+  /** Published and inside its window, computed rather than stored. */
+  isOpen: boolean;
+}
+
+function one<T>(rel: unknown): T | null {
+  return Array.isArray(rel) ? ((rel[0] as T) ?? null) : ((rel as T) ?? null);
+}
+
+/** IST, because a window is read by people who work in one timezone. */
+export function formatIst(iso: string): string {
+  return new Date(iso).toLocaleString("en-IN", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Asia/Kolkata",
+  });
+}
+
+export async function listExams(): Promise<ExamRow[]> {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("exams")
+    .select(
+      `id, title, status, duration_minutes, opens_at, closes_at,
+       question_banks(name), exam_questions(count), exam_assignments(count)`,
+    )
+    .order("opens_at", { ascending: false });
+
+  const now = Date.now();
+  return (data ?? []).map((e) => {
+    const questions = e.exam_questions as unknown as { count: number }[] | null;
+    const centres = e.exam_assignments as unknown as { count: number }[] | null;
+    return {
+      id: e.id,
+      title: e.title,
+      status: e.status,
+      bankName: one<{ name: string }>(e.question_banks)?.name ?? "—",
+      durationMinutes: e.duration_minutes,
+      opensAt: e.opens_at,
+      closesAt: e.closes_at,
+      questionCount: questions?.[0]?.count ?? 0,
+      centreCount: centres?.[0]?.count ?? 0,
+      isOpen:
+        e.status === "published" &&
+        now >= Date.parse(e.opens_at) &&
+        now < Date.parse(e.closes_at),
+    };
+  });
+}
+
+export interface ExamDetail extends ExamRow {
+  instructions: string | null;
+  passPercent: number;
+  maxAttempts: number;
+  bankId: string;
+  paper: { id: string; body: string; typeLabel: string; marks: number }[];
+  centres: { id: string; centreId: string; name: string; code: string }[];
+}
+
+export async function getExam(examId: string): Promise<ExamDetail | null> {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("exams")
+    .select(
+      `id, title, status, instructions, duration_minutes, opens_at, closes_at,
+       pass_percent, max_attempts, bank_id, question_banks(name)`,
+    )
+    .eq("id", examId)
+    .maybeSingle();
+  if (!data) return null;
+
+  const [paperResult, centreResult] = await Promise.all([
+    supabase
+      .from("exam_questions")
+      .select("id, display_order, marks_override, questions(body, type, marks)")
+      .eq("exam_id", examId)
+      .order("display_order"),
+    supabase
+      .from("exam_assignments")
+      .select("id, centre_id, centres(name, code)")
+      .eq("exam_id", examId),
+  ]);
+
+  const now = Date.now();
+  const paper = (paperResult.data ?? []).map((row) => {
+    const q = one<{ body: string; type: string; marks: number }>(row.questions);
+    return {
+      id: row.id,
+      body: q?.body ?? "",
+      typeLabel: TYPE_LABELS[q?.type ?? ""] ?? q?.type ?? "",
+      marks: row.marks_override ?? q?.marks ?? 0,
+    };
+  });
+
+  return {
+    id: data.id,
+    title: data.title,
+    status: data.status,
+    instructions: data.instructions,
+    bankId: data.bank_id,
+    bankName: one<{ name: string }>(data.question_banks)?.name ?? "—",
+    durationMinutes: data.duration_minutes,
+    opensAt: data.opens_at,
+    closesAt: data.closes_at,
+    passPercent: data.pass_percent,
+    maxAttempts: data.max_attempts,
+    questionCount: paper.length,
+    centreCount: centreResult.data?.length ?? 0,
+    isOpen:
+      data.status === "published" &&
+      now >= Date.parse(data.opens_at) &&
+      now < Date.parse(data.closes_at),
+    paper,
+    centres: (centreResult.data ?? []).map((a) => {
+      const c = one<{ name: string; code: string }>(a.centres);
+      return {
+        id: a.id,
+        centreId: a.centre_id,
+        name: c?.name ?? "Centre",
+        code: c?.code ?? "",
+      };
+    }),
+  };
+}
+
+/** Questions in the exam's bank that are not yet on the paper. */
+export async function listAvailableQuestions(
+  bankId: string,
+  examId: string,
+): Promise<{ id: string; body: string; typeLabel: string; marks: number }[]> {
+  const supabase = await createClient();
+
+  const { data: onPaper } = await supabase
+    .from("exam_questions")
+    .select("question_id")
+    .eq("exam_id", examId);
+  const taken = new Set((onPaper ?? []).map((r) => r.question_id));
+
+  const { data } = await supabase
+    .from("questions")
+    .select("id, body, type, marks")
+    .eq("bank_id", bankId)
+    .eq("status", "active")
+    .order("created_at");
+
+  return (data ?? [])
+    .filter((q) => !taken.has(q.id))
+    .map((q) => ({
+      id: q.id,
+      body: q.body,
+      typeLabel: TYPE_LABELS[q.type] ?? q.type,
+      marks: q.marks,
+    }));
+}
+
+export async function listBankOptions(): Promise<
+  { id: string; name: string }[]
+> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("question_banks")
+    .select("id, name")
+    .order("name");
+  return data ?? [];
+}
+
+export async function listCentreOptions(): Promise<
+  { id: string; name: string; code: string }[]
+> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("centres")
+    .select("id, name, code")
+    .eq("status", "active")
+    .order("name");
+  return data ?? [];
+}

@@ -623,6 +623,71 @@ export interface Database {
         Update: never;
         Relationships: [];
       };
+      exams: {
+        Row: {
+          id: string;
+          organization_id: string;
+          bank_id: string;
+          course_id: string | null;
+          title: string;
+          instructions: string | null;
+          duration_minutes: number;
+          opens_at: string;
+          closes_at: string;
+          max_attempts: number;
+          pass_percent: number;
+          status: 'draft' | 'published' | 'cancelled';
+          created_at: string;
+          created_by: string | null;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: Partial<Database['public']['Tables']['exams']['Row']> & {
+          organization_id: string;
+          bank_id: string;
+          title: string;
+          duration_minutes: number;
+          opens_at: string;
+          closes_at: string;
+        };
+        Update: Partial<Database['public']['Tables']['exams']['Row']>;
+        Relationships: [];
+      };
+      exam_questions: {
+        Row: {
+          id: string;
+          exam_id: string;
+          question_id: string;
+          organization_id: string;
+          display_order: number;
+          marks_override: number | null;
+        };
+        Insert: Partial<Database['public']['Tables']['exam_questions']['Row']> & {
+          exam_id: string;
+          question_id: string;
+          organization_id: string;
+          display_order: number;
+        };
+        Update: Partial<Database['public']['Tables']['exam_questions']['Row']>;
+        Relationships: [];
+      };
+      exam_assignments: {
+        Row: {
+          id: string;
+          exam_id: string;
+          organization_id: string;
+          centre_id: string;
+          created_at: string;
+          created_by: string | null;
+        };
+        Insert: Partial<Database['public']['Tables']['exam_assignments']['Row']> & {
+          exam_id: string;
+          organization_id: string;
+          centre_id: string;
+        };
+        Update: Partial<Database['public']['Tables']['exam_assignments']['Row']>;
+        Relationships: [];
+      };
       public_verification_logs: {
         Row: {
           id: string;
@@ -857,6 +922,7 @@ export interface Database {
         | 'file_upload';
       question_status: 'draft' | 'active' | 'retired';
       question_difficulty: 'easy' | 'medium' | 'hard';
+      exam_status: 'draft' | 'published' | 'cancelled';
     };
     CompositeTypes: Record<string, never>;
   };

@@ -288,3 +288,287 @@ describe.skipIf(!hasCredentials)("question banks", () => {
     expect(error?.code).toBe("23503");
   });
 });
+
+describe.skipIf(!hasCredentials)("exams", () => {
+  let fx: Fixture;
+  let hoCli: AnyClient;
+  let roleId: string;
+  let bankId: string;
+  let questionId: string;
+  let examId: string;
+
+  beforeAll(async () => {
+    fx = await setupFixture();
+
+    const { data: role } = await fx.admin
+      .from("roles")
+      .insert({
+        organization_id: fx.orgId,
+        code: `exam_ctrl2_${fx.suffix}`,
+        name: "Exam Controller (test)",
+        is_system_role: false,
+      })
+      .select("id")
+      .single();
+    roleId = role!.id;
+    await fx.admin
+      .from("role_permissions")
+      .insert(
+        ["question.read", "question.manage", "exam.read", "exam.manage"].map(
+          (permission_code) => ({ role_id: roleId, permission_code }),
+        ),
+      );
+
+    const email = `fx-ho2-${fx.suffix}@example.test`;
+    const { data: created } = await fx.admin.auth.admin.createUser({
+      email,
+      password: PASSWORD,
+      email_confirm: true,
+    });
+    fx.userIds.push(created!.user!.id);
+    await fx.admin
+      .from("profiles")
+      .insert({ id: created!.user!.id, full_name: "Controller" });
+    await fx.admin.from("memberships").insert({
+      user_id: created!.user!.id,
+      organization_id: fx.orgId,
+      centre_id: null,
+      role_id: roleId,
+      status: "active",
+    });
+
+    hoCli = createClient(url!, anonKey!);
+    await hoCli.auth.signInWithPassword({ email, password: PASSWORD });
+
+    const { data: bank } = await fx.admin
+      .from("question_banks")
+      .insert({
+        organization_id: fx.orgId,
+        name: `Exam bank ${fx.suffix}`,
+        status: "active",
+      })
+      .select("id")
+      .single();
+    bankId = bank!.id;
+
+    const { data: q } = await fx.admin
+      .from("questions")
+      .insert({
+        bank_id: bankId,
+        organization_id: fx.orgId,
+        type: "true_false",
+        body: "GST is levied on the supply of goods and services.",
+        marks: 1,
+        status: "active",
+      })
+      .select("id")
+      .single();
+    questionId = q!.id;
+
+    // Opens tomorrow — the whole point of the R18 test below.
+    const tomorrow = new Date(Date.now() + 24 * 3600 * 1000).toISOString();
+    const dayAfter = new Date(Date.now() + 48 * 3600 * 1000).toISOString();
+
+    const { data: exam } = await fx.admin
+      .from("exams")
+      .insert({
+        organization_id: fx.orgId,
+        bank_id: bankId,
+        title: `Unit test 1 ${fx.suffix}`,
+        duration_minutes: 30,
+        opens_at: tomorrow,
+        closes_at: dayAfter,
+        status: "draft",
+      })
+      .select("id")
+      .single();
+    examId = exam!.id;
+
+    await fx.admin.from("exam_questions").insert({
+      exam_id: examId,
+      question_id: questionId,
+      organization_id: fx.orgId,
+      display_order: 1,
+    });
+    await fx.admin.from("exam_assignments").insert({
+      exam_id: examId,
+      organization_id: fx.orgId,
+      centre_id: fx.centreId,
+    });
+    await fx.admin
+      .from("exams")
+      .update({ status: "published" })
+      .eq("id", examId);
+  }, 120_000);
+
+  afterAll(async () => {
+    if (!fx) return;
+    await fx.admin.from("exams").delete().eq("id", examId);
+    await fx.admin.from("question_banks").delete().eq("id", bankId);
+    await fx.admin.from("role_permissions").delete().eq("role_id", roleId);
+    await fx.admin.from("memberships").delete().eq("role_id", roleId);
+    await fx.admin.from("roles").delete().eq("id", roleId);
+    await teardownFixture(fx);
+  }, 120_000);
+
+  it("R18 — a centre cannot read the paper before the window opens", async () => {
+    // The exam is published and assigned to this centre. The only thing
+    // standing between the centre owner and tomorrow's paper is the clock.
+    const { data: visible } = await fx.owner.cli.from("exams").select("id");
+    expect(visible?.map((e) => e.id)).toContain(examId);
+
+    const { data: paper } = await fx.owner.cli
+      .from("exam_questions")
+      .select("id")
+      .eq("exam_id", examId);
+    expect(paper ?? []).toHaveLength(0);
+  });
+
+  it("the paper appears once the window opens, and closes again after", async () => {
+    const now = Date.now();
+    await fx.admin
+      .from("exams")
+      .update({
+        opens_at: new Date(now - 3600 * 1000).toISOString(),
+        closes_at: new Date(now + 3600 * 1000).toISOString(),
+      })
+      .eq("id", examId);
+
+    const { data: during } = await fx.owner.cli
+      .from("exam_questions")
+      .select("id")
+      .eq("exam_id", examId);
+    expect(during ?? []).toHaveLength(1);
+
+    await fx.admin
+      .from("exams")
+      .update({
+        opens_at: new Date(now - 7200 * 1000).toISOString(),
+        closes_at: new Date(now - 3600 * 1000).toISOString(),
+      })
+      .eq("id", examId);
+
+    const { data: after } = await fx.owner.cli
+      .from("exam_questions")
+      .select("id")
+      .eq("exam_id", examId);
+    expect(after ?? []).toHaveLength(0);
+  });
+
+  it("an unassigned centre sees neither the exam nor the paper", async () => {
+    // Window is irrelevant here — assignment is.
+    const now = Date.now();
+    await fx.admin
+      .from("exams")
+      .update({
+        opens_at: new Date(now - 3600 * 1000).toISOString(),
+        closes_at: new Date(now + 3600 * 1000).toISOString(),
+      })
+      .eq("id", examId);
+
+    const { data: exams } = await fx.accountant.cli
+      .from("exams")
+      .select("id")
+      .eq("id", examId);
+    // The accountant is at the same centre, so they do see it — the check that
+    // matters is a centre with no assignment at all.
+    expect(exams?.length).toBe(1);
+
+    await fx.admin.from("exam_assignments").delete().eq("exam_id", examId);
+
+    const { data: gone } = await fx.owner.cli
+      .from("exams")
+      .select("id")
+      .eq("id", examId);
+    expect(gone ?? []).toHaveLength(0);
+
+    await fx.admin.from("exam_assignments").insert({
+      exam_id: examId,
+      organization_id: fx.orgId,
+      centre_id: fx.centreId,
+    });
+  });
+
+  it("a draft exam is invisible to the centre it is assigned to", async () => {
+    await fx.admin.from("exams").update({ status: "draft" }).eq("id", examId);
+
+    const { data: hidden } = await fx.owner.cli
+      .from("exams")
+      .select("id")
+      .eq("id", examId);
+    expect(hidden ?? []).toHaveLength(0);
+
+    // Head office still sees it — it is theirs to write.
+    const { data: seen } = await hoCli
+      .from("exams")
+      .select("id")
+      .eq("id", examId);
+    expect(seen).toHaveLength(1);
+
+    await fx.admin
+      .from("exams")
+      .update({ status: "published" })
+      .eq("id", examId);
+  });
+
+  it("an exam cannot be published with no questions", async () => {
+    const { data: empty } = await fx.admin
+      .from("exams")
+      .insert({
+        organization_id: fx.orgId,
+        bank_id: bankId,
+        title: `Empty ${fx.suffix}`,
+        duration_minutes: 10,
+        opens_at: new Date(Date.now() + 3600 * 1000).toISOString(),
+        closes_at: new Date(Date.now() + 7200 * 1000).toISOString(),
+      })
+      .select("id")
+      .single();
+
+    const { error } = await fx.admin
+      .from("exams")
+      .update({ status: "published" })
+      .eq("id", empty!.id);
+    expect(error?.message).toMatch(/no questions/i);
+
+    await fx.admin.from("exams").delete().eq("id", empty!.id);
+  });
+
+  it("a centre cannot create or edit an exam", async () => {
+    const { error } = await fx.owner.cli.from("exams").insert({
+      organization_id: fx.orgId,
+      bank_id: bankId,
+      title: "Centre-authored",
+      duration_minutes: 10,
+      opens_at: new Date().toISOString(),
+      closes_at: new Date(Date.now() + 3600 * 1000).toISOString(),
+    });
+    expect(error?.code).toBe("42501");
+
+    const { error: updateError } = await fx.owner.cli
+      .from("exams")
+      .update({ title: "Renamed" })
+      .eq("id", examId);
+    // RLS makes the row invisible to the update rather than refusing it, so
+    // the assertion is that the title did not change.
+    expect(updateError).toBeNull();
+    const { data: unchanged } = await hoCli
+      .from("exams")
+      .select("title")
+      .eq("id", examId)
+      .single();
+    expect(unchanged?.title).not.toBe("Renamed");
+  });
+
+  it("a window that closes before it opens is refused", async () => {
+    const { error } = await fx.admin.from("exams").insert({
+      organization_id: fx.orgId,
+      bank_id: bankId,
+      title: `Backwards ${fx.suffix}`,
+      duration_minutes: 10,
+      opens_at: new Date(Date.now() + 7200 * 1000).toISOString(),
+      closes_at: new Date(Date.now() + 3600 * 1000).toISOString(),
+    });
+    expect(error?.code).toBe("23514");
+  });
+});
