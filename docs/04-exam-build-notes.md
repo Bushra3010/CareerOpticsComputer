@@ -70,8 +70,14 @@ level" — is the only column-level requirement in the entire permission matrix.
 Bolting it on after the runner exists means every read path already written the
 other way.
 
-Then: exams and assignment; the runner; and last a ~40-line bridge from a graded
-attempt to the existing `record_student_result()`.
+Then: exams and assignment — **also done, migrations `0022`–`0023`**; the
+runner; and last a ~40-line bridge from a graded attempt to the existing
+`record_student_result()`.
+
+One correction worth carrying forward: "exams are blocked on C7" was too broad.
+C7 governs the _result publication_, which only the last of those three
+touches. Two slices shipped while it stayed open. C8's grading rules do bite
+when the grader is written — that one is real.
 
 ## Load-bearing — do not defer these
 
