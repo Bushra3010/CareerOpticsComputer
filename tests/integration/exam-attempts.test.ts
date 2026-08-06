@@ -711,6 +711,55 @@ describe.skipIf(!hasCredentials)("exam attempts", () => {
     expect(error).not.toBeNull();
   });
 
+  it("a student sees their assigned exam, and the paper carries no answer key", async () => {
+    // Before migration 0026 both of these failed silently: every exam policy
+    // reached can_access_centre, which is membership-based, and a student has
+    // students.user_id, not a membership. The runner would have rendered an
+    // empty shell while the whole suite stayed green.
+    await clearAttempts();
+
+    const { data: visible } = await studentCli
+      .from("exams")
+      .select("id, title")
+      .eq("id", examId);
+    expect(visible).toHaveLength(1);
+
+    const { data } = await studentCli.rpc("start_exam_attempt", {
+      p_exam_id: examId,
+    });
+    const attemptId = (data as { attempt_id: string }[])[0].attempt_id;
+
+    const { data: paper, error } = await studentCli.rpc("get_attempt_paper", {
+      p_attempt_id: attemptId,
+    });
+    expect(error).toBeNull();
+    const rows = paper as {
+      question_id: string;
+      body: string;
+      options: { id: string; body: string }[];
+    }[];
+    expect(rows).toHaveLength(3);
+
+    // The sanitisation is the point: no is_correct anywhere in the payload,
+    // not as a key and not as a value smuggled into option objects.
+    expect(JSON.stringify(paper)).not.toContain("is_correct");
+    expect(
+      rows.every((q) => q.options.every((o) => "id" in o && "body" in o)),
+    ).toBe(true);
+  });
+
+  it("another student cannot fetch someone else's paper", async () => {
+    await clearAttempts();
+    const { data } = await studentCli.rpc("start_exam_attempt", {
+      p_exam_id: examId,
+    });
+
+    const { error } = await otherStudentCli.rpc("get_attempt_paper", {
+      p_attempt_id: (data as { attempt_id: string }[])[0].attempt_id,
+    });
+    expect(error).not.toBeNull();
+  });
+
   it("the heartbeat reports the server's clock, not the client's", async () => {
     await clearAttempts();
     const { data } = await studentCli.rpc("start_exam_attempt", {

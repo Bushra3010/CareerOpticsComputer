@@ -4,7 +4,7 @@ Multi-tenant computer education, franchise and training-centre management
 platform for **Career Optics Computer Academy**.
 
 > **Status: Phase 1 substantially complete, running against a hosted Supabase
-> project.** Migrations `0001`–`0025`, all applied. Working end to end: the public site and
+> project.** Migrations `0001`–`0026`, all applied. Working end to end: the public site and
 > course catalogue, admission enquiries, the centre franchise application and
 > its atomic head-office approval, authentication for three portals, five
 > centre roles with staff invitations, student admission and the student
@@ -16,8 +16,11 @@ platform for **Career Optics Computer Academy**.
 > Phase 4 is under way: **question banks** and **exams** are built — the
 > answer key is protected at the privilege level (proof R19) and the paper is
 > time-windowed so a centre cannot read it before the exam opens (proof R18).
-> The attempt lifecycle — start, autosave, heartbeat, submit, grading and the
-> deadline sweep — is built and proven (build plan R6); the runner UI is next. It is **not** blocked on C7 in
+> The full exam flow works end to end: the attempt lifecycle (build plan R6),
+> and the distraction-free runner at `app/exam/` — display-only timer,
+> debounced autosave with stale-write protection, offline recovery, screen
+> reader announcements, and automatic submission through the cron sweep. What
+> remains of Phase 4 is the results bridge, which **is** blocked on C7 in
 > [`docs/02-open-conflicts.md`](docs/02-open-conflicts.md), which turns out to
 > govern only the last slice — turning a graded attempt into a published
 > result. Not built at all: inventory, wallets, referrals, notifications and
@@ -110,10 +113,10 @@ app/student       Student portal
 app/exam          Distraction-free exam runner (no portal chrome, by design)
 app/api           Route handlers — today the cron job runner only
 
-                  app/exam is PLANNED, not present — the runner UI is the
-                  next slice. app/api exists as of migration 0025's commit:
-                  one route, the cron job runner that drives the attempt
-                  deadline sweep.
+                  app/exam holds the attempt runner — its own root segment,
+                  so an active attempt shows nothing but the exam (style
+                  guide §11.5). app/api holds one route: the cron job runner
+                  that drives the attempt deadline sweep.
 
 components/ui     Primitives    components/layout  Shells
 components/tables Data table + its designed mobile equivalent

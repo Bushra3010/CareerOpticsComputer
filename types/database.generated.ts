@@ -812,6 +812,19 @@ export interface Database {
         Args: { p_limit: number };
         Returns: number;
       };
+      get_attempt_paper: {
+        Args: { p_attempt_id: string };
+        Returns: {
+          question_id: string;
+          display_order: number;
+          type: Database['public']['Enums']['question_type'];
+          body: string;
+          marks: number;
+          negative_marks: number;
+          /** Sanitised at source — the row type has no is_correct column. */
+          options: { id: string; body: string }[];
+        }[];
+      };
       start_exam_attempt: {
         Args: { p_exam_id: string };
         Returns: {
