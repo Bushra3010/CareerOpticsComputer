@@ -110,9 +110,10 @@ app/student       Student portal
 app/exam          Distraction-free exam runner (no portal chrome, by design)
 app/api           Route handlers — today the cron job runner only
 
-                  app/exam and app/api are PLANNED, not present. They are here
-                  because the build plan's route map puts them here; the exam
-                  route handlers will be the first thing in app/api.
+                  app/exam is PLANNED, not present — the runner UI is the
+                  next slice. app/api exists as of migration 0025's commit:
+                  one route, the cron job runner that drives the attempt
+                  deadline sweep.
 
 components/ui     Primitives    components/layout  Shells
 components/tables Data table + its designed mobile equivalent
