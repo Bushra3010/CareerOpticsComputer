@@ -26,7 +26,9 @@ platform for **Career Optics Computer Academy**.
 > chain now runs — question bank → exam → attempt → grade → result →
 > certificate. **Phase 5 has started:** a centre wallet with an insert-only
 > ledger, idempotent debit (proof P6, finally against the real ledger rather
-> than `idempotency_keys`), and head-office-only recharge. Not built at all: the shop, inventory, referrals, notifications and
+> than `idempotency_keys`), and head-office-only recharge.
+>
+> Not built at all: the shop, inventory, referrals, notifications and
 > reporting. Known defects and an
 > unverified audit backlog are in
 > [`docs/03-audit-findings.md`](docs/03-audit-findings.md) — read it before
