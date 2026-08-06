@@ -493,6 +493,7 @@ export interface Database {
           max_marks: number;
           obtained_marks: number;
           outcome: 'fail' | 'pass' | 'distinction';
+          attempt_id: string | null;
           created_at: string;
         };
         Insert: Partial<Database['public']['Tables']['student_results']['Row']> & {
@@ -808,6 +809,10 @@ export interface Database {
        * from public and anon (migration 0024). Typed here because the cron
        * route calls it; the revoke, not this map, is what stops anyone else.
        */
+      import_attempt_results: {
+        Args: { p_publication_id: string };
+        Returns: number;
+      };
       sweep_expired_exam_attempts: {
         Args: { p_limit: number };
         Returns: number;

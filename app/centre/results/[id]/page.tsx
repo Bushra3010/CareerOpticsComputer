@@ -10,6 +10,7 @@ import {
 import { createClient } from "@/lib/db/server";
 import { getCurrentCentreContext } from "@/features/centres/current-membership";
 import { getPublicationDetail } from "@/features/results/queries";
+import { ImportAttemptsButton } from "@/features/results/components/import-attempts-button";
 import {
   MarkSheetForm,
   PublishButton,
@@ -172,7 +173,8 @@ export default async function PublicationPage({
           />
         </div>
       ) : (
-        <div className="mt-8">
+        <div className="mt-8 space-y-6">
+          <ImportAttemptsButton publicationId={detail.id} />
           <MarkSheetForm
             publicationId={detail.id}
             rows={detail.rows}

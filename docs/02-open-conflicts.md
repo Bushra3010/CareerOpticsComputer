@@ -241,8 +241,37 @@ hides the regression when it comes back.
 
 ## C7 — What is a result publication scoped to?
 
-**Status:** open · **Raised:** 6 August 2026 · **Severity:** blocks the Phase 4
-exam migration entirely
+**Status:** resolved by documented assumption · **Raised:** 6 August 2026 ·
+**Resolved:** 7 August 2026, option A
+
+**The resolution.** Option A, with the owner's go-ahead: migration 0015's
+shape stands. A publication remains scoped to (centre, course, term), results
+remain keyed to an enrolment, and an exam attempt _feeds_ that pipeline —
+migration `0027`'s `import_attempt_results()` pulls each student's latest
+graded attempt into a draft publication through the same integer arithmetic
+and upsert manual mark entry uses, stamping `student_results.attempt_id` for
+traceability. The attempt lifecycle closes submitted → evaluated on import.
+
+Chosen because it is the reversible option: B (per-exam publications) remains
+buildable later, whereas splitting the pipeline could not be unsplit. If head
+office ever answers "three exams in a term are three publications", that is
+the moment to reopen this — the bridge is one function, and nothing else knows
+the assumption.
+
+One sub-decision travelled with it: when a student has several graded
+attempts, the **latest** one counts, on the reasoning that a retake exists
+because somebody allowed it. That sits in C8's territory and is one UPDATE to
+change.
+
+The riders stand as recommended: no stored percentage, no grade (no bands
+exist), no rank (stale on any correction), and the pass-threshold placement on
+`courses` rather than `course_versions` remains a separate recorded defect.
+
+---
+
+The original entry, for the record:
+
+**Severity as raised:** blocks the Phase 4 exam migration entirely
 
 **The conflict.** PRD §10.5 describes `result_publications` as scoped to an
 **exam** ("exam/scope, version, status, published by/time") and `student_results`

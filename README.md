@@ -4,7 +4,7 @@ Multi-tenant computer education, franchise and training-centre management
 platform for **Career Optics Computer Academy**.
 
 > **Status: Phase 1 substantially complete, running against a hosted Supabase
-> project.** Migrations `0001`–`0026`, all applied. Working end to end: the public site and
+> project.** Migrations `0001`–`0027`, all applied. Working end to end: the public site and
 > course catalogue, admission enquiries, the centre franchise application and
 > its atomic head-office approval, authentication for three portals, five
 > centre roles with staff invitations, student admission and the student
@@ -19,11 +19,12 @@ platform for **Career Optics Computer Academy**.
 > The full exam flow works end to end: the attempt lifecycle (build plan R6),
 > and the distraction-free runner at `app/exam/` — display-only timer,
 > debounced autosave with stale-write protection, offline recovery, screen
-> reader announcements, and automatic submission through the cron sweep. What
-> remains of Phase 4 is the results bridge, which **is** blocked on C7 in
-> [`docs/02-open-conflicts.md`](docs/02-open-conflicts.md), which turns out to
-> govern only the last slice — turning a graded attempt into a published
-> result. Not built at all: inventory, wallets, referrals, notifications and
+> reader announcements, and automatic submission through the cron sweep. The
+> results bridge closes the loop: graded attempts import into the existing
+> term publication (C7, resolved by documented assumption — see
+> [`docs/02-open-conflicts.md`](docs/02-open-conflicts.md)), so the whole
+> chain now runs — question bank → exam → attempt → grade → result →
+> certificate. Not built at all: inventory, wallets, referrals, notifications and
 > reporting. Known defects and an
 > unverified audit backlog are in
 > [`docs/03-audit-findings.md`](docs/03-audit-findings.md) — read it before

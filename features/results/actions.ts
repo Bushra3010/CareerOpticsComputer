@@ -188,3 +188,39 @@ export async function publishPublication(
     message: "Results published. Students can now see them.",
   };
 }
+
+export async function importAttemptResults(
+  publicationId: string,
+  _prev: ResultActionState,
+  _formData: FormData,
+): Promise<ResultActionState> {
+  const ctx = await centreContext();
+  if ("error" in ctx) return { status: "error", message: ctx.error };
+
+  const { data, error } = await callRpc(
+    ctx.supabase,
+    "import_attempt_results",
+    {
+      p_publication_id: publicationId,
+    },
+  );
+
+  if (error) {
+    return {
+      status: "error",
+      message:
+        error.message.replace(/^.*?:\s*/, "") ||
+        "Could not import exam results.",
+    };
+  }
+
+  const imported = typeof data === "number" ? data : 0;
+  revalidatePath(`/centre/results/${publicationId}`);
+  return {
+    status: "success",
+    message:
+      imported === 0
+        ? "No graded exam attempts found for this course yet."
+        : `Imported ${imported} ${imported === 1 ? "result" : "results"} from exam attempts.`,
+  };
+}

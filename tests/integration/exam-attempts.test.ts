@@ -108,6 +108,19 @@ describe.skipIf(!hasCredentials)("exam attempts", () => {
   };
 
   const clearAttempts = async () => {
+    // student_results.attempt_id references exam_attempts (migration 0027), so
+    // results recorded by a bridge test must go before the attempts can.
+    const { data: ids } = await fx.admin
+      .from("exam_attempts")
+      .select("id")
+      .eq("exam_id", examId);
+    const attemptIds = (ids ?? []).map((a) => a.id);
+    if (attemptIds.length) {
+      await fx.admin
+        .from("student_results")
+        .delete()
+        .in("attempt_id", attemptIds);
+    }
     await fx.admin.from("exam_attempts").delete().eq("exam_id", examId);
   };
 
@@ -169,6 +182,9 @@ describe.skipIf(!hasCredentials)("exam attempts", () => {
       .insert({
         organization_id: fx.orgId,
         bank_id: bankId,
+        // The bridge joins attempts to publications through the course, so the
+        // exam must carry the same course the fixture students are enrolled on.
+        course_id: fx.courseId,
         title: `Sit exam ${fx.suffix}`,
         duration_minutes: 30,
         max_attempts: 1,
@@ -758,6 +774,128 @@ describe.skipIf(!hasCredentials)("exam attempts", () => {
       p_attempt_id: (data as { attempt_id: string }[])[0].attempt_id,
     });
     expect(error).not.toBeNull();
+  });
+
+  it("C7-A — a graded attempt lands in the term publication with traceability", async () => {
+    await clearAttempts();
+    const { data } = await studentCli.rpc("start_exam_attempt", {
+      p_exam_id: examId,
+    });
+    const attemptId = (data as { attempt_id: string }[])[0].attempt_id;
+    await studentCli.rpc("save_exam_answer", {
+      p_attempt_id: attemptId,
+      p_question_id: qSingle,
+      p_answer: { option_id: opts[qSingle].correct[0] },
+      p_client_seq: 1,
+    });
+    await studentCli.rpc("submit_exam_attempt", { p_attempt_id: attemptId });
+    // 2 of 6 = 33% against a 40% pass mark: a deliberate fail, so the outcome
+    // computation is visible rather than everything happening to pass.
+
+    const { data: pub, error: pubError } = await fx.owner.cli
+      .from("result_publications")
+      .insert({
+        organization_id: fx.orgId,
+        centre_id: fx.centreId,
+        course_id: fx.courseId,
+        term_label: `Bridge ${fx.suffix}`,
+      })
+      .select("id")
+      .single();
+    expect(pubError).toBeNull();
+
+    const { data: imported, error } = await fx.owner.cli.rpc(
+      "import_attempt_results",
+      { p_publication_id: pub!.id },
+    );
+    expect(error).toBeNull();
+    expect(imported as number).toBe(1);
+
+    const { data: rows } = await fx.owner.cli
+      .from("student_results")
+      .select("obtained_marks, max_marks, outcome, attempt_id")
+      .eq("publication_id", pub!.id);
+    expect(rows).toHaveLength(1);
+    expect(rows![0].obtained_marks).toBe(2);
+    expect(rows![0].max_marks).toBe(6);
+    expect(rows![0].outcome).toBe("fail");
+    expect(rows![0].attempt_id).toBe(attemptId);
+
+    // The attempt's lifecycle closes: submitted -> evaluated.
+    const { data: after } = await fx.admin
+      .from("exam_attempts")
+      .select("status")
+      .eq("id", attemptId)
+      .single();
+    expect(after!.status).toBe("evaluated");
+
+    await fx.admin
+      .from("student_results")
+      .delete()
+      .eq("publication_id", pub!.id);
+    await fx.admin.from("result_publications").delete().eq("id", pub!.id);
+  });
+
+  it("the bridge is idempotent, refuses the unauthorised, and locks after publish", async () => {
+    await clearAttempts();
+    const { data } = await studentCli.rpc("start_exam_attempt", {
+      p_exam_id: examId,
+    });
+    const attemptId = (data as { attempt_id: string }[])[0].attempt_id;
+    await studentCli.rpc("save_exam_answer", {
+      p_attempt_id: attemptId,
+      p_question_id: qSingle,
+      p_answer: { option_id: opts[qSingle].correct[0] },
+      p_client_seq: 1,
+    });
+    await studentCli.rpc("submit_exam_attempt", { p_attempt_id: attemptId });
+
+    const { data: pub } = await fx.owner.cli
+      .from("result_publications")
+      .insert({
+        organization_id: fx.orgId,
+        centre_id: fx.centreId,
+        course_id: fx.courseId,
+        term_label: `Bridge2 ${fx.suffix}`,
+      })
+      .select("id")
+      .single();
+
+    // An accountant holds no result.manage; importing marks IS mark entry.
+    const { error: denied } = await fx.accountant.cli.rpc(
+      "import_attempt_results",
+      { p_publication_id: pub!.id },
+    );
+    expect(denied).not.toBeNull();
+
+    const first = await fx.owner.cli.rpc("import_attempt_results", {
+      p_publication_id: pub!.id,
+    });
+    const second = await fx.owner.cli.rpc("import_attempt_results", {
+      p_publication_id: pub!.id,
+    });
+    expect(first.error).toBeNull();
+    expect(second.error).toBeNull();
+
+    const { count } = await fx.admin
+      .from("student_results")
+      .select("id", { count: "exact", head: true })
+      .eq("publication_id", pub!.id);
+    expect(count).toBe(1);
+
+    await fx.owner.cli.rpc("publish_results", { p_publication_id: pub!.id });
+    const { error: locked } = await fx.owner.cli.rpc("import_attempt_results", {
+      p_publication_id: pub!.id,
+    });
+    expect(locked?.message).toMatch(/already published/i);
+
+    // A published publication is immutable to users by design, so the service
+    // role clears it — results first, because of the attempt FK.
+    await fx.admin
+      .from("student_results")
+      .delete()
+      .eq("publication_id", pub!.id);
+    await fx.admin.from("result_publications").delete().eq("id", pub!.id);
   });
 
   it("the heartbeat reports the server's clock, not the client's", async () => {
