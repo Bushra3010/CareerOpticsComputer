@@ -751,6 +751,36 @@ export interface Database {
         Update: never;
         Relationships: [];
       };
+      wallet_accounts: {
+        Row: {
+          id: string;
+          organization_id: string;
+          centre_id: string;
+          created_at: string;
+        };
+        /** Created lazily by app.ensure_wallet_account — never by the app. */
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      wallet_entries: {
+        Row: {
+          entry_seq: number;
+          account_id: string;
+          organization_id: string;
+          amount_paise: number;
+          entry_type: 'recharge' | 'debit' | 'reversal';
+          reason: string;
+          reference: string | null;
+          idempotency_key: string | null;
+          created_at: string;
+          created_by: string | null;
+        };
+        /** credit_wallet / debit_wallet only. Insert-only ledger, CLAUDE.md rule 4. */
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       public_verification_logs: {
         Row: {
           id: string;
@@ -809,6 +839,24 @@ export interface Database {
        * from public and anon (migration 0024). Typed here because the cron
        * route calls it; the revoke, not this map, is what stops anyone else.
        */
+      credit_wallet: {
+        Args: {
+          p_centre_id: string;
+          p_amount_paise: number;
+          p_reason: string;
+          p_reference?: string | null;
+        };
+        Returns: number;
+      };
+      debit_wallet: {
+        Args: {
+          p_centre_id: string;
+          p_amount_paise: number;
+          p_reason: string;
+          p_idempotency_key: string;
+        };
+        Returns: number;
+      };
       import_attempt_results: {
         Args: { p_publication_id: string };
         Returns: number;

@@ -114,7 +114,6 @@ export const CENTRE_NAV: NavGroup[] = [
       {
         label: "Wallet and recharge",
         href: "/centre/wallet",
-        planned: true,
         icon: Wallet,
         permission: "wallet.read",
         matchPrefix: true,
