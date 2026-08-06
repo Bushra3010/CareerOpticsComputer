@@ -4,7 +4,7 @@ Multi-tenant computer education, franchise and training-centre management
 platform for **Career Optics Computer Academy**.
 
 > **Status: Phase 1 substantially complete, running against a hosted Supabase
-> project.** Migrations `0001`–`0023`, all applied. Working end to end: the public site and
+> project.** Migrations `0001`–`0025`, all applied. Working end to end: the public site and
 > course catalogue, admission enquiries, the centre franchise application and
 > its atomic head-office approval, authentication for three portals, five
 > centre roles with staff invitations, student admission and the student
@@ -16,7 +16,8 @@ platform for **Career Optics Computer Academy**.
 > Phase 4 is under way: **question banks** and **exams** are built — the
 > answer key is protected at the privilege level (proof R19) and the paper is
 > time-windowed so a centre cannot read it before the exam opens (proof R18).
-> The attempt runner is next. It is **not** blocked on C7 in
+> The attempt lifecycle — start, autosave, heartbeat, submit, grading and the
+> deadline sweep — is built and proven (build plan R6); the runner UI is next. It is **not** blocked on C7 in
 > [`docs/02-open-conflicts.md`](docs/02-open-conflicts.md), which turns out to
 > govern only the last slice — turning a graded attempt into a published
 > result. Not built at all: inventory, wallets, referrals, notifications and
@@ -107,7 +108,7 @@ app/admin         Platform / head-office portal
 app/centre        Centre portal
 app/student       Student portal
 app/exam          Distraction-free exam runner (no portal chrome, by design)
-app/api           Versioned route handlers, webhooks, cron
+app/api           Route handlers — today the cron job runner only
 
                   app/exam and app/api are PLANNED, not present. They are here
                   because the build plan's route map puts them here; the exam

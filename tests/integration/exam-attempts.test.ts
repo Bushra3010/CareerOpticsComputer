@@ -553,6 +553,40 @@ describe.skipIf(!hasCredentials)("exam attempts", () => {
     expect((result as { score_marks: number }[])[0].score_marks).toBe(0);
   });
 
+  it("C8(c) again — a JSON-null answer is blank, not wrong (regression)", async () => {
+    // Found by an end-to-end sweep probe, not by this suite: the suite cleared
+    // answers with `{}`, but a client clearing with `{"option_id": null}` was
+    // graded as an attempted wrong answer, because in jsonb a JSON null is not
+    // SQL NULL and the blank check fell through. Migration 0025. This pins the
+    // shape the suite had missed.
+    await clearAttempts();
+    const { data } = await studentCli.rpc("start_exam_attempt", {
+      p_exam_id: examId,
+    });
+    const attemptId = (data as { attempt_id: string }[])[0].attempt_id;
+
+    // qSingle carries -1. Correct on true/false (+1), JSON-null on single.
+    await studentCli.rpc("save_exam_answer", {
+      p_attempt_id: attemptId,
+      p_question_id: qSingle,
+      p_answer: { option_id: null },
+      p_client_seq: 1,
+    });
+    await studentCli.rpc("save_exam_answer", {
+      p_attempt_id: attemptId,
+      p_question_id: qTrueFalse,
+      p_answer: { option_id: opts[qTrueFalse].correct[0] },
+      p_client_seq: 1,
+    });
+
+    const { data: result } = await studentCli.rpc("submit_exam_attempt", {
+      p_attempt_id: attemptId,
+    });
+    // +1 and a blank: 1. The bug scored it 0 (+1 − 1), which the zero floor
+    // would NOT mask here.
+    expect((result as { score_marks: number }[])[0].score_marks).toBe(1);
+  });
+
   it("a negative total is floored at zero", async () => {
     await clearAttempts();
     const { data } = await studentCli.rpc("start_exam_attempt", {

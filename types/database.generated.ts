@@ -803,6 +803,15 @@ export interface Database {
         Args: { p_question_id: string; p_options: unknown };
         Returns: number;
       };
+      /**
+       * Service role only — EXECUTE is revoked from `authenticated` as well as
+       * from public and anon (migration 0024). Typed here because the cron
+       * route calls it; the revoke, not this map, is what stops anyone else.
+       */
+      sweep_expired_exam_attempts: {
+        Args: { p_limit: number };
+        Returns: number;
+      };
       start_exam_attempt: {
         Args: { p_exam_id: string };
         Returns: {
