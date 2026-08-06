@@ -688,6 +688,68 @@ export interface Database {
         Update: Partial<Database['public']['Tables']['exam_assignments']['Row']>;
         Relationships: [];
       };
+      exam_attempts: {
+        Row: {
+          id: string;
+          exam_id: string;
+          student_id: string;
+          organization_id: string;
+          centre_id: string;
+          attempt_number: number;
+          started_at: string;
+          deadline_at: string;
+          submitted_at: string | null;
+          status:
+            | 'not_started'
+            | 'in_progress'
+            | 'submitted'
+            | 'auto_submitted'
+            | 'evaluated';
+          score_marks: number | null;
+          max_marks: number | null;
+        };
+        /** Written only by start_exam_attempt / submit_exam_attempt / the sweep.
+         *  INSERT, UPDATE and DELETE are revoked from `authenticated`
+         *  (migration 0024) — a policy allowing a student to update their own
+         *  attempt would be a policy allowing them to write their own deadline. */
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      exam_answers: {
+        Row: {
+          id: string;
+          attempt_id: string;
+          question_id: string;
+          organization_id: string;
+          answer: Record<string, unknown>;
+          client_seq: number;
+          saved_at: string;
+          awarded_marks: number | null;
+        };
+        /** save_exam_answer only — the sequence-number guard is the point. */
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      exam_events: {
+        Row: {
+          id: number;
+          attempt_id: string;
+          organization_id: string;
+          event_type: Database['public']['Enums']['exam_event_type'];
+          occurred_at: string;
+          metadata: Record<string, unknown>;
+        };
+        Insert: Partial<Database['public']['Tables']['exam_events']['Row']> & {
+          attempt_id: string;
+          organization_id: string;
+          event_type: Database['public']['Enums']['exam_event_type'];
+        };
+        /** Insert-only ledger. CLAUDE.md rule 4. */
+        Update: never;
+        Relationships: [];
+      };
       public_verification_logs: {
         Row: {
           id: string;
@@ -740,6 +802,47 @@ export interface Database {
       save_question_options: {
         Args: { p_question_id: string; p_options: unknown };
         Returns: number;
+      };
+      start_exam_attempt: {
+        Args: { p_exam_id: string };
+        Returns: {
+          attempt_id: string;
+          deadline_at: string;
+          attempt_number: number;
+          resumed: boolean;
+        }[];
+      };
+      save_exam_answer: {
+        Args: {
+          p_attempt_id: string;
+          p_question_id: string;
+          p_answer: unknown;
+          p_client_seq: number;
+        };
+        Returns: {
+          saved: boolean;
+          server_time: string;
+          remaining_seconds: number;
+        }[];
+      };
+      exam_attempt_heartbeat: {
+        Args: { p_attempt_id: string };
+        Returns: {
+          server_time: string;
+          remaining_seconds: number;
+          status: string;
+        }[];
+      };
+      record_exam_event: {
+        Args: {
+          p_attempt_id: string;
+          p_event: Database['public']['Enums']['exam_event_type'];
+        };
+        Returns: undefined;
+      };
+      submit_exam_attempt: {
+        Args: { p_attempt_id: string };
+        Returns: { score_marks: number; max_marks: number }[];
       };
       has_permission: {
         Args: { perm: string; org: string; centre: string | null };
@@ -923,6 +1026,15 @@ export interface Database {
       question_status: 'draft' | 'active' | 'retired';
       question_difficulty: 'easy' | 'medium' | 'hard';
       exam_status: 'draft' | 'published' | 'cancelled';
+      exam_event_type:
+        | 'started'
+        | 'resumed'
+        | 'answer_saved'
+        | 'heartbeat'
+        | 'focus_lost'
+        | 'focus_regained'
+        | 'submitted'
+        | 'auto_submitted';
     };
     CompositeTypes: Record<string, never>;
   };
