@@ -12,6 +12,7 @@ import {
   Megaphone,
   Plus,
   Users,
+  Wallet,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -283,6 +284,11 @@ export default async function AdminDashboardPage() {
             <Button asChild variant="secondary" className="justify-start">
               <Link href="/partner-with-us/apply">
                 <Plus /> New centre application
+              </Link>
+            </Button>
+            <Button asChild variant="secondary" className="justify-start">
+              <Link href="/admin/wallets">
+                <Wallet /> Recharge wallet
               </Link>
             </Button>
             <Button asChild variant="secondary" className="justify-start">

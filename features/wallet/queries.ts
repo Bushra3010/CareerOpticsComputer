@@ -70,3 +70,63 @@ export async function getWallet(centreId: string): Promise<WalletView> {
     })),
   };
 }
+
+export interface CentreWalletSummary {
+  centreId: string;
+  centreName: string;
+  centreCode: string;
+  balancePaise: number;
+  balanceLabel: string;
+}
+
+/**
+ * Every active centre with its wallet balance, for the head-office recharge
+ * screen. A centre with no wallet_accounts row yet — nobody has credited or
+ * debited it — shows a zero balance rather than being omitted, so a new
+ * centre is reachable to recharge for the first time.
+ */
+export async function listCentreWalletSummaries(): Promise<
+  CentreWalletSummary[]
+> {
+  const supabase = await createClient();
+
+  const [{ data: centres }, { data: accounts }] = await Promise.all([
+    supabase
+      .from("centres")
+      .select("id, name, code")
+      .eq("status", "active")
+      .order("name"),
+    supabase.from("wallet_accounts").select("id, centre_id"),
+  ]);
+
+  const accountByCentre = new Map(
+    (accounts ?? []).map((a) => [a.centre_id, a.id]),
+  );
+  const accountIds = [...accountByCentre.values()];
+
+  const balances = new Map<string, number>();
+  if (accountIds.length) {
+    const { data: entries } = await supabase
+      .from("wallet_entries")
+      .select("account_id, amount_paise")
+      .in("account_id", accountIds);
+    for (const e of entries ?? []) {
+      balances.set(
+        e.account_id,
+        (balances.get(e.account_id) ?? 0) + e.amount_paise,
+      );
+    }
+  }
+
+  return (centres ?? []).map((c) => {
+    const accountId = accountByCentre.get(c.id);
+    const balance = accountId ? (balances.get(accountId) ?? 0) : 0;
+    return {
+      centreId: c.id,
+      centreName: c.name,
+      centreCode: c.code,
+      balancePaise: balance,
+      balanceLabel: formatPaise(balance as Paise),
+    };
+  });
+}
