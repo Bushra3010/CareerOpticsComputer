@@ -857,6 +857,14 @@ export interface Database {
         };
         Returns: number;
       };
+      set_centre_status: {
+        Args: { p_centre_id: string; p_status: string; p_reason: string };
+        Returns: undefined;
+      };
+      revoke_certificate: {
+        Args: { p_document_number: string; p_reason: string };
+        Returns: undefined;
+      };
       import_attempt_results: {
         Args: { p_publication_id: string };
         Returns: number;
