@@ -251,11 +251,16 @@ priority order:
    _journey_: build plan §6 step 10 wants onboarding → approval → first login →
    dashboard as one flow, and no test does that.
 
-Still unbuilt beyond exams: wallet, inventory and orders, notifications,
-reports, CMS, referrals, support tickets, the leads UI, batches and timetable,
-the admin portal beyond its dashboard and applications, the MFA / invite /
-activate pages, and `app/api` (empty — the exam route handlers will be the first
-things in it).
+**Update, 8 August 2026:** this section is stale — wallet (migration 0028),
+the super-admin CRUD audit and its fixes (`docs/03-audit-findings.md`), and now
+inventory/shop/orders (migration 0031, `docs/02-open-conflicts.md` C9) have all
+since shipped, on top of the exams work this section describes. `README.md`'s
+status block at the top of the repo is kept current turn-by-turn; treat it, not
+this paragraph, as the source of truth for what exists. Still genuinely unbuilt:
+notifications, reports, CMS, referrals, support tickets, the leads UI, batches
+and timetable, the admin portal beyond its dashboard and the sections named
+above, the MFA / invite / activate pages, and most of `app/api` (the exam
+route handlers and the cron runner are the only things in it so far).
 
 <details>
 <summary>The original Phase 1 list, for the record — steps 1–9 are complete</summary>

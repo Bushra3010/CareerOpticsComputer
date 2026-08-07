@@ -814,6 +814,172 @@ export interface Database {
         Update: Partial<Database['public']['Tables']['document_sequences']['Row']>;
         Relationships: [];
       };
+      product_categories: {
+        Row: {
+          id: string;
+          organization_id: string;
+          name: string;
+          code: string;
+          status: Database['public']['Enums']['catalog_item_status'];
+          display_order: number;
+          created_at: string;
+          created_by: string | null;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: Partial<Database['public']['Tables']['product_categories']['Row']> & {
+          organization_id: string;
+          name: string;
+          code: string;
+        };
+        Update: Partial<Database['public']['Tables']['product_categories']['Row']>;
+        Relationships: [];
+      };
+      products: {
+        Row: {
+          id: string;
+          organization_id: string;
+          category_id: string | null;
+          sku: string;
+          name: string;
+          description: string | null;
+          image_url: string | null;
+          price_paise: number;
+          tax_percent: number;
+          low_stock_threshold: number;
+          is_all_centres: boolean;
+          status: Database['public']['Enums']['catalog_item_status'];
+          created_at: string;
+          created_by: string | null;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: Partial<Database['public']['Tables']['products']['Row']> & {
+          organization_id: string;
+          sku: string;
+          name: string;
+          price_paise: number;
+        };
+        Update: Partial<Database['public']['Tables']['products']['Row']>;
+        Relationships: [];
+      };
+      product_centre_eligibility: {
+        Row: {
+          product_id: string;
+          centre_id: string;
+          created_at: string;
+        };
+        Insert: { product_id: string; centre_id: string };
+        Update: never;
+        Relationships: [];
+      };
+      inventory_locations: {
+        Row: {
+          id: string;
+          organization_id: string;
+          name: string;
+          type: string;
+          created_at: string;
+          created_by: string | null;
+        };
+        Insert: Partial<Database['public']['Tables']['inventory_locations']['Row']> & {
+          organization_id: string;
+          name: string;
+        };
+        Update: Partial<Database['public']['Tables']['inventory_locations']['Row']>;
+        Relationships: [];
+      };
+      inventory_entries: {
+        Row: {
+          entry_seq: number;
+          organization_id: string;
+          location_id: string;
+          product_id: string;
+          quantity_delta: number;
+          balance_after: number;
+          reason: Database['public']['Enums']['inventory_entry_reason'];
+          reference: string | null;
+          notes: string | null;
+          created_at: string;
+          created_by: string | null;
+        };
+        /** receive_stock / adjust_stock / order functions only — insert-only ledger. */
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      orders: {
+        Row: {
+          id: string;
+          organization_id: string;
+          centre_id: string;
+          location_id: string | null;
+          order_number: string;
+          status: Database['public']['Enums']['order_status'];
+          subtotal_paise: number;
+          tax_paise: number;
+          total_paise: number;
+          wallet_entry_seq: number | null;
+          placed_at: string;
+          confirmed_at: string | null;
+          dispatched_at: string | null;
+          delivered_at: string | null;
+          cancelled_at: string | null;
+          cancelled_reason: string | null;
+          created_by: string | null;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        /** create_order / pay_order / dispatch_order / cancel_order only. */
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      order_items: {
+        Row: {
+          id: string;
+          order_id: string;
+          product_id: string;
+          product_name_snapshot: string;
+          sku_snapshot: string;
+          unit_price_paise: number;
+          tax_percent: number;
+          quantity: number;
+          line_subtotal_paise: number;
+          line_tax_paise: number;
+          line_total_paise: number;
+          created_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      shipments: {
+        Row: {
+          id: string;
+          organization_id: string;
+          order_id: string;
+          courier: string;
+          tracking_number: string | null;
+          dispatched_at: string;
+          delivered_at: string | null;
+          created_by: string | null;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      shipment_items: {
+        Row: {
+          id: string;
+          shipment_id: string;
+          order_item_id: string;
+          quantity: number;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -934,6 +1100,57 @@ export interface Database {
       can_access_centre: {
         Args: { centre: string };
         Returns: boolean;
+      };
+      receive_stock: {
+        Args: {
+          p_location_id: string;
+          p_product_id: string;
+          p_quantity: number;
+          p_reason?: Database['public']['Enums']['inventory_entry_reason'];
+          p_reference?: string | null;
+        };
+        Returns: number;
+      };
+      adjust_stock: {
+        Args: {
+          p_location_id: string;
+          p_product_id: string;
+          p_quantity_delta: number;
+          p_notes: string;
+          p_reference?: string | null;
+        };
+        Returns: number;
+      };
+      create_order: {
+        Args: {
+          p_centre_id: string;
+          p_items: { product_id: string; quantity: number }[];
+        };
+        Returns: string;
+      };
+      pay_order: {
+        Args: {
+          p_order_id: string;
+          p_location_id: string;
+          p_idempotency_key: string;
+        };
+        Returns: Database['public']['Enums']['order_status'];
+      };
+      dispatch_order: {
+        Args: {
+          p_order_id: string;
+          p_courier: string;
+          p_tracking_number?: string | null;
+        };
+        Returns: string;
+      };
+      mark_order_delivered: {
+        Args: { p_order_id: string };
+        Returns: undefined;
+      };
+      cancel_order: {
+        Args: { p_order_id: string; p_reason: string };
+        Returns: undefined;
       };
       submit_public_enquiry: {
         Args: {
@@ -1118,6 +1335,23 @@ export interface Database {
         | 'focus_regained'
         | 'submitted'
         | 'auto_submitted';
+      catalog_item_status: 'draft' | 'active' | 'retired';
+      order_status:
+        | 'pending_payment'
+        | 'confirmed'
+        | 'processing'
+        | 'packed'
+        | 'dispatched'
+        | 'delivered'
+        | 'cancelled'
+        | 'returned';
+      inventory_entry_reason:
+        | 'opening_stock'
+        | 'purchase_receipt'
+        | 'reservation'
+        | 'dispatch'
+        | 'return'
+        | 'adjustment';
     };
     CompositeTypes: Record<string, never>;
   };

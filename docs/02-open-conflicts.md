@@ -353,4 +353,32 @@ an exam, while §4 gives centre roles **read-only** on `exam.*`. Either the
 route or the matrix is wrong. Until it is settled, eligibility should be a
 head-office field with a read-only centre view — the reversible choice.
 
+---
+
+## C9 — Shop, inventory and orders: what the spec leaves silent
+
+**Status:** resolved by documented assumption · **Raised and resolved:** 8
+August 2026, migration `0031`
+
+PRD §6.9 and §7.10 describe the workflow in prose; the §10.6 ERD row for each
+table is terser than the prose above it, and several details a schema needs
+are never stated anywhere. None of these blocked building the slice — each has
+a reversible default — but each is a real product decision hiding as a schema
+detail, the same shape C7 and C8 already are for exams.
+
+| #   | Question                                                                       | Default taken                                                                                                                                                                                                                                                                                                                                                   | Why it is reversible                                                                                                         |
+| --- | ------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| a   | Cash or gateway payment, alongside the wallet?                                 | **Wallet only.** PRD §6.9 step 3 allows "payment/wallet authorisation" as alternatives, but no payment gateway exists yet — the same fact migration 0028 recorded for the wallet itself.                                                                                                                                                                        | `pay_order` is the one function that calls `debit_wallet`; a gateway path is a second branch inside it, not a schema change. |
+| b   | Is there a discount on an order?                                               | **No discount field anywhere.** Unlike fees (`student_fee_plans.discount`, an explicit PRD requirement), no discount concept is named for orders in either source document.                                                                                                                                                                                     | Adding `order_items.discount_paise` later does not touch anything already posted — existing rows just have it null.          |
+| c   | Is there a value-based approval gate before an order is paid?                  | **No.** Every other financial workflow in the PRD (fee discounts, wallet recharge/adjustment) has one; orders conspicuously do not, and the permission matrix prints no `order.approve` code.                                                                                                                                                                   | `pay_order` already centralises the one place money moves — an approval check is one more condition in that function.        |
+| d   | Who supplied a batch of received stock?                                        | **Nobody recorded.** No `suppliers`/`vendors` entity or column exists in either document; `receive_stock`'s free-text `reference` is the only trace.                                                                                                                                                                                                            | A `suppliers` table and an FK from `inventory_entries` is additive; nothing existing changes shape.                          |
+| e   | Does stock move twice — once reserved, once physically dispatched?             | **No, once.** `inventory_entries` decrements at `pay_order` (reason `reservation`); `dispatch_order` only creates the shipment record, touching no stock. Modelling on-hand vs. reserved stock separately is the back-order / partial-dispatch machinery PRD §7.10 names in passing ("partial dispatch and back-order support") but describes no mechanics for. | The `dispatch` and `return` values already exist in the `inventory_entry_reason` enum, unused, for exactly this day.         |
+| f   | Which warehouse does an order draw from, when a centre has never heard of one? | **The app picks the organisation's oldest `inventory_locations` row automatically** (`getDefaultLocationId()` in `features/orders/queries.ts`); the RPC layer still takes an explicit `p_location_id`, so nothing stops a second location existing.                                                                                                             | Purely an application-layer default. The schema already supports many locations per organisation.                            |
+| g   | What happens when a `returned` order status is reached?                        | **Nothing drives a transition into it.** The enum value exists because PRD §6.9's stated sequence includes it, the same way `processing`/`packed` exist with no action that sets them — an accepted gap, not an oversight, matching how `exams.status = 'cancelled'` and similar terminal-but-unreachable-by-some-paths states were left in earlier phases.     | Adding a `return_order()` function that transitions into it is additive.                                                     |
+
+**Decision needed from:** head office, on whether a gateway, a discount
+mechanic, an approval threshold, or supplier tracking are needed before this
+goes into real use — none of them are needed for the workflow as PRD §6.9
+describes it, which is what was built.
+
 **Decision needed from:** the Exam Controller, or whoever will hold that role.

@@ -11,6 +11,7 @@ import {
   IndianRupee,
   Megaphone,
   Plus,
+  ShoppingCart,
   Users,
   Wallet,
 } from "lucide-react";
@@ -299,6 +300,11 @@ export default async function AdminDashboardPage() {
             <Button asChild variant="secondary" className="justify-start">
               <Link href="/admin/wallets">
                 <Wallet /> Recharge wallet
+              </Link>
+            </Button>
+            <Button asChild variant="secondary" className="justify-start">
+              <Link href="/admin/orders">
+                <ShoppingCart /> Shop and orders
               </Link>
             </Button>
             <Button asChild variant="secondary" className="justify-start">

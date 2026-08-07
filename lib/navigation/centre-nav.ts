@@ -140,7 +140,6 @@ export const CENTRE_NAV: NavGroup[] = [
       {
         label: "Shop",
         href: "/centre/shop",
-        planned: true,
         icon: ShoppingBag,
         permission: "product.read",
         matchPrefix: true,
@@ -148,7 +147,6 @@ export const CENTRE_NAV: NavGroup[] = [
       {
         label: "My orders",
         href: "/centre/orders",
-        planned: true,
         icon: Package,
         permission: "order.read",
         matchPrefix: true,

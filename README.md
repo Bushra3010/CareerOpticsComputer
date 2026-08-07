@@ -4,7 +4,7 @@ Multi-tenant computer education, franchise and training-centre management
 platform for **Career Optics Computer Academy**.
 
 > **Status: Phase 1 substantially complete, running against a hosted Supabase
-> project.** Migrations `0001`–`0030`, all applied. Working end to end: the public site and
+> project.** Migrations `0001`–`0031`, all applied. Working end to end: the public site and
 > course catalogue, admission enquiries, the centre franchise application and
 > its atomic head-office approval, authentication for three portals, five
 > centre roles with staff invitations, student admission and the student
@@ -24,9 +24,17 @@ platform for **Career Optics Computer Academy**.
 > term publication (C7, resolved by documented assumption — see
 > [`docs/02-open-conflicts.md`](docs/02-open-conflicts.md)), so the whole
 > chain now runs — question bank → exam → attempt → grade → result →
-> certificate. **Phase 5 has started:** a centre wallet with an insert-only
+> certificate. **Phase 5 is under way:** a centre wallet with an insert-only
 > ledger, idempotent debit (proof P6, finally against the real ledger rather
-> than `idempotency_keys`), and head-office-only recharge.
+> than `idempotency_keys`), and head-office-only recharge — and now
+> **inventory, shop and orders** on top of it: a head-office catalogue of
+> academy consumables (books, ID cards, certificate stationery, uniforms,
+> marketing material), an insert-only stock ledger that can never go negative,
+> and a centre checkout that reserves stock and debits the wallet atomically —
+> if either would fail, neither happens. Cancelling a paid order reverses both
+> in one step. No payment gateway exists yet, so checkout is wallet-only; see
+> [`docs/02-open-conflicts.md`](docs/02-open-conflicts.md) (C9) for what that
+> and a few other schema gaps mean and why they were resolved that way.
 >
 > The super-admin portal's CRUD coverage was audited and closed: centre
 > profile editing and lifecycle control (suspend/reactivate/close, behind a
@@ -37,7 +45,7 @@ platform for **Career Optics Computer Academy**.
 > across question banks and exams that RLS had always permitted and no screen
 > had ever exposed.
 >
-> Not built at all: the shop, inventory, referrals, notifications and
+> Not built at all: referrals, notifications, support tickets, CMS and
 > reporting. Known defects and an
 > unverified audit backlog are in
 > [`docs/03-audit-findings.md`](docs/03-audit-findings.md) — read it before
@@ -276,7 +284,7 @@ decision. None of them came from review.
   passing while the shape it checks against stops being true, and the failure
   surfaces at runtime as a column nobody expected. So `npm run db:types:check`
   compares the file's table and column names against the live schema and fails
-  on any difference. It currently reports **29 tables, 257 columns, no drift**.
+  on any difference. It currently reports **49 tables, 444 columns, no drift**.
 
   Still outstanding: `lib/db/rpc.ts`'s `callRpc` escape hatch and the
   duplicated `one<T>` helpers, both of which exist only because postgrest-js's
