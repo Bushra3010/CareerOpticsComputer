@@ -118,6 +118,7 @@ export const STATUS_TONES = {
   passed: "success",
   failed: "danger",
   published: "success",
+  archived: "neutral",
   withheld: "warning",
   issued: "success",
   revoked: "danger",

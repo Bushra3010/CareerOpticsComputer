@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/db/server";
-import type { Paise } from "@/lib/money";
+import { formatPaise, type Paise } from "@/lib/money";
 
 export interface PublicCourse {
   id: string;
@@ -81,4 +81,52 @@ export async function getPublishedCourseBySlug(
   }
 
   return data ? toPublicCourse(data as unknown as CourseRow) : null;
+}
+
+export interface AdminCourseRow {
+  id: string;
+  name: string;
+  slug: string;
+  categoryName: string;
+  durationLabel: string;
+  feeLabel: string;
+  status: "draft" | "published" | "archived";
+}
+
+/** Every course regardless of status, via `courses_platform_read_all`
+ *  (app.is_platform_admin() only). */
+export async function listAllCoursesForAdmin(): Promise<AdminCourseRow[]> {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("courses")
+    .select(
+      "id, name, slug, duration_label, fee_paise, status, course_categories(name)",
+    )
+    .order("display_order");
+
+  return ((data ?? []) as unknown as CourseRow[]).map((row) => ({
+    id: row.id,
+    name: row.name,
+    slug: row.slug,
+    categoryName: categoryName(row) ?? "Uncategorised",
+    durationLabel: row.duration_label,
+    feeLabel: formatPaise(row.fee_paise as Paise),
+    status: (row as unknown as { status: "draft" | "published" | "archived" })
+      .status,
+  }));
+}
+
+export interface CourseCategoryOption {
+  id: string;
+  name: string;
+}
+
+export async function listCourseCategories(): Promise<CourseCategoryOption[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("course_categories")
+    .select("id, name")
+    .order("display_order");
+  return data ?? [];
 }
