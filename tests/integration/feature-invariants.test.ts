@@ -560,5 +560,74 @@ describe.skipIf(!hasCredentials)("feature invariants", () => {
       const students = await anon.from("students").select("full_name");
       expect(students.data ?? []).toHaveLength(0);
     });
+
+    it("revoke_certificate flips the certificate and public verification stops finding it", async () => {
+      const { data: cert } = await fx.admin
+        .from("issued_documents")
+        .select("document_number")
+        .eq("centre_id", fx.centreId)
+        .eq("status", "issued")
+        .limit(1)
+        .single();
+      const documentNumber = must(
+        cert,
+        "an issued certificate to revoke",
+      ).document_number;
+
+      // Not centre.owner's own centre-scoped permission — issue is
+      // certificate.issue, revoke is a distinct certificate.revoke, and
+      // nobody in the fixture holds it, so only the seeded permission set
+      // decides this, not an assumption that issuing implies revoking.
+      const denied = await fx.counsellor.cli.rpc("revoke_certificate", {
+        p_document_number: documentNumber,
+        p_reason: "Should not be permitted",
+      });
+      expect(denied.error).not.toBeNull();
+
+      const blank = await fx.owner.cli.rpc("revoke_certificate", {
+        p_document_number: documentNumber,
+        p_reason: "",
+      });
+      expect(blank.error?.message).toMatch(/reason is required/i);
+
+      const revoked = await fx.owner.cli.rpc("revoke_certificate", {
+        p_document_number: documentNumber,
+        p_reason: "Issued in error — wrong course code",
+      });
+      expect(revoked.error).toBeNull();
+
+      const { data: after } = await fx.admin
+        .from("issued_documents")
+        .select("status, revoked_reason, revoked_at")
+        .eq("document_number", documentNumber)
+        .single();
+      expect(after!.status).toBe("revoked");
+      expect(after!.revoked_reason).toMatch(/wrong course code/i);
+      expect(after!.revoked_at).not.toBeNull();
+
+      // Revoking an already-revoked certificate is refused, not a silent
+      // no-op — the reason on record should never be quietly overwritten.
+      const again = await fx.owner.cli.rpc("revoke_certificate", {
+        p_document_number: documentNumber,
+        p_reason: "Second attempt",
+      });
+      expect(again.error?.message).toMatch(/already revoked/i);
+
+      // Public verification does not hide it — verify_certificate returns a
+      // revoked document WITH that status rather than as "not found", because
+      // an employer holding one needs to be told it was revoked, not that it
+      // never existed. This is the one place "still findable" is correct.
+      const { createClient } = await import("@supabase/supabase-js");
+      const anon = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      );
+      const verified = await anon.rpc("verify_certificate", {
+        p_number: documentNumber,
+      });
+      const rows = (verified.data ?? []) as { status: string }[];
+      expect(rows).toHaveLength(1);
+      expect(rows[0].status).toBe("revoked");
+    });
   });
 });

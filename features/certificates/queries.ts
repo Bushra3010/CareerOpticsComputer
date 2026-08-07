@@ -144,3 +144,39 @@ export async function listStudentCertificates(): Promise<IssuedCertificate[]> {
     };
   });
 }
+
+export interface AdminCertificateRow {
+  id: string;
+  documentNumber: string;
+  studentName: string;
+  centreName: string;
+  status: "pending" | "issued" | "revoked";
+  issuedOn: string;
+  revokedReason: string | null;
+}
+
+/** Every issued document platform-wide, via `issued_documents_staff_select`'s
+ *  app.is_platform_admin() branch — no centre filter needed or wanted here. */
+export async function listAllCertificatesForAdmin(): Promise<
+  AdminCertificateRow[]
+> {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("issued_documents")
+    .select(
+      "id, document_number, status, issued_at, revoked_reason, students(full_name), centres(name)",
+    )
+    .order("issued_at", { ascending: false })
+    .limit(200);
+
+  return (data ?? []).map((d) => ({
+    id: d.id,
+    documentNumber: d.document_number,
+    studentName: one<{ full_name: string }>(d.students)?.full_name ?? "Unknown",
+    centreName: one<{ name: string }>(d.centres)?.name ?? "Unknown",
+    status: d.status,
+    issuedOn: d.issued_at.slice(0, 10),
+    revokedReason: d.revoked_reason,
+  }));
+}
