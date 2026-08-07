@@ -124,7 +124,7 @@ export default async function AdminDashboardPage() {
           context="All time"
           icon={<Building2 />}
           accent="navy"
-          href="/admin/centre-applications"
+          href="/admin/centres"
         />
         <KpiCard
           label="Active centres"
@@ -284,6 +284,16 @@ export default async function AdminDashboardPage() {
             <Button asChild variant="secondary" className="justify-start">
               <Link href="/partner-with-us/apply">
                 <Plus /> New centre application
+              </Link>
+            </Button>
+            <Button asChild variant="secondary" className="justify-start">
+              <Link href="/admin/centres">
+                <Building2 /> Manage centres
+              </Link>
+            </Button>
+            <Button asChild variant="secondary" className="justify-start">
+              <Link href="/admin/academics/courses">
+                <BookOpen /> Manage courses
               </Link>
             </Button>
             <Button asChild variant="secondary" className="justify-start">
