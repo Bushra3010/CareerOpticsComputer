@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/db/action";
 import { callRpc } from "@/lib/db/rpc";
@@ -349,4 +350,227 @@ export async function publishExam(
 
   revalidatePath(`/admin/exams/${examId}`);
   return { status: "success", message: "Published." };
+}
+
+/**
+ * Cancelling, not deleting. `exam_attempts.exam_id` cascades from `exams`
+ * (migration 0024), so a hard delete on a published exam with attempts would
+ * silently destroy student answers and scores that had not yet been imported
+ * into a result — a UI action must never be able to trigger that. `cancelled`
+ * is the safe terminal state the enum already carries.
+ */
+export async function cancelExam(
+  examId: string,
+  _prev: ExamActionState,
+  _formData: FormData,
+): Promise<ExamActionState> {
+  const supabase = await createClient();
+  const context = await getHeadOfficeContext(supabase);
+  if (!context) return { status: "error", message: "No head-office access." };
+  try {
+    await authorizeHeadOffice(supabase, context, "exam.manage");
+  } catch {
+    return { status: "error", message: "You cannot cancel this exam." };
+  }
+
+  const { error } = await supabase
+    .from("exams")
+    .update({ status: "cancelled", updated_by: context.userId })
+    .eq("id", examId);
+
+  if (error) {
+    return { status: "error", message: "Could not cancel the exam." };
+  }
+
+  revalidatePath(`/admin/exams/${examId}`);
+  revalidatePath("/admin/exams");
+  return { status: "success", message: "Exam cancelled." };
+}
+
+/**
+ * Removes a question from a paper. Only meaningful before the window opens —
+ * exam_questions_read is time-windowed (proof R18) and this action's own
+ * `exam.manage` requirement already means the caller could see the paper
+ * regardless, so there is nothing further to gate on the window here.
+ */
+export async function removeQuestionFromExam(
+  examId: string,
+  examQuestionId: string,
+  _prev: ExamActionState,
+  _formData: FormData,
+): Promise<ExamActionState> {
+  const supabase = await createClient();
+  const context = await getHeadOfficeContext(supabase);
+  if (!context) return { status: "error", message: "No head-office access." };
+  try {
+    await authorizeHeadOffice(supabase, context, "exam.manage");
+  } catch {
+    return { status: "error", message: "You cannot edit this exam." };
+  }
+
+  const { error } = await supabase
+    .from("exam_questions")
+    .delete()
+    .eq("id", examQuestionId);
+
+  if (error) {
+    return { status: "error", message: "Could not remove the question." };
+  }
+
+  revalidatePath(`/admin/exams/${examId}`);
+  return { status: "success", message: "Removed from the paper." };
+}
+
+export async function unassignCentreFromExam(
+  examId: string,
+  assignmentId: string,
+  _prev: ExamActionState,
+  _formData: FormData,
+): Promise<ExamActionState> {
+  const supabase = await createClient();
+  const context = await getHeadOfficeContext(supabase);
+  if (!context) return { status: "error", message: "No head-office access." };
+  try {
+    await authorizeHeadOffice(supabase, context, "exam.manage");
+  } catch {
+    return { status: "error", message: "You cannot edit this exam." };
+  }
+
+  const { error } = await supabase
+    .from("exam_assignments")
+    .delete()
+    .eq("id", assignmentId);
+
+  if (error) {
+    return { status: "error", message: "Could not unassign the centre." };
+  }
+
+  revalidatePath(`/admin/exams/${examId}`);
+  return { status: "success", message: "Centre unassigned." };
+}
+
+/**
+ * Retires a question bank rather than deleting it. `question_banks_write`
+ * permits DELETE at the RLS level, but a bank referenced by any exam's paper
+ * would fail on the FK from exam_questions with a raw Postgres error the UI
+ * has no business surfacing — `retired` is the status the enum already
+ * carries for exactly this, matching how courses are archived rather than
+ * dropped.
+ */
+export async function retireQuestionBank(
+  bankId: string,
+  _prev: ExamActionState,
+  _formData: FormData,
+): Promise<ExamActionState> {
+  const supabase = await createClient();
+  const context = await getHeadOfficeContext(supabase);
+  if (!context) return { status: "error", message: "No head-office access." };
+  try {
+    await authorizeHeadOffice(supabase, context, "question.manage");
+  } catch {
+    return { status: "error", message: "You cannot retire this bank." };
+  }
+
+  const { error } = await supabase
+    .from("question_banks")
+    .update({ status: "retired", updated_by: context.userId })
+    .eq("id", bankId);
+
+  if (error) {
+    return { status: "error", message: "Could not retire the bank." };
+  }
+
+  revalidatePath("/admin/exams/question-banks");
+  return { status: "success", message: "Bank retired." };
+}
+
+export async function activateQuestionBank(
+  bankId: string,
+  _prev: ExamActionState,
+  _formData: FormData,
+): Promise<ExamActionState> {
+  const supabase = await createClient();
+  const context = await getHeadOfficeContext(supabase);
+  if (!context) return { status: "error", message: "No head-office access." };
+  try {
+    await authorizeHeadOffice(supabase, context, "question.manage");
+  } catch {
+    return { status: "error", message: "You cannot activate this bank." };
+  }
+
+  const { error } = await supabase
+    .from("question_banks")
+    .update({ status: "active", updated_by: context.userId })
+    .eq("id", bankId);
+
+  if (error) {
+    return { status: "error", message: "Could not activate the bank." };
+  }
+
+  revalidatePath("/admin/exams/question-banks");
+  return { status: "success", message: "Bank active." };
+}
+
+export async function retireQuestion(
+  bankId: string,
+  questionId: string,
+  _prev: ExamActionState,
+  _formData: FormData,
+): Promise<ExamActionState> {
+  const supabase = await createClient();
+  const context = await getHeadOfficeContext(supabase);
+  if (!context) return { status: "error", message: "No head-office access." };
+  try {
+    await authorizeHeadOffice(supabase, context, "question.manage");
+  } catch {
+    return { status: "error", message: "You cannot retire this question." };
+  }
+
+  const { error } = await supabase
+    .from("questions")
+    .update({ status: "retired", updated_by: context.userId })
+    .eq("id", questionId);
+
+  if (error) {
+    return { status: "error", message: "Could not retire the question." };
+  }
+
+  revalidatePath(`/admin/exams/question-banks/${bankId}`);
+  return { status: "success", message: "Question retired." };
+}
+
+/**
+ * Hard delete, but only ever reachable for a draft. `start_exam_attempt`
+ * requires `status = 'published'` (migration 0024), so a draft exam
+ * provably has no attempts and nothing downstream to protect — the CASCADE
+ * on exam_attempts.exam_id that makes deleting a published exam dangerous
+ * cannot fire on one that never went live. A published exam is cancelled,
+ * never deleted; see `cancelExam`.
+ */
+export async function deleteExam(
+  examId: string,
+  _prev: ExamActionState,
+  _formData: FormData,
+): Promise<ExamActionState> {
+  const supabase = await createClient();
+  const context = await getHeadOfficeContext(supabase);
+  if (!context) return { status: "error", message: "No head-office access." };
+  try {
+    await authorizeHeadOffice(supabase, context, "exam.manage");
+  } catch {
+    return { status: "error", message: "You cannot delete this exam." };
+  }
+
+  const { error } = await supabase
+    .from("exams")
+    .delete()
+    .eq("id", examId)
+    .eq("status", "draft");
+
+  if (error) {
+    return { status: "error", message: "Could not delete the exam." };
+  }
+
+  revalidatePath("/admin/exams");
+  redirect("/admin/exams");
 }

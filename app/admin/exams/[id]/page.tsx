@@ -13,6 +13,12 @@ import {
   PublishButton,
 } from "@/features/exams/components/paper-builder";
 import {
+  CancelExamButton,
+  DeleteExamButton,
+  RemoveQuestionButton,
+  UnassignCentreButton,
+} from "@/features/exams/components/lifecycle-buttons";
+import {
   formatIst,
   getExam,
   listAvailableQuestions,
@@ -72,7 +78,12 @@ export default async function ExamPage({
               {formatIst(exam.opensAt)} — {formatIst(exam.closesAt)} IST
             </p>
           </div>
-          <StatusBadge status={exam.isOpen ? "active" : exam.status} />
+          <div className="flex items-center gap-3">
+            <StatusBadge status={exam.isOpen ? "active" : exam.status} />
+            {exam.status === "published" ? (
+              <CancelExamButton examId={exam.id} />
+            ) : null}
+          </div>
         </div>
       </div>
 
@@ -81,8 +92,9 @@ export default async function ExamPage({
           <CardHeader>
             <CardTitle>Publish</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex flex-wrap items-center gap-3">
             <PublishButton examId={exam.id} />
+            <DeleteExamButton examId={exam.id} />
           </CardContent>
         </Card>
       ) : null}
@@ -111,11 +123,22 @@ export default async function ExamPage({
             ) : (
               <ul className="text-body text-text space-y-1">
                 {exam.centres.map((c) => (
-                  <li key={c.id}>
-                    {c.name}{" "}
-                    <span className="text-meta text-text-secondary">
-                      {c.code}
+                  <li
+                    key={c.id}
+                    className="flex items-center justify-between gap-2"
+                  >
+                    <span>
+                      {c.name}{" "}
+                      <span className="text-meta text-text-secondary">
+                        {c.code}
+                      </span>
                     </span>
+                    {exam.status === "draft" ? (
+                      <UnassignCentreButton
+                        examId={exam.id}
+                        assignmentId={c.id}
+                      />
+                    ) : null}
                   </li>
                 ))}
               </ul>
@@ -143,9 +166,17 @@ export default async function ExamPage({
                   <span className="text-text-secondary">{index + 1}.</span>{" "}
                   {q.body}
                 </p>
-                <p className="text-meta text-text-secondary shrink-0">
-                  {q.typeLabel} &middot; {q.marks}
-                </p>
+                <div className="flex shrink-0 items-center gap-3">
+                  <p className="text-meta text-text-secondary">
+                    {q.typeLabel} &middot; {q.marks}
+                  </p>
+                  {exam.status === "draft" ? (
+                    <RemoveQuestionButton
+                      examId={exam.id}
+                      examQuestionId={q.id}
+                    />
+                  ) : null}
+                </div>
               </li>
             ))}
           </ol>

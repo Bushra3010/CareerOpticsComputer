@@ -8,6 +8,7 @@ import { EmptyState, PermissionDeniedState } from "@/components/states";
 import { createClient } from "@/lib/db/server";
 import { getHeadOfficeContext } from "@/features/exams/access";
 import { QuestionForm } from "@/features/exams/components/question-form";
+import { RetireQuestionButton } from "@/features/exams/components/lifecycle-buttons";
 import { getQuestionBank } from "@/features/exams/queries";
 
 export const metadata: Metadata = {
@@ -85,7 +86,15 @@ export default async function QuestionBankPage({
                       <span className="text-text-secondary">{index + 1}.</span>{" "}
                       {q.body}
                     </p>
-                    <StatusBadge status={q.status} />
+                    <div className="flex shrink-0 items-center gap-3">
+                      <StatusBadge status={q.status} />
+                      {q.status !== "retired" ? (
+                        <RetireQuestionButton
+                          bankId={bank.id}
+                          questionId={q.id}
+                        />
+                      ) : null}
+                    </div>
                   </div>
 
                   <p className="text-meta text-text-secondary">

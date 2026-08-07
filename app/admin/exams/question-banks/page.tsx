@@ -12,6 +12,7 @@ import {
 import { createClient } from "@/lib/db/server";
 import { BankForm } from "@/features/exams/components/bank-form";
 import { getHeadOfficeContext } from "@/features/exams/access";
+import { QuestionBankStatusButton } from "@/features/exams/components/lifecycle-buttons";
 import { listQuestionBanks } from "@/features/exams/queries";
 
 export const metadata: Metadata = {
@@ -73,6 +74,12 @@ export default async function QuestionBanksPage() {
                     { label: "Questions", value: String(b.questionCount) },
                     { label: "Created", value: b.createdOn },
                   ]}
+                  action={
+                    <QuestionBankStatusButton
+                      bankId={b.id}
+                      currentStatus={b.status}
+                    />
+                  }
                 />
               ))}
             </MobileList>
@@ -94,6 +101,7 @@ export default async function QuestionBanksPage() {
                     <th scope="col" className="text-label px-4 py-3">
                       Created
                     </th>
+                    <th scope="col" className="text-label px-4 py-3"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -120,6 +128,12 @@ export default async function QuestionBanksPage() {
                       </td>
                       <td className="text-body text-text-secondary px-4 py-3">
                         {b.createdOn}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <QuestionBankStatusButton
+                          bankId={b.id}
+                          currentStatus={b.status}
+                        />
                       </td>
                     </tr>
                   ))}
