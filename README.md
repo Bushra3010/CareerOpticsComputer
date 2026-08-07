@@ -4,7 +4,7 @@ Multi-tenant computer education, franchise and training-centre management
 platform for **Career Optics Computer Academy**.
 
 > **Status: Phase 1 substantially complete, running against a hosted Supabase
-> project.** Migrations `0001`–`0028`, all applied. Working end to end: the public site and
+> project.** Migrations `0001`–`0030`, all applied. Working end to end: the public site and
 > course catalogue, admission enquiries, the centre franchise application and
 > its atomic head-office approval, authentication for three portals, five
 > centre roles with staff invitations, student admission and the student
@@ -27,6 +27,15 @@ platform for **Career Optics Computer Academy**.
 > certificate. **Phase 5 has started:** a centre wallet with an insert-only
 > ledger, idempotent debit (proof P6, finally against the real ledger rather
 > than `idempotency_keys`), and head-office-only recharge.
+>
+> The super-admin portal's CRUD coverage was audited and closed: centre
+> profile editing and lifecycle control (suspend/reactivate/close, behind a
+> permission split that fixed a real privilege-escalation bug — see
+> [`docs/03-audit-findings.md`](docs/03-audit-findings.md)), a course
+> catalogue with create/publish/archive, lead management, platform-wide
+> certificate oversight with revocation, and retire/cancel/remove actions
+> across question banks and exams that RLS had always permitted and no screen
+> had ever exposed.
 >
 > Not built at all: the shop, inventory, referrals, notifications and
 > reporting. Known defects and an

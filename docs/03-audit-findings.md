@@ -205,3 +205,65 @@ BUFFERS)` on the ten heaviest queries against seeded volume; that has not been
 - **The UI was not exercised by a screen reader**, and no axe scan has been run.
 - **Only the live hosted project was probed**, with a handful of rows. Nothing
   here says how the system behaves at realistic volume.
+
+---
+
+## Confirmed and fixed — 2026-08-07/08
+
+A separate pass, months after the audit above and covering a different
+question entirely: does the super-admin portal's CRUD coverage match what RLS
+already permits? Not a six-auditor exercise — one reviewer, reading the
+permission matrix and the actual policies against what screens existed, then
+reproducing each finding against the live database before treating it as real.
+
+### A suspended centre could reactivate itself
+
+The one finding here that is a security defect rather than a missing screen.
+`centres_update` gated on `centre.update` at row level, with no column
+restriction, and `centre_owner` holds `centre.update` to edit their own
+centre's profile. Combined: a suspended centre's own owner could clear the
+suspension.
+
+Reproduced live before it was believed: head office suspended a seeded centre
+via the service role; the centre's own owner then issued a direct
+`PATCH /centres?id=eq.<id> {"status":"active"}`, and RLS raised no objection.
+PRD §19.3 and build plan §4's step-up list both treat suspension as a
+head-office act; it was worth nothing.
+
+**Fixed** in migration `0029`, the same shape as R19's answer-key fix — split
+by privilege, not by policy. `centre.update` now grants columns
+(`name, address, city, state, pincode`) only; `status` is reachable solely
+through `set_centre_status()`, gated on `app.is_platform_admin()` or the new
+organisation-level `centre.manage`. Permanently guarded by
+`tests/integration/centre-lifecycle.test.ts`, whose first test is the exploit
+itself.
+
+### Gaps that were missing screens, not defects
+
+RLS already permitted all of the following; nothing on top of it had ever been
+built to use it.
+
+| Gap                                                                        | Where it stood                                                              | Closed by                                                        |
+| -------------------------------------------------------------------------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| No way to suspend/close/reactivate a centre                                | `centres_update` allowed it row-wise; no UI                                 | `/admin/centres`, migration `0029`                               |
+| No course create/update anywhere                                           | `features/academics/` had queries only                                      | `/admin/academics/courses`, `features/academics/actions.ts`      |
+| Question banks/questions: update and delete legal under RLS, never exposed | `question_banks_write`/`questions_write` are `for all`                      | Retire/reactivate buttons — not hard delete; see below           |
+| Exams: only publish was ever exposed as an update                          | `exams_write`/`exam_questions_write`/`exam_assignments_write` are `for all` | Cancel, delete-if-draft, remove-question, unassign-centre        |
+| Leads captured, never read back beyond a count                             | `leads_platform_write`/`leads_platform_read` already `is_platform_admin()`  | `/admin/leads`                                                   |
+| `issue_certificate()` had no revoke mirror                                 | `revoked_at`/`revoked_by`/`revoked_reason` unused since migration `0016`    | `revoke_certificate()` (migration `0029`), `/admin/certificates` |
+
+**Retire, not delete, for question banks and questions; cancel, not delete,
+for a published exam.** `exam_attempts.exam_id` cascades from `exams`
+(migration `0024`) — deleting a published exam with attempts not yet imported
+into a result would silently destroy student answers and scores. A **draft**
+exam is the one case a hard delete is provably safe (`start_exam_attempt`
+requires `status = 'published'`, so a draft cannot have an attempt to lose),
+and that is the only delete this pass added.
+
+**A second, smaller mistake caught by its own test.** Migration `0029` seeded
+`certificate.revoke` and granted it to nobody but a platform admin, mirroring
+`centre.manage`'s posture. That was wrong — revoking a certificate a centre
+issued in error is the same authority as issuing it. Migration `0030` grants
+it to `centre_owner`, matching `certificate.issue` exactly. Found because the
+integration test written alongside `0029` assumed the grant existed and
+failed until it did.
