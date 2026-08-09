@@ -20,6 +20,60 @@ export async function listStudentsForCentre(
   return data ?? [];
 }
 
+export interface AdminStudentRow {
+  id: string;
+  registrationNumber: string;
+  fullName: string;
+  centreName: string;
+  status: string;
+  admittedOn: string;
+}
+
+/**
+ * Platform-wide list for /admin/students. RLS decides the actual reach:
+ * a platform admin sees every centre, an HO role sees what org-level
+ * `student.read` grants, and anyone else gets zero rows and the page's
+ * permission-denied state. The optional search matches name or
+ * registration number, server-side.
+ */
+export async function listStudentsForAdmin(
+  search?: string,
+): Promise<AdminStudentRow[]> {
+  const supabase = await createClient();
+  let query = supabase
+    .from("students")
+    .select("id, registration_number, full_name, centre_id, status, created_at")
+    .order("created_at", { ascending: false })
+    .limit(100);
+  if (search && search.trim()) {
+    const term = search.trim().replace(/[%_]/g, "");
+    query = query.or(
+      `full_name.ilike.%${term}%,registration_number.ilike.%${term}%`,
+    );
+  }
+  const { data } = await query;
+  const rows = data ?? [];
+
+  const centreIds = [...new Set(rows.map((s) => s.centre_id))];
+  const names = new Map<string, string>();
+  if (centreIds.length) {
+    const { data: centres } = await supabase
+      .from("centres")
+      .select("id, name")
+      .in("id", centreIds);
+    for (const c of centres ?? []) names.set(c.id, c.name);
+  }
+
+  return rows.map((s) => ({
+    id: s.id,
+    registrationNumber: s.registration_number,
+    fullName: s.full_name,
+    centreName: names.get(s.centre_id) ?? "Unknown centre",
+    status: s.status,
+    admittedOn: s.created_at.slice(0, 10),
+  }));
+}
+
 export interface StudentProfile {
   id: string;
   registrationNumber: string;

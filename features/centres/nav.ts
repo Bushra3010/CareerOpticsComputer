@@ -22,8 +22,30 @@ export async function getPermissionCodes(
     .eq("centre_id", centreId)
     .eq("status", "active");
 
+  return collectCodes(data);
+}
+
+/**
+ * The organisation-level variant: codes from memberships with no centre —
+ * head-office roles (migration 0039). Same display-filter caveat as above.
+ */
+export async function getOrgPermissionCodes(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+): Promise<Set<string>> {
+  const { data } = await supabase
+    .from("memberships")
+    .select("role_permissions:roles(role_permissions(permission_code))")
+    .eq("user_id", userId)
+    .is("centre_id", null)
+    .eq("status", "active");
+
+  return collectCodes(data);
+}
+
+function collectCodes(data: unknown): Set<string> {
   const codes = new Set<string>();
-  for (const row of (data ?? []) as unknown as {
+  for (const row of ((data as object[] | null) ?? []) as unknown as {
     role_permissions: {
       role_permissions: { permission_code: string }[];
     } | null;

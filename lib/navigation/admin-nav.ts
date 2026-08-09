@@ -100,6 +100,7 @@ export const ADMIN_NAV: NavGroup[] = [
         icon: BarChart3,
         permission: "report.read",
         matchPrefix: true,
+        planned: true,
       },
       {
         label: "Settings",
@@ -137,5 +138,5 @@ export const ADMIN_BOTTOM_NAV: BottomNavItems = [
     icon: Users,
     matchPrefix: true,
   },
-  { label: "More", href: "/admin/more", icon: MoreHorizontal },
+  { label: "More", href: "/admin/more", icon: MoreHorizontal, planned: true },
 ];
