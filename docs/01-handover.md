@@ -251,6 +251,43 @@ priority order:
    _journey_: build plan §6 step 10 wants onboarding → approval → first login →
    dashboard as one flow, and no test does that.
 
+**Update, 10 August 2026.** Everything below this paragraph is older than the
+work described here; `README.md`'s status block is the current inventory.
+Since 9 August: notifications (`0037`), ticket attachments (`0038`), the
+head-office staff roles the PRD names and nothing had ever seeded (`0039`),
+public notices (`0043`), centre leads (`0044`), income and expenses (`0045`),
+batches and timetable (`0046`–`0047`), study materials (`0048`) and reports
+(`0049`). The head-office and student portals moved onto the portal shell
+they had never used, and `/invite` gives the invitation emails somewhere to
+land.
+
+Five defects were found by building on top of the existing code rather than
+by reading it, which is worth knowing about the shape of this codebase:
+
+1. **`resolve_ticket` and `reopen_ticket` could be called by anyone** —
+   `if not (a or b or x = nullable)` is NULL when the nullable side is NULL,
+   and `if NULL` takes the false branch, so the guard never raised. Fixed
+   forward in `0041`.
+2. **`enrolments` had a table-level UPDATE grant and no UPDATE policy**, so
+   every enrolment edit had always been refused as zero rows. Nothing had
+   noticed because nothing had needed to edit one (`0047`).
+3. **`user.read` and `report.read` were gated on permission codes that did
+   not exist** — referenced by policies and navigation since Phase 1, so
+   they could never pass for anyone (`0040`, `0049`).
+4. **`0032`'s revoke sweep caught `commission_rules`**, making its own
+   manage policy dead code (`0035`).
+5. **The integration suite had stopped testing most of what it claimed.**
+   Auth rate limits failed `beforeAll`, vitest skipped whole files, and the
+   run still exited 0. Fixed by serial execution and sign-in backoff; the
+   fixture teardown also now cleans the tables added since it was written,
+   after 56 undeletable test tenants accumulated in the live project.
+
+The lesson each time: the gap was between two things that were each
+individually correct — a grant and a policy, a policy and a permission
+code, a test that passed and a test that ran.
+
+---
+
 **Update, 8 August 2026:** this section is stale — wallet (migration 0028),
 the super-admin CRUD audit and its fixes (`docs/03-audit-findings.md`), and now
 inventory/shop/orders (migration 0031, `docs/02-open-conflicts.md` C9) have all

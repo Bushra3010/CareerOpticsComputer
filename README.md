@@ -4,7 +4,7 @@ Multi-tenant computer education, franchise and training-centre management
 platform for **Career Optics Computer Academy**.
 
 > **Status: Phase 1 substantially complete, running against a hosted Supabase
-> project.** Migrations `0001`–`0042`, all applied. Working end to end: the public site and
+> project.** Migrations `0001`–`0049`, all applied. Working end to end: the public site and
 > course catalogue, admission enquiries, the centre franchise application and
 > its atomic head-office approval, authentication for three portals, five
 > centre roles with staff invitations, student admission and the student
@@ -105,7 +105,38 @@ platform for **Career Optics Computer Academy**.
 > metadata) has no specified shape and stays deliberately unbuilt; C13
 > records what it needs from the owner.
 >
-> Not built at all: reporting. Known defects and an
+> **Both portals now have their shells.** The head office and student
+> portals had been running on a bare logo header since Phase 1 while the
+> sidebar/bottom-navigation shell sat built and unused; both now use it,
+> and every route their navigation named exists. That closed a long tail of
+> links that pointed at nothing: `/admin/students`, `/admin/settings`, six
+> student pages, `/centre/leads`, and the notifications bell.
+>
+> **Leads reach the centres** (migration `0044`): an enquiry lands in a
+> head-office pool, assignment hands it to one centre, and that centre works
+> its own pipeline — the boundary is one-way at the RLS level, so a centre
+> can move nothing anywhere and never sees the pool.
+>
+> **Income and expenses** (migration `0045`, C14): the centre cash box, as
+> an insert-only ledger where a correction is a mirror-image compensating
+> row validated by trigger. Course fees stay in the payments ledger.
+>
+> **Batches, timetable and study materials** (migrations `0046`–`0048`,
+> C15): batches carry capacity enforced by a trigger rather than a
+> check-then-insert race, their timetable inherits the batch's visibility,
+> and study materials narrow by centre, course or batch with the file's
+> bytes following exactly the same scope as its row.
+>
+> **Reports** (migration `0049`) are aggregates over tables that already
+> carry RLS, so one query means "my centre" for centre staff and "the
+> platform" for head office.
+>
+> **Invitations can be accepted.** Three call sites sent invitation emails
+> that had nowhere to land; `/invite` is that page, and every sender now
+> points at it.
+>
+> Not built at all: MFA (PRD A8 defers enforcement to Phase 6), and the
+> rest of §7.12's CMS. Known defects and an
 > unverified audit backlog are in
 > [`docs/03-audit-findings.md`](docs/03-audit-findings.md) — read it before
 > treating any of this as production-ready. See
@@ -343,7 +374,7 @@ decision. None of them came from review.
   passing while the shape it checks against stops being true, and the failure
   surfaces at runtime as a column nobody expected. So `npm run db:types:check`
   compares the file's table and column names against the live schema and fails
-  on any difference. It currently reports **49 tables, 444 columns, no drift**.
+  on any difference. It currently reports **62 tables, 604 columns, no drift**.
 
   Still outstanding: `lib/db/rpc.ts`'s `callRpc` escape hatch and the
   duplicated `one<T>` helpers, both of which exist only because postgrest-js's
@@ -356,8 +387,15 @@ decision. None of them came from review.
   the database tests run as Vitest integration tests against the hosted project
   (`npm run test:integration`) instead of pgTAP in CI. Migrations themselves no
   longer need Docker — `SUPABASE_DB_URL` is set over the session pooler and
-  `supabase db push` works. Two suites live there:
-  `rls-proof.test.ts` (the P1–P6 gate from build plan §5.3) and
+  `supabase db push` works. **Eighteen suites, 158 tests**, run serially:
+  each fixture signs several users in, and running the files concurrently
+  trips Supabase Auth's rate limit — which fails `beforeAll` and _skips_
+  whole files while the run still exits 0, so a green result could mean
+  almost nothing was tested. Sign-in now backs off and retries, and
+  `fileParallelism` is off. Expect the full run to take a few minutes.
+  Do not apply a migration while it is running: PostgREST reloads its
+  schema cache and in-flight `rpc()` calls fail with `PGRST202`.
+  Among them: `rls-proof.test.ts` (the P1–P6 gate from build plan §5.3) and
   `feature-invariants.test.ts` (16), which covers the role matrix
   including proof test R13, attendance re-save and cross-centre marking, the
   fee split and allocation arithmetic, overpayment rollback, result
