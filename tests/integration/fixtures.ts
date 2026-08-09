@@ -271,9 +271,13 @@ export async function teardownFixture(fx: Fixture): Promise<void> {
     .delete()
     .in("recipient_user_id", fx.userIds);
 
-  for (const id of fx.userIds) {
-    await admin.auth.admin.deleteUser(id).catch(() => undefined);
-  }
+  // Users are deleted LAST, after every table below. Auth admin calls share
+  // the rate limit the whole suite is already pushing against, so during a
+  // full run this loop can stall long enough to blow the hook's timeout —
+  // and when it ran first, that abort left every table behind it untouched,
+  // stranding centres that RESTRICT then made undeletable. Fifty-six test
+  // tenants accumulated in one run that way. Database cleanup must not
+  // depend on the auth API being responsive.
 
   // Foreign keys are RESTRICT, so children first. issued_documents references
   // both student_results and students, so it has to go before either.
@@ -339,4 +343,8 @@ export async function teardownFixture(fx: Fixture): Promise<void> {
   await admin.from("memberships").delete().in("centre_id", centres);
   await admin.from("document_sequences").delete().in("centre_id", centres);
   await admin.from("centres").delete().in("id", centres);
+
+  for (const id of fx.userIds) {
+    await admin.auth.admin.deleteUser(id).catch(() => undefined);
+  }
 }

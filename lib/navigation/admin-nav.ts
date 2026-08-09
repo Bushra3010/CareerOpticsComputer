@@ -100,7 +100,6 @@ export const ADMIN_NAV: NavGroup[] = [
         icon: BarChart3,
         permission: "report.read",
         matchPrefix: true,
-        planned: true,
       },
       {
         label: "Settings",

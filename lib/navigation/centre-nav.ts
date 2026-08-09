@@ -189,7 +189,6 @@ export const CENTRE_NAV: NavGroup[] = [
       {
         label: "Reports",
         href: "/centre/reports",
-        planned: true,
         icon: BarChart3,
         permission: "report.read",
         matchPrefix: true,
