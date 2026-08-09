@@ -262,6 +262,18 @@ and timetable, the admin portal beyond its dashboard and the sections named
 above, the MFA / invite / activate pages, and most of `app/api` (the exam
 route handlers and the cron runner are the only things in it so far).
 
+**Update, 9 August 2026:** referrals/commission and support tickets are off
+that list — migrations `0032`–`0036` (`docs/02-open-conflicts.md` C10/C11),
+screens in all three portals (`/admin/referrals`, `/admin/commissions[/rules]`,
+`/admin/tickets[/id]`, `/centre/referrals`, `/centre/support[/id]`,
+`/student/support[/id]`), and a 17-test integration suite
+(`tests/integration/referrals-tickets.test.ts`) that found a real RLS hole on
+its first run: a `ticket.manage` holder could read a ticket's internal notes
+but not its public conversation (`0036`). The two fix migrations before it
+were also found live, not by review — `0033` (nested SECURITY DEFINER
+permission wall in `pay_commission`) and `0034` (a staff requester's own
+reply stamped `first_response_at`). The rest of the 8 August list stands.
+
 <details>
 <summary>The original Phase 1 list, for the record — steps 1–9 are complete</summary>
 

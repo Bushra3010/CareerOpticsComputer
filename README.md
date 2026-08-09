@@ -45,8 +45,28 @@ platform for **Career Optics Computer Academy**.
 > across question banks and exams that RLS had always permitted and no screen
 > had ever exposed.
 >
-> Not built at all: referrals, notifications, support tickets, CMS and
-> reporting. Known defects and an
+> **Referrals, commission and support tickets** close out build plan
+> `0011`'s scope (migrations `0032`–`0036`): head office issues referral
+> codes, records referrals against them, and qualifies each one against a
+> commission-rules table — the commission then walks PRD §7.11's five states
+> exactly. A centre payout lands in the wallet ledger as its own
+> `commission_payout` entry type (never a fake "recharge"), and a clawback
+> reverses it — deliberately allowed to take the wallet negative, because
+> that is what "the centre owes head office" means. Individual payouts
+> settle externally against a mandatory reference. Support tickets run PRD
+> §6.10's seven-state lifecycle across all three portals: students and
+> centre staff raise and reply, head office assigns, resolves and closes,
+> and internal notes are invisible to requesters **at the RLS level**
+> (proof R17), not by UI filtering. Three of the slice's bugs were found
+> live and fixed forward — a nested SECURITY DEFINER permission wall
+> (`0033`), a requester's own reply masquerading as the first support
+> response (`0034`), and a support agent who could read a ticket's internal
+> notes but not its public conversation (`0036`, caught by the integration
+> suite's first run). The invented ticket priorities and the polymorphic
+> referral columns are C11 and C10 in
+> [`docs/02-open-conflicts.md`](docs/02-open-conflicts.md).
+>
+> Not built at all: notifications, CMS and reporting. Known defects and an
 > unverified audit backlog are in
 > [`docs/03-audit-findings.md`](docs/03-audit-findings.md) — read it before
 > treating any of this as production-ready. See

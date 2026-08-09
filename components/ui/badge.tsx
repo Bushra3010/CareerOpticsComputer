@@ -132,6 +132,16 @@ export const STATUS_TONES = {
   dispatched: "info",
   delivered: "success",
   returned: "neutral",
+  // Referrals and commission
+  attributed: "success",
+  payable: "info",
+  // Support tickets
+  open: "warning",
+  assigned: "info",
+  waiting_on_support: "warning",
+  waiting_on_requester: "info",
+  resolved: "success",
+  reopened: "warning",
 } as const satisfies Record<string, BadgeTone>;
 
 export type KnownStatus = keyof typeof STATUS_TONES;

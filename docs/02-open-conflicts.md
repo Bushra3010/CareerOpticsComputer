@@ -353,6 +353,8 @@ an exam, while §4 gives centre roles **read-only** on `exam.*`. Either the
 route or the matrix is wrong. Until it is settled, eligibility should be a
 head-office field with a read-only centre view — the reversible choice.
 
+**Decision needed from:** the Exam Controller, or whoever will hold that role.
+
 ---
 
 ## C9 — Shop, inventory and orders: what the spec leaves silent
@@ -381,4 +383,59 @@ mechanic, an approval threshold, or supplier tracking are needed before this
 goes into real use — none of them are needed for the workflow as PRD §6.9
 describes it, which is what was built.
 
-**Decision needed from:** the Exam Controller, or whoever will hold that role.
+---
+
+## C10 — Referrals and commission: what the spec leaves polymorphic
+
+**Status:** resolved by documented assumption · **Raised and resolved:** 9
+August 2026, migrations `0032`/`0033`/`0035`
+
+PRD §7.11 states the commission lifecycle exactly (pending → approved →
+payable → paid → reversed, duplicate detection included) and §10.6 names the
+four tables — then both go quiet on everything a schema and a payout actually
+need. As with C9, none of this blocked the slice; each default is recorded
+here because each is a product decision wearing a schema costume.
+
+| #   | Question                                            | Default taken                                                                                                                                                                                                                                                                                                                                  | Why it is reversible                                                                                                                         |
+| --- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| a   | Who or what can own a code, and be referred?        | PRD §10.6's own words are polymorphic — "authorised centres/**users**", and a referred entity that may be a lead, a student or a centre — with no discriminator named. Modelled as explicit `_type` + `_id` pairs; a FK cannot point at more than one table, so referential integrity for these two columns is an application-level guarantee. | A discriminated-union check trigger, or per-type shadow FK columns, can be added without moving any data.                                    |
+| b   | What automatically qualifies a referral?            | **Nothing.** `record_referral` and `qualify_referral` are standalone, head-office-triggered acts. Wiring them into `admit_student`, `post_payment` or centre approval means editing shipped, tested financial code for a feature whose own qualifying rules are this very open question.                                                       | The wiring is a later call to these same functions from inside those pipelines; the functions do not change.                                 |
+| c   | How is an individual (non-centre) beneficiary paid? | **Externally.** `wallet_accounts` is centre-scoped (migration 0028); a user beneficiary has no wallet, so `pay_commission` demands a `payout_reference` — the only record of the settlement.                                                                                                                                                   | User wallets later mean one new `wallet_accounts` shape and a second branch in `pay_commission`; `payout_reference` rows stay valid history. |
+| d   | May a clawback take a centre's wallet negative?     | **Yes.** A commission already paid and since spent still comes back when reversed; the negative balance is what "the centre now owes head office" means, exactly as a real ledger would show it.                                                                                                                                               | A floor-at-zero policy would be one check in `reverse_commission`; the ledger arithmetic is untouched either way.                            |
+| e   | Which rule applies when several could?              | **The active rule for the event, effective today, newest `effective_from` first.** `commission_rules.conditions` (jsonb) is deliberately inert — §10.6 names "conditions" with no grammar, so it stores a human note today and a condition engine later.                                                                                       | Rule selection is one `order by` inside `qualify_referral`.                                                                                  |
+| f   | Who holds `referral.manage` / `commission.manage`?  | **No seeded role** — the matrix gives them to Finance Admin / HO Operator, organisation-wide staff roles the PRD names (§4) and the seed has never created, so today only a platform admin qualifies. The same standing gap 0031 recorded for `product.manage`/`inventory.manage`.                                                             | Seeding those roles lights the permissions up with no code change; the checks are already permission-shaped, not role-shaped.                |
+
+Two of the slice's own bugs were found live and fixed forward, worth knowing
+when reading the migration folder: `0033` (a `commission.manage` holder
+without `wallet.manage` could not pay a centre commission, because nested
+SECURITY DEFINER functions each re-check `auth.uid()`) and `0035` (0032's
+revoke sweep caught `commission_rules`, a table whose manage policy expects
+direct writes — rule creation failed 42501 for everyone).
+
+**Decision needed from:** head office — the real qualifying rules (which
+event, attributed how, within what window), and whether individual-beneficiary
+payouts need more than a reference string before referrals are marketed.
+
+---
+
+## C11 — Ticket priority values are invented
+
+**Status:** resolved by documented assumption · **Raised and resolved:** 9
+August 2026, migration `0032`
+
+PRD §6.10 fixes the ticket lifecycle to exactly seven states and names
+priority as a field — and never says what the priorities are. It is the one
+enum in the whole PRD/build-plan pair left completely open. Free text would
+make status boards, SLA reporting and "sort by priority" meaningless, so a
+closed set was invented: `low` / `medium` / `high` / `urgent`, defaulting to
+`medium` — the same "cheap now, easy to loosen" reasoning migration 0025 used
+for grading defaults.
+
+The ticket _category_ list has the same silence and got the softer answer:
+free text in the schema, with the raise-ticket form offering a fixed choice
+list (`general` / `billing` / `technical` / `academic`) at the application
+layer, where changing it is a copy edit rather than a migration.
+
+**Decision needed from:** head office, only if the support workflow wants
+different words (e.g. an SLA tier per priority, or categories per department).
+Renaming enum values later is a single `alter type … rename value` migration.

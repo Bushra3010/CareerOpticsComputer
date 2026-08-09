@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,8 +36,26 @@ export default async function AdminWalletsPage() {
 
   return (
     <div className="space-y-8">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-page-title text-navy-900">Wallets</h1>
+        </div>
+        <div className="flex gap-4">
+          <Link
+            href="/admin/referrals"
+            className="text-body text-brand-600 font-semibold hover:underline"
+          >
+            Referrals
+          </Link>
+          <Link
+            href="/admin/commissions"
+            className="text-body text-brand-600 font-semibold hover:underline"
+          >
+            Commissions
+          </Link>
+        </div>
+      </div>
       <div>
-        <h1 className="text-page-title text-navy-900">Wallets</h1>
         <p className="text-body text-text-secondary mt-1">
           Record a recharge after a centre&rsquo;s offline payment is received.
           Every balance below is the sum of its own ledger, never a stored

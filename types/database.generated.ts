@@ -980,6 +980,131 @@ export interface Database {
         Update: never;
         Relationships: [];
       };
+      referral_codes: {
+        Row: {
+          id: string;
+          organization_id: string;
+          owner_type: Database['public']['Enums']['referral_owner_type'];
+          owner_id: string;
+          code: string;
+          valid_until: string | null;
+          status: Database['public']['Enums']['catalog_item_status'];
+          created_at: string;
+          created_by: string | null;
+        };
+        /** create_referral_code() only. */
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      referrals: {
+        Row: {
+          id: string;
+          organization_id: string;
+          referral_code_id: string;
+          referred_entity_type: Database['public']['Enums']['referred_entity_type'];
+          referred_entity_id: string;
+          qualifying_event: Database['public']['Enums']['commission_event'] | null;
+          status: Database['public']['Enums']['referral_status'];
+          attributed_at: string | null;
+          created_at: string;
+          created_by: string | null;
+        };
+        /** record_referral() / qualify_referral() only. */
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      commission_rules: {
+        Row: {
+          id: string;
+          organization_id: string;
+          event: Database['public']['Enums']['commission_event'];
+          amount_type: Database['public']['Enums']['commission_amount_type'];
+          flat_amount_paise: number | null;
+          percentage: number | null;
+          conditions: Json | null;
+          effective_from: string;
+          effective_to: string | null;
+          status: Database['public']['Enums']['catalog_item_status'];
+          created_at: string;
+          created_by: string | null;
+        };
+        Insert: Partial<Database['public']['Tables']['commission_rules']['Row']> & {
+          organization_id: string;
+          event: Database['public']['Enums']['commission_event'];
+          amount_type: Database['public']['Enums']['commission_amount_type'];
+        };
+        Update: Partial<Database['public']['Tables']['commission_rules']['Row']>;
+        Relationships: [];
+      };
+      commission_entries: {
+        Row: {
+          id: string;
+          organization_id: string;
+          referral_id: string;
+          commission_rule_id: string;
+          beneficiary_type: Database['public']['Enums']['referral_owner_type'];
+          beneficiary_id: string;
+          base_amount_paise: number | null;
+          amount_paise: number;
+          status: Database['public']['Enums']['commission_status'];
+          wallet_entry_seq: number | null;
+          payout_reference: string | null;
+          reversed_reason: string | null;
+          created_at: string;
+          approved_at: string | null;
+          approved_by: string | null;
+          paid_at: string | null;
+          paid_by: string | null;
+          reversed_at: string | null;
+          reversed_by: string | null;
+        };
+        /** qualify_referral() only. */
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      tickets: {
+        Row: {
+          id: string;
+          organization_id: string;
+          centre_id: string;
+          number: string;
+          requester_type: Database['public']['Enums']['ticket_requester_type'];
+          requester_id: string;
+          category: string;
+          priority: Database['public']['Enums']['ticket_priority'];
+          subject: string;
+          status: Database['public']['Enums']['ticket_status'];
+          assignee_id: string | null;
+          first_response_at: string | null;
+          resolved_at: string | null;
+          closed_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        /** create_ticket() / assign_ticket() / resolve_ticket() / close_ticket() / reopen_ticket() only. */
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      ticket_messages: {
+        Row: {
+          id: string;
+          ticket_id: string;
+          sender_type: Database['public']['Enums']['ticket_requester_type'];
+          sender_id: string;
+          body: string;
+          is_internal: boolean;
+          attachments: string[];
+          created_at: string;
+        };
+        /** add_ticket_message() only. */
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -1150,6 +1275,77 @@ export interface Database {
       };
       cancel_order: {
         Args: { p_order_id: string; p_reason: string };
+        Returns: undefined;
+      };
+      create_referral_code: {
+        Args: {
+          p_organization_id: string;
+          p_owner_type: Database['public']['Enums']['referral_owner_type'];
+          p_owner_id: string;
+          p_valid_until?: string | null;
+        };
+        Returns: string;
+      };
+      record_referral: {
+        Args: {
+          p_code: string;
+          p_referred_entity_type: Database['public']['Enums']['referred_entity_type'];
+          p_referred_entity_id: string;
+        };
+        Returns: string;
+      };
+      qualify_referral: {
+        Args: {
+          p_referral_id: string;
+          p_event: Database['public']['Enums']['commission_event'];
+          p_base_amount_paise?: number | null;
+        };
+        Returns: string;
+      };
+      approve_commission: {
+        Args: { p_commission_entry_id: string };
+        Returns: undefined;
+      };
+      mark_commission_payable: {
+        Args: { p_commission_entry_id: string };
+        Returns: undefined;
+      };
+      pay_commission: {
+        Args: { p_commission_entry_id: string; p_payout_reference?: string | null };
+        Returns: undefined;
+      };
+      reverse_commission: {
+        Args: { p_commission_entry_id: string; p_reason: string };
+        Returns: undefined;
+      };
+      create_ticket: {
+        Args: {
+          p_centre_id: string;
+          p_category: string;
+          p_priority: Database['public']['Enums']['ticket_priority'];
+          p_subject: string;
+          p_body: string;
+        };
+        Returns: string;
+      };
+      add_ticket_message: {
+        Args: { p_ticket_id: string; p_body: string; p_is_internal?: boolean };
+        Returns: string;
+      };
+      assign_ticket: {
+        Args: { p_ticket_id: string; p_assignee_id: string };
+        Returns: undefined;
+      };
+      resolve_ticket: {
+        Args: { p_ticket_id: string };
+        Returns: undefined;
+      };
+      close_ticket: {
+        Args: { p_ticket_id: string };
+        Returns: undefined;
+      };
+      reopen_ticket: {
+        Args: { p_ticket_id: string };
         Returns: undefined;
       };
       submit_public_enquiry: {
@@ -1352,6 +1548,22 @@ export interface Database {
         | 'dispatch'
         | 'return'
         | 'adjustment';
+      referral_owner_type: 'centre' | 'user';
+      referred_entity_type: 'lead' | 'student' | 'centre';
+      referral_status: 'pending' | 'attributed' | 'expired' | 'rejected';
+      commission_event: 'centre_approval' | 'student_admission' | 'fee_payment';
+      commission_amount_type: 'flat' | 'percentage';
+      commission_status: 'pending' | 'approved' | 'payable' | 'paid' | 'reversed';
+      ticket_status:
+        | 'open'
+        | 'assigned'
+        | 'waiting_on_support'
+        | 'waiting_on_requester'
+        | 'resolved'
+        | 'closed'
+        | 'reopened';
+      ticket_priority: 'low' | 'medium' | 'high' | 'urgent';
+      ticket_requester_type: 'staff' | 'student';
     };
     CompositeTypes: Record<string, never>;
   };

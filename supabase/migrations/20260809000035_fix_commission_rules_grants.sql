@@ -1,0 +1,22 @@
+-- 0035: restore the table privileges `commission_rules_manage` (migration
+-- 0032) was written against. Forward migration, per CLAUDE.md rule 5 — 0032
+-- is applied.
+--
+-- 0032 created a FOR ALL policy so commission.manage holders could write
+-- commission rules directly — the same shape 0031 gave `products`, and the
+-- shape the application's "New rule" form uses. But the migration's revoke
+-- sweep for the function-only tables (`referrals`, `commission_entries`)
+-- also caught `commission_rules`, revoking INSERT/UPDATE/DELETE at the
+-- privilege level. A privilege revoke beats any policy, so the manage
+-- policy became dead code and rule creation failed with 42501 for
+-- everyone, platform admins included. Found by inspecting the live grants;
+-- the form had never been exercised against the applied schema.
+--
+-- INSERT and UPDATE come back; DELETE stays revoked on purpose. A rule is
+-- never deleted — it is retired via `status`, exactly like `products`
+-- SHOULD have been (0031 left DELETE granted there; the policy still
+-- blocks non-managers, so that is a looseness, not a hole). The RLS
+-- policy remains the thing that decides WHO may write; this only restores
+-- that there is a write to decide about.
+
+grant insert, update on public.commission_rules to authenticated;

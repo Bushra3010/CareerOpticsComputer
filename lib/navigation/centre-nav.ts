@@ -128,7 +128,6 @@ export const CENTRE_NAV: NavGroup[] = [
       {
         label: "Referrals",
         href: "/centre/referrals",
-        planned: true,
         icon: Share2,
         permission: "referral.read",
       },
@@ -180,7 +179,6 @@ export const CENTRE_NAV: NavGroup[] = [
       {
         label: "Support",
         href: "/centre/support",
-        planned: true,
         icon: LifeBuoy,
         matchPrefix: true,
       },
