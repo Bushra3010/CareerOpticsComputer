@@ -17,11 +17,13 @@ import { filterBottomNav, filterNavGroups } from "../nav-filter";
 export function CentrePortalShell({
   permissionCodes,
   centreName,
+  notificationCount = 0,
   headerAction,
   children,
 }: {
   permissionCodes: string[];
   centreName: string;
+  notificationCount?: number;
   headerAction?: React.ReactNode;
   children: React.ReactNode;
 }) {
@@ -35,6 +37,7 @@ export function CentrePortalShell({
       profileHref="/centre/profile"
       title={centreName}
       breadcrumbs={[{ label: centreName, href: "/centre" }]}
+      notificationCount={notificationCount}
       headerAction={headerAction}
     >
       {children}

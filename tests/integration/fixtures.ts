@@ -239,6 +239,15 @@ export async function teardownFixture(fx: Fixture): Promise<void> {
     await purgeCentreFiles(admin, centre).catch(() => undefined);
   }
 
+  // Ticket replies and assignments raise notifications (migration 0037).
+  // Student-recipient rows cascade with the student; user-recipient rows
+  // have no FK into auth.users, so they must be swept explicitly or every
+  // ticket-touching suite leaks a few rows per run.
+  await admin
+    .from("notifications")
+    .delete()
+    .in("recipient_user_id", fx.userIds);
+
   for (const id of fx.userIds) {
     await admin.auth.admin.deleteUser(id).catch(() => undefined);
   }

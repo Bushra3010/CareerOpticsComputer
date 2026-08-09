@@ -66,7 +66,14 @@ platform for **Career Optics Computer Academy**.
 > referral columns are C11 and C10 in
 > [`docs/02-open-conflicts.md`](docs/02-open-conflicts.md).
 >
-> Not built at all: notifications, CMS and reporting. Known defects and an
+> **In-app notifications** now exist (migration `0037`, C12): ticket
+> replies, ticket assignment, order fulfilment movements and result
+> publication each notify their one obvious recipient; the centre shell's
+> bell — which had linked to a 404 since Phase 1 — now shows the unread
+> count and lands on a real `/notifications` page shared by staff and
+> student identities, scoped by RLS rather than by the page.
+>
+> Not built at all: CMS and reporting. Known defects and an
 > unverified audit backlog are in
 > [`docs/03-audit-findings.md`](docs/03-audit-findings.md) — read it before
 > treating any of this as production-ready. See

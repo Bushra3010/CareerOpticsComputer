@@ -439,3 +439,33 @@ layer, where changing it is a copy edit rather than a migration.
 **Decision needed from:** head office, only if the support workflow wants
 different words (e.g. an SLA tier per priority, or categories per department).
 Renaming enum values later is a single `alter type … rename value` migration.
+
+---
+
+## C12 — Which events raise a notification
+
+**Status:** resolved by documented assumption · **Raised and resolved:** 9
+August 2026, migration `0037`
+
+PRD §3 scopes V1 to in-app notifications and stops there — no document
+enumerates which events notify whom. The V1 set was chosen for being
+unambiguous (each has exactly one obvious recipient) and is deliberately
+small:
+
+| Event                                    | Recipient                                                                                                                                              |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Public ticket reply                      | The side that did not write it (requester ↔ assignee; an unassigned ticket notifies nobody on the support side — the admin queue is that side's inbox) |
+| Ticket assigned                          | The assignee                                                                                                                                           |
+| Order dispatched / delivered / cancelled | The staff member who placed the order                                                                                                                  |
+| Result published (`student_results` row) | The student, keyed by student id so the message waits for a login that may not exist yet                                                               |
+
+Not wired, on purpose, until someone asks: exam scheduling, fee due dates,
+wallet movements, announcement publication (that one lands with the
+announcements slice). Each is one `app.notify(...)` call from a trigger —
+additive, no schema change.
+
+Internal notes notify nobody, matching R17's visibility rule. Notifications
+are private to their recipient at the RLS level; there is no staff read of
+another person's inbox anywhere, because nothing in the PRD asks for one.
+
+**Decision needed from:** head office, only to extend the event list.

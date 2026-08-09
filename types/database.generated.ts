@@ -980,6 +980,25 @@ export interface Database {
         Update: never;
         Relationships: [];
       };
+      notifications: {
+        Row: {
+          id: string;
+          organization_id: string;
+          recipient_user_id: string | null;
+          recipient_student_id: string | null;
+          type: string;
+          title: string;
+          body: string | null;
+          href: string | null;
+          read_at: string | null;
+          created_at: string;
+        };
+        /** app.notify() via triggers only. */
+        Insert: never;
+        /** mark_notification_read() / mark_all_notifications_read() only. */
+        Update: never;
+        Relationships: [];
+      };
       referral_codes: {
         Row: {
           id: string;
@@ -1346,6 +1365,14 @@ export interface Database {
       };
       reopen_ticket: {
         Args: { p_ticket_id: string };
+        Returns: undefined;
+      };
+      mark_notification_read: {
+        Args: { p_notification_id: string };
+        Returns: undefined;
+      };
+      mark_all_notifications_read: {
+        Args: Record<string, never>;
         Returns: undefined;
       };
       submit_public_enquiry: {

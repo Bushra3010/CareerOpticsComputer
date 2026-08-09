@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/db/server";
 import { getCurrentCentreContext } from "@/features/centres/current-membership";
 import { getPermissionCodes } from "@/features/centres/nav";
+import { countUnreadNotifications } from "@/features/notifications/queries";
 import { CentrePortalShell } from "@/features/centres/components/centre-portal-shell";
 import { SignOutButton } from "@/features/auth/components/sign-out-button";
 
@@ -32,19 +33,21 @@ export default async function CentreLayout({
     );
   }
 
-  const [codes, { data: centre }] = await Promise.all([
+  const [codes, { data: centre }, unreadNotifications] = await Promise.all([
     getPermissionCodes(supabase, user.id, context.centreId),
     supabase
       .from("centres")
       .select("name")
       .eq("id", context.centreId)
       .maybeSingle(),
+    countUnreadNotifications(),
   ]);
 
   return (
     <CentrePortalShell
       permissionCodes={[...codes]}
       centreName={centre?.name ?? "Centre"}
+      notificationCount={unreadNotifications}
       headerAction={<SignOutButton />}
     >
       {children}
