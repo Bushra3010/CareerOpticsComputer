@@ -37,7 +37,6 @@ export const STUDENT_NAV: NavGroup[] = [
         label: "Class schedule",
         href: "/student/timetable",
         icon: CalendarDays,
-        planned: true,
       },
       {
         label: "Study materials",
@@ -96,7 +95,6 @@ export const STUDENT_BOTTOM_NAV: BottomNavItems = [
     label: "Classes",
     href: "/student/timetable",
     icon: CalendarDays,
-    planned: true,
   },
   {
     label: "Exams",

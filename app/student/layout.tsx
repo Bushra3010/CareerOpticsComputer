@@ -20,7 +20,7 @@ export default async function StudentLayout({
     redirect("/sign-in/student");
   }
 
-  const { data: student } = await supabase
+  const { data: student, error } = await supabase
     .from("students")
     .select("full_name")
     .eq("user_id", user.id)
@@ -29,7 +29,12 @@ export default async function StudentLayout({
 
   // A login with no student record gets no navigation to nowhere — the page
   // itself explains. This is the pre-shell layout, kept for exactly this case.
-  if (!student) {
+  //
+  // A *failed* query is not that case, and the two must not collapse into
+  // one: observed in development, a request that errored transiently
+  // rendered every page without its navigation, which looks like a broken
+  // portal rather than a hiccup. On error the shell still renders.
+  if (!student && !error) {
     return (
       <div className="bg-canvas min-h-dvh">
         <header className="bg-surface border-border flex items-center justify-between border-b px-6 py-4">
@@ -45,7 +50,7 @@ export default async function StudentLayout({
 
   return (
     <StudentPortalShell
-      studentName={student.full_name}
+      studentName={student?.full_name ?? "Student"}
       notificationCount={unreadNotifications}
       headerAction={<SignOutButton />}
     >

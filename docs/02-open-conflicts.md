@@ -530,3 +530,28 @@ trigger, one reversal per entry, reversals themselves irreversible.
 
 **Decision needed from:** head office, only if they want a fixed category
 chart or a cash-box-to-wallet reconciliation.
+
+---
+
+## C15 — Attendance is scoped to a course, not a batch
+
+**Status:** open · **Raised:** 10 August 2026, migration `0046`
+
+PRD §10.6 scopes `attendance_sessions` to a **batch** ("centre, batch,
+date, schedule, topic…"), and §6.4's flow has faculty "choose date, batch
+and scheduled session". Migration `0011` shipped it scoped to
+**(centre, course, date)** with no batch and no link to a timetable slot,
+and it has been exercised by the integration suite ever since.
+
+Migration `0046` adds batches and their timetable without retrofitting
+attendance, deliberately. Retrofitting is not a column addition: every
+existing session would need a batch, sessions predate batches entirely, and
+"what happens to a session whose students are spread across two batches"
+is a product question, not a schema detail.
+
+**What this means today:** attendance is taken per course per day, so a
+centre running two batches of the same course cannot mark them separately.
+
+**Decision needed from:** head office — whether attendance must be
+per-batch (a real migration plus a backfill rule for existing sessions), or
+whether per-course-per-day is how the centres actually work.

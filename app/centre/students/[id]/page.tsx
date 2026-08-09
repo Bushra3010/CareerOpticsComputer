@@ -12,6 +12,10 @@ import {
   listStudentDocuments,
 } from "@/features/students/document-queries";
 import { getStudentProfile } from "@/features/students/queries";
+import { PlaceStudentSelect } from "@/features/batches/components/place-student-select";
+import { listBatchOptions } from "@/features/batches/queries";
+import { getCurrentCentreContext } from "@/features/centres/current-membership";
+import { createClient } from "@/lib/db/server";
 
 export const metadata: Metadata = {
   title: "Student",
@@ -38,6 +42,18 @@ export default async function StudentDetailPage({
 
   const documents = await listStudentDocuments(id);
   const photo = documents.find((d) => d.kind === "photo" && d.url);
+
+  // Batch options come from the viewer's own centre. A viewer without
+  // `batch.manage` gets an empty list from RLS, and the select is not
+  // rendered at all — the action would refuse them anyway.
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const context = user
+    ? await getCurrentCentreContext(supabase, user.id)
+    : null;
+  const batches = context ? await listBatchOptions(context.centreId) : [];
 
   return (
     <div className="space-y-8">
@@ -135,7 +151,17 @@ export default async function StudentDetailPage({
                       </p>
                       <p className="text-meta text-text-secondary">
                         Enrolled {e.enrolledOn}
+                        {e.batchLabel ? ` · ${e.batchLabel}` : ""}
                       </p>
+                      {batches.length > 0 ? (
+                        <div className="mt-2">
+                          <PlaceStudentSelect
+                            enrolmentId={e.id}
+                            currentBatchId={e.batchId}
+                            batches={batches}
+                          />
+                        </div>
+                      ) : null}
                     </div>
                     <StatusBadge status={e.status} />
                   </li>

@@ -64,7 +64,6 @@ export const CENTRE_NAV: NavGroup[] = [
       {
         label: "Batches and timetable",
         href: "/centre/batches",
-        planned: true,
         icon: CalendarCheck,
         permission: "batch.read",
         matchPrefix: true,

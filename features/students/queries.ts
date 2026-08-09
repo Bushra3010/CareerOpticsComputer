@@ -92,6 +92,8 @@ export interface StudentProfile {
     courseName: string;
     status: string;
     enrolledOn: string;
+    batchId: string | null;
+    batchLabel: string | null;
   }[];
 }
 
@@ -117,7 +119,7 @@ export async function getStudentProfile(
     .select(
       `id, registration_number, full_name, phone, email, guardian_name,
        date_of_birth, address, gov_id_last4, status, user_id, created_at,
-       enrolments(id, status, enrolled_at, courses(name))`,
+       enrolments(id, status, enrolled_at, batch_id, courses(name), batches(code, name))`,
     )
     .eq("id", studentId)
     .maybeSingle();
@@ -128,7 +130,9 @@ export async function getStudentProfile(
     id: string;
     status: string;
     enrolled_at: string;
+    batch_id: string | null;
     courses: unknown;
+    batches: unknown;
   }[];
 
   return {
@@ -144,11 +148,16 @@ export async function getStudentProfile(
     status: data.status,
     hasLogin: data.user_id !== null,
     admittedOn: data.created_at.slice(0, 10),
-    enrolments: enrolments.map((e) => ({
-      id: e.id,
-      courseName: one<{ name: string }>(e.courses)?.name ?? "Course",
-      status: e.status,
-      enrolledOn: e.enrolled_at.slice(0, 10),
-    })),
+    enrolments: enrolments.map((e) => {
+      const batch = one<{ code: string; name: string }>(e.batches);
+      return {
+        id: e.id,
+        courseName: one<{ name: string }>(e.courses)?.name ?? "Course",
+        status: e.status,
+        enrolledOn: e.enrolled_at.slice(0, 10),
+        batchId: e.batch_id,
+        batchLabel: batch ? `${batch.code} — ${batch.name}` : null,
+      };
+    }),
   };
 }

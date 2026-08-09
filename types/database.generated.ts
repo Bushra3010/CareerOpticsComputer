@@ -331,6 +331,7 @@ export interface Database {
           centre_id: string;
           student_id: string;
           course_id: string;
+          batch_id: string | null;
           status: 'active' | 'completed' | 'withdrawn' | 'transferred' | 'on_hold';
           enrolled_at: string;
           created_at: string;
@@ -1107,6 +1108,58 @@ export interface Database {
         /** create_ticket() / assign_ticket() / resolve_ticket() / close_ticket() / reopen_ticket() only. */
         Insert: never;
         Update: never;
+        Relationships: [];
+      };
+      batches: {
+        Row: {
+          id: string;
+          organization_id: string;
+          centre_id: string;
+          course_id: string;
+          code: string;
+          name: string;
+          faculty_id: string | null;
+          capacity: number | null;
+          room: string | null;
+          start_date: string;
+          end_date: string | null;
+          status: Database['public']['Enums']['catalog_item_status'];
+          created_at: string;
+          created_by: string | null;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: Partial<Database['public']['Tables']['batches']['Row']> & {
+          organization_id: string;
+          centre_id: string;
+          course_id: string;
+          code: string;
+          name: string;
+          start_date: string;
+        };
+        Update: Partial<Database['public']['Tables']['batches']['Row']>;
+        Relationships: [];
+      };
+      batch_schedules: {
+        Row: {
+          id: string;
+          batch_id: string;
+          weekday: number;
+          start_time: string;
+          end_time: string;
+          room: string | null;
+          faculty_id: string | null;
+          created_at: string;
+        };
+        Insert: Partial<
+          Database['public']['Tables']['batch_schedules']['Row']
+        > & {
+          batch_id: string;
+          weekday: number;
+          start_time: string;
+          end_time: string;
+        };
+        Update: Partial<Database['public']['Tables']['batch_schedules']['Row']>;
         Relationships: [];
       };
       expense_entries: {
