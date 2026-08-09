@@ -96,6 +96,29 @@ jobs:
             echo "::warning::No pgTAP suites yet — RLS tests are a Phase 0 exit gate."
           fi
 
+      # 7b. The Vitest integration suite — eighteen files, 158 tests, and
+      #     until now they ran on one developer's laptop and nowhere else,
+      #     which the day somebody else pushes is the same as not having them.
+      #
+      #     Deliberately pointed at the LOCAL stack this job already booted,
+      #     not the hosted project. That means: no secrets (this repository is
+      #     public and the service-role key bypasses every policy), no shared
+      #     tenant for concurrent runs to collide over, and no Supabase Auth
+      #     rate limit — which is what forces `fileParallelism: false` locally.
+      #     It also tests something the hosted run cannot: that the policies
+      #     hold on a database built from migrations alone, with no history.
+      #
+      #     `supabase status -o env` prints the local keys; they are fixed
+      #     development values, identical on every machine, and are not secret.
+      - name: Integration tests (local stack)
+        run: |
+          set -euo pipefail
+          eval "$(supabase status -o env)"
+          NEXT_PUBLIC_SUPABASE_URL="$API_URL" \
+          NEXT_PUBLIC_SUPABASE_ANON_KEY="$ANON_KEY" \
+          SUPABASE_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY" \
+          npm run test:integration
+
       - name: Stop Supabase
         if: always()
         run: supabase stop --no-backup
