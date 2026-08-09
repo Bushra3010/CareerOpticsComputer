@@ -18,11 +18,15 @@ import { Button } from "@/components/ui/button";
  * sticky state."
  */
 
+// Gallery is deliberately absent: `/gallery/photos` was listed here from
+// Phase 1 and never built, so the public site's most visible menu carried a
+// 404. The gallery is one of the §7.12 CMS pieces whose shape nobody has
+// specified (C13) — a dead link is worse than a missing one, so it comes
+// back when the pages behind it do.
 const NAV = [
   { label: "Courses", href: "/courses" },
   { label: "Centres", href: "/centres" },
   { label: "Verify", href: "/verify" },
-  { label: "Gallery", href: "/gallery/photos" },
   { label: "Notices", href: "/notices" },
   { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },

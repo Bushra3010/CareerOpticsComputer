@@ -555,3 +555,9 @@ centre running two batches of the same course cannot mark them separately.
 **Decision needed from:** head office — whether attendance must be
 per-batch (a real migration plus a backfill rule for existing sessions), or
 whether per-course-per-day is how the centres actually work.
+
+**Addendum, 10 August 2026.** The public header's "Gallery" item pointed at
+`/gallery/photos`, which has never existed — a 404 in the public site's main
+menu since Phase 1. The item has been removed rather than backed by an
+invented schema; it returns when the gallery does. Every other internal link
+in the codebase was audited at the same time and resolves to a real route.
