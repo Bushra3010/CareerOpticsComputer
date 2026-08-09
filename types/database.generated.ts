@@ -1108,6 +1108,30 @@ export interface Database {
         Update: never;
         Relationships: [];
       };
+      announcements: {
+        Row: {
+          id: string;
+          organization_id: string;
+          scope_type: Database['public']['Enums']['announcement_scope'];
+          scope_centre_id: string | null;
+          title: string;
+          body: string;
+          status: Database['public']['Enums']['catalog_item_status'];
+          publish_at: string | null;
+          expires_at: string | null;
+          created_at: string;
+          created_by: string | null;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: Partial<Database['public']['Tables']['announcements']['Row']> & {
+          organization_id: string;
+          title: string;
+          body: string;
+        };
+        Update: Partial<Database['public']['Tables']['announcements']['Row']>;
+        Relationships: [];
+      };
       ticket_messages: {
         Row: {
           id: string;
@@ -1596,6 +1620,7 @@ export interface Database {
         | 'reopened';
       ticket_priority: 'low' | 'medium' | 'high' | 'urgent';
       ticket_requester_type: 'staff' | 'student';
+      announcement_scope: 'organization' | 'centre';
     };
     CompositeTypes: Record<string, never>;
   };

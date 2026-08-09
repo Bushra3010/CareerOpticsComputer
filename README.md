@@ -4,7 +4,7 @@ Multi-tenant computer education, franchise and training-centre management
 platform for **Career Optics Computer Academy**.
 
 > **Status: Phase 1 substantially complete, running against a hosted Supabase
-> project.** Migrations `0001`–`0041`, all applied. Working end to end: the public site and
+> project.** Migrations `0001`–`0042`, all applied. Working end to end: the public site and
 > course catalogue, admission enquiries, the centre franchise application and
 > its atomic head-office approval, authentication for three portals, five
 > centre roles with staff invitations, student admission and the student
@@ -88,6 +88,13 @@ platform for **Career Optics Computer Academy**.
 > was unset — an unassigned ticket, or a caller who is not a student — which
 > SQL's three-valued logic then let straight past the `if`. Found by the
 > newly-seeded-role integration suite, not by inspection.
+>
+> **Announcements** (migration `0042`) close the last unbuilt bullet in
+> Phase 5 — head office posts organisation-wide, a centre owner posts to
+> their own centre, and everyone else (every other centre role, and
+> students) reads whatever is published, in its publish/expiry window and
+> in scope, entirely at the RLS level: there is no application code deciding
+> who sees what. **Phase 5 is complete.**
 >
 > Not built at all: CMS and reporting. Known defects and an
 > unverified audit backlog are in

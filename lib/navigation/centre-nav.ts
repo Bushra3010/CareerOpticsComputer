@@ -173,7 +173,6 @@ export const CENTRE_NAV: NavGroup[] = [
       {
         label: "Announcements",
         href: "/centre/announcements",
-        planned: true,
         icon: Megaphone,
       },
       {

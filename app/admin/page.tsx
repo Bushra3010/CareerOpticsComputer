@@ -308,6 +308,11 @@ export default async function AdminDashboardPage() {
               </Link>
             </Button>
             <Button asChild variant="secondary" className="justify-start">
+              <Link href="/admin/announcements">
+                <Megaphone /> Announcements
+              </Link>
+            </Button>
+            <Button asChild variant="secondary" className="justify-start">
               <Link href="/courses">
                 <BookOpen /> Course catalogue
               </Link>
