@@ -10,6 +10,7 @@ import {
   GraduationCap,
   IndianRupee,
   Megaphone,
+  Newspaper,
   Plus,
   ShoppingCart,
   Users,
@@ -310,6 +311,11 @@ export default async function AdminDashboardPage() {
             <Button asChild variant="secondary" className="justify-start">
               <Link href="/admin/announcements">
                 <Megaphone /> Announcements
+              </Link>
+            </Button>
+            <Button asChild variant="secondary" className="justify-start">
+              <Link href="/admin/notices">
+                <Newspaper /> Public notices
               </Link>
             </Button>
             <Button asChild variant="secondary" className="justify-start">

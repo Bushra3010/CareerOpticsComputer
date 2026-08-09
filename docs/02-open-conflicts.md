@@ -469,3 +469,33 @@ are private to their recipient at the RLS level; there is no staff read of
 another person's inbox anywhere, because nothing in the PRD asks for one.
 
 **Decision needed from:** head office, only to extend the event list.
+
+---
+
+## C13 — The public CMS has no specified shape
+
+**Status:** partially resolved by documented assumption · **Raised:** 9
+August 2026, migration `0043`
+
+PRD §7.12 names a "Public CMS for pages, courses, news/notices, gallery,
+contact details and SEO metadata" and build plan A15 assumes it is
+database-driven from Phase 1 — but neither document gives any of it a
+schema: there is no §10.6 ERD row for `notices`, `gallery`, `testimonials`,
+`pages` or SEO metadata, unlike every other domain this system has built.
+
+What was shipped: **`notices` only** (migration `0043`, `/notices`,
+`/notices/[slug]`, `/admin/notices`) — the one piece named consistently in
+both documents' public route maps, modelled column-for-column on the
+publish-status shape `courses` already established, including its
+"platform-admin only until a content permission exists" write policy.
+
+What was deliberately NOT invented: gallery, testimonials, CMS-backed
+about/contact/legal pages, and per-page SEO metadata. Each needs a real
+decision about shape (one `pages` table with JSON blocks? fixed columns per
+page? where do gallery images live and who moderates them?) that would be
+guesswork today. The static pages keep working as code; the day the owner
+describes what they want managed, each piece is one more table following
+this same pattern.
+
+**Decision needed from:** the owner — which of the remaining §7.12 pieces
+they actually want content-managed, and what fields each carries.

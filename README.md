@@ -96,7 +96,16 @@ platform for **Career Optics Computer Academy**.
 > in scope, entirely at the RLS level: there is no application code deciding
 > who sees what. **Phase 5 is complete.**
 >
-> Not built at all: CMS and reporting. Known defects and an
+> **Public notices** (migration `0043`, C13) put the first real content
+> behind the public site's header and footer "Notices" links, which had
+> pointed at a 404 since Phase 1: head office drafts and publishes at
+> `/admin/notices`, and `/notices` + `/notices/[slug]` show exactly what
+> the publish window allows — enforced by RLS, anonymous readers included.
+> The rest of PRD §7.12's CMS (gallery, testimonials, page content, SEO
+> metadata) has no specified shape and stays deliberately unbuilt; C13
+> records what it needs from the owner.
+>
+> Not built at all: reporting. Known defects and an
 > unverified audit backlog are in
 > [`docs/03-audit-findings.md`](docs/03-audit-findings.md) — read it before
 > treating any of this as production-ready. See

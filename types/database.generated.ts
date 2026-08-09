@@ -1108,6 +1108,29 @@ export interface Database {
         Update: never;
         Relationships: [];
       };
+      notices: {
+        Row: {
+          id: string;
+          organization_id: string;
+          title: string;
+          slug: string;
+          body: string;
+          status: Database['public']['Enums']['catalog_item_status'];
+          published_at: string | null;
+          created_at: string;
+          created_by: string | null;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: Partial<Database['public']['Tables']['notices']['Row']> & {
+          organization_id: string;
+          title: string;
+          slug: string;
+          body: string;
+        };
+        Update: Partial<Database['public']['Tables']['notices']['Row']>;
+        Relationships: [];
+      };
       announcements: {
         Row: {
           id: string;
