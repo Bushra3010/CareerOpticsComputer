@@ -120,7 +120,6 @@ export const CENTRE_NAV: NavGroup[] = [
       {
         label: "Income and expenses",
         href: "/centre/finance/expenses",
-        planned: true,
         icon: Banknote,
         permission: "expense.read",
       },

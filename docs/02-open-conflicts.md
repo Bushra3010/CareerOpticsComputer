@@ -499,3 +499,34 @@ this same pattern.
 
 **Decision needed from:** the owner — which of the remaining §7.12 pieces
 they actually want content-managed, and what fields each carries.
+
+---
+
+## C14 — Income and expense entries: categories and scope
+
+**Status:** resolved by documented assumption · **Raised:** 10 August 2026,
+migration `0045`
+
+The matrix's `expense.*` row and PRD §6.7's "income & expense tracking"
+bullet name the feature; neither gives it categories, a workflow, or a
+relationship to the money already tracked elsewhere. Three assumptions,
+recorded rather than silently decided:
+
+1. **Category is free text with UI suggestions, not an enum.** Unlike
+   ticket priority (C11) nothing routes or gates on it — it only groups
+   report lines. An enum would make every new category a migration for zero
+   enforcement value.
+2. **Course fees are excluded.** They already live in the insert-only
+   payments ledger; recording them twice would make both ledgers wrong.
+   This module is the rest of the cash box — rent, salaries, printing
+   income.
+3. **No wallet linkage.** The wallet is head-office money (recharges,
+   orders, commissions); the cash box is the centre's own. No document
+   connects them, and connecting them invents an accounting model.
+
+Same ledger discipline as everything else: insert-only at the privilege
+level, corrections are mirror-image compensating rows validated by
+trigger, one reversal per entry, reversals themselves irreversible.
+
+**Decision needed from:** head office, only if they want a fixed category
+chart or a cash-box-to-wallet reconciliation.

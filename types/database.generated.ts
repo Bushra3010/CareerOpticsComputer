@@ -1109,6 +1109,33 @@ export interface Database {
         Update: never;
         Relationships: [];
       };
+      expense_entries: {
+        Row: {
+          id: string;
+          organization_id: string;
+          centre_id: string;
+          entry_type: 'income' | 'expense';
+          category: string;
+          amount_paise: number;
+          entry_date: string;
+          note: string | null;
+          reverses_entry_id: string | null;
+          created_at: string;
+          created_by: string;
+        };
+        Insert: Partial<
+          Database['public']['Tables']['expense_entries']['Row']
+        > & {
+          organization_id: string;
+          centre_id: string;
+          entry_type: 'income' | 'expense';
+          category: string;
+          amount_paise: number;
+        };
+        /** Insert-only ledger — UPDATE/DELETE revoked (migration 0045). */
+        Update: never;
+        Relationships: [];
+      };
       notices: {
         Row: {
           id: string;

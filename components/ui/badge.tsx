@@ -112,6 +112,8 @@ export const STATUS_TONES = {
   overdue: "danger",
   refunded: "info",
   reversed: "neutral",
+  income: "success",
+  expense: "neutral",
   // Exams and credentials
   retired: "neutral",
   scheduled: "info",
