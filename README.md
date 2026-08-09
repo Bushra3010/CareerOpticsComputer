@@ -4,7 +4,7 @@ Multi-tenant computer education, franchise and training-centre management
 platform for **Career Optics Computer Academy**.
 
 > **Status: Phase 1 substantially complete, running against a hosted Supabase
-> project.** Migrations `0001`–`0031`, all applied. Working end to end: the public site and
+> project.** Migrations `0001`–`0041`, all applied. Working end to end: the public site and
 > course catalogue, admission enquiries, the centre franchise application and
 > its atomic head-office approval, authentication for three portals, five
 > centre roles with staff invitations, student admission and the student
@@ -72,6 +72,22 @@ platform for **Career Optics Computer Academy**.
 > bell — which had linked to a 404 since Phase 1 — now shows the unread
 > count and lands on a real `/notifications` page shared by staff and
 > student identities, scoped by RLS rather than by the page.
+>
+> Ticket attachments (migration `0038`) upload under the ticket's own
+> storage prefix and sign with the reader's own session, so a path a reader
+> cannot see simply signs to nothing. Migrations `0039`–`0040` finally seed
+> the organisation-wide head-office roles (HO Operator, Finance Admin,
+> Support Agent) the PRD names in §4 and every permission-gap note since
+> `0031` had been waiting on — until now every `*.manage` permission in the
+> system was reachable only by a platform super admin. `0040` also closed a
+> permission that had been dead since Phase 1: `user.read`, referenced by
+> `memberships_select`'s RLS policy but never actually created, found by the
+> assign-ticket picker having no roster to show. `0041` is a real
+> privilege-escalation-class fix: two `if not (a or b or x = nullable)`
+> authorisation guards went `NULL` (not `false`) whenever the nullable side
+> was unset — an unassigned ticket, or a caller who is not a student — which
+> SQL's three-valued logic then let straight past the `if`. Found by the
+> newly-seeded-role integration suite, not by inspection.
 >
 > Not built at all: CMS and reporting. Known defects and an
 > unverified audit backlog are in

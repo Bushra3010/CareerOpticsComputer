@@ -112,10 +112,22 @@ describe.skipIf(!hasCredentials)("notifications", () => {
 
     // Creation inserts the opening message — from the requester, with no
     // assignee yet, so nobody is notified. That silence is deliberate.
+    //
+    // Scoped to THIS ticket's own href rather than the whole organisation:
+    // `fx.orgId` is the one real seeded org every integration test file
+    // shares, and `npm run test:integration` runs files concurrently, so an
+    // org-wide count is affected by whatever other suite happens to be
+    // moving an order or replying on a ticket at the same moment. Found by
+    // a real, reproducible failure under the full combined run despite this
+    // file passing in isolation — a href-scoped filter cannot see another
+    // ticket's notifications no matter what else is running.
     const { data: none } = await fx.admin
       .from("notifications")
       .select("id")
-      .eq("organization_id", fx.orgId);
+      .eq("organization_id", fx.orgId)
+      .or(
+        `href.eq./admin/tickets/${ticketId},href.eq./student/support/${ticketId},href.eq./centre/support/${ticketId}`,
+      );
     expect(none ?? []).toHaveLength(0);
 
     // Support replies → the student hears.

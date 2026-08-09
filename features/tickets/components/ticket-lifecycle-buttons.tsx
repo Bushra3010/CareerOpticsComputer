@@ -4,7 +4,7 @@ import { useActionState, useRef } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Input, Select } from "@/components/ui/input";
 
 import {
   assignTicket,
@@ -13,10 +13,19 @@ import {
   resolveTicket,
   type TicketActionState,
 } from "../actions";
+import type { AssignableStaff } from "../queries";
 
 const initial: TicketActionState = { status: "idle" };
 
-export function AssignTicketForm({ ticketId }: { ticketId: string }) {
+export function AssignTicketForm({
+  ticketId,
+  staff,
+}: {
+  ticketId: string;
+  /** RLS-shaped upstream: the full roster for user.read holders, at least
+   *  the viewer themselves for everyone else with this page. */
+  staff: AssignableStaff[];
+}) {
   const formRef = useRef<HTMLFormElement>(null);
   const bound = assignTicket.bind(null, ticketId);
   const [state, action, pending] = useActionState(bound, initial);
@@ -32,10 +41,28 @@ export function AssignTicketForm({ ticketId }: { ticketId: string }) {
     >
       <Field
         id="assigneeId"
-        label="Assign to (user id)"
+        label="Assign to"
         error={state.fieldErrors?.assigneeId}
       >
-        <Input name="assigneeId" required maxLength={36} className="w-64" />
+        {staff.length > 0 ? (
+          <Select name="assigneeId" required className="w-72">
+            {staff.map((s) => (
+              <option key={s.userId} value={s.userId}>
+                {s.label}
+              </option>
+            ))}
+          </Select>
+        ) : (
+          // No roster visible to this viewer — the raw id still works, so
+          // the capability is not silently lost.
+          <Input
+            name="assigneeId"
+            required
+            maxLength={36}
+            className="w-72"
+            placeholder="User id"
+          />
+        )}
       </Field>
       <Button
         type="submit"

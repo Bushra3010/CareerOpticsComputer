@@ -15,7 +15,10 @@ import {
   ReopenTicketButton,
   ResolveTicketButton,
 } from "@/features/tickets/components/ticket-lifecycle-buttons";
-import { getTicketDetail } from "@/features/tickets/queries";
+import {
+  getTicketDetail,
+  listAssignableStaff,
+} from "@/features/tickets/queries";
 
 export const metadata: Metadata = { title: "Ticket", robots: { index: false } };
 
@@ -37,7 +40,10 @@ export default async function AdminTicketPage({
     );
   }
 
-  const ticket = await getTicketDetail(id);
+  const [ticket, staff] = await Promise.all([
+    getTicketDetail(id),
+    listAssignableStaff(),
+  ]);
   if (!ticket) notFound();
 
   // `ticket.internal_note` is granted to no role yet (migration 0032's own
@@ -97,7 +103,9 @@ export default async function AdminTicketPage({
           <CardTitle>Manage</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {isOpen ? <AssignTicketForm ticketId={ticket.id} /> : null}
+          {isOpen ? (
+            <AssignTicketForm ticketId={ticket.id} staff={staff} />
+          ) : null}
           <div className="flex flex-wrap gap-2">
             {isOpen ? <ResolveTicketButton ticketId={ticket.id} /> : null}
             {ticket.status !== "closed" ? (

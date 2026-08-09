@@ -119,6 +119,49 @@ export async function listTicketsForStudent(): Promise<TicketListRow[]> {
   }));
 }
 
+export interface AssignableStaff {
+  userId: string;
+  label: string;
+}
+
+/**
+ * Organisation-level staff a ticket can be assigned to. RLS shapes the
+ * result to the viewer: a platform admin or `user.read` holder sees the
+ * whole head-office roster; a support agent sees at least themselves
+ * (memberships' own-row arm), which is the assignment they actually make.
+ */
+export async function listAssignableStaff(): Promise<AssignableStaff[]> {
+  const supabase = await createClient();
+  const { data: memberships } = await supabase
+    .from("memberships")
+    .select("user_id, roles(name)")
+    .is("centre_id", null)
+    .eq("status", "active");
+
+  const rows = (memberships ?? []) as unknown as {
+    user_id: string;
+    roles: { name: string } | { name: string }[] | null;
+  }[];
+  if (rows.length === 0) return [];
+
+  const ids = [...new Set(rows.map((m) => m.user_id))];
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("id, full_name")
+    .in("id", ids);
+  const names = new Map((profiles ?? []).map((p) => [p.id, p.full_name]));
+
+  return rows
+    .map((m) => {
+      const role = Array.isArray(m.roles) ? m.roles[0] : m.roles;
+      return {
+        userId: m.user_id,
+        label: `${names.get(m.user_id) ?? "Unnamed"}${role?.name ? ` — ${role.name}` : ""}`,
+      };
+    })
+    .sort((a, b) => a.label.localeCompare(b.label));
+}
+
 export interface TicketAttachment {
   name: string;
   url: string;
