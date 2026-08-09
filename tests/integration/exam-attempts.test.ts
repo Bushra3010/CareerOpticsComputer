@@ -5,6 +5,7 @@ import {
   anonKey,
   hasCredentials,
   PASSWORD,
+  signIn,
   setupFixture,
   teardownFixture,
   url,
@@ -51,7 +52,7 @@ describe.skipIf(!hasCredentials)("exam attempts", () => {
       .update({ user_id: created.user.id })
       .eq("id", studentId);
     const cli: AnyClient = createClient(url!, anonKey!);
-    await cli.auth.signInWithPassword({ email, password: PASSWORD });
+    await signIn(cli, email, "sign-in");
     return cli;
   };
 

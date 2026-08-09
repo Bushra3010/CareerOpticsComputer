@@ -5,6 +5,7 @@ import {
   anonKey,
   hasCredentials,
   PASSWORD,
+  signIn,
   setupFixture,
   teardownFixture,
   url,
@@ -59,7 +60,7 @@ describe.skipIf(!hasCredentials)("seeded head-office roles", () => {
       .single();
     memberIds.push(membership!.id);
     const cli: AnyClient = createClient(url!, anonKey!);
-    await cli.auth.signInWithPassword({ email, password: PASSWORD });
+    await signIn(cli, email, "sign-in");
     return { cli, userId };
   };
 

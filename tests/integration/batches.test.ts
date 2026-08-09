@@ -5,6 +5,7 @@ import {
   anonKey,
   hasCredentials,
   PASSWORD,
+  signIn,
   setupFixture,
   teardownFixture,
   url,
@@ -42,7 +43,7 @@ describe.skipIf(!hasCredentials)("batches and timetable", () => {
       .update({ user_id: created!.user!.id })
       .eq("id", fx.students[0].studentId);
     studentCli = createClient(url!, anonKey!);
-    await studentCli.auth.signInWithPassword({ email, password: PASSWORD });
+    await signIn(studentCli, email, "sign-in");
   }, 120_000);
 
   afterAll(async () => {

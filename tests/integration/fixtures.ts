@@ -13,6 +13,34 @@ export const hasCredentials = Boolean(url && anonKey && serviceKey);
 
 export const PASSWORD = "TestPass123!";
 
+/**
+ * Signs in, backing off when Supabase Auth rate-limits us.
+ *
+ * The whole suite creates upwards of eighty users, and the hosted auth
+ * endpoint limits sign-ins per IP over a rolling window. Without this, a
+ * limited request throws inside `beforeAll`, vitest reports the file's
+ * tests as *skipped*, and the run still exits 0 — a green result that
+ * tested nothing. Failing slowly is fine; passing silently is not.
+ */
+export async function signIn(
+  cli: AnyClient,
+  email: string,
+  label: string,
+  password: string = PASSWORD,
+): Promise<void> {
+  const delays = [2000, 5000, 10000, 20000, 30000, 45000];
+  for (let attempt = 0; ; attempt += 1) {
+    const { error } = await cli.auth.signInWithPassword({ email, password });
+    if (!error) return;
+
+    const rateLimited = /rate limit/i.test(error.message);
+    if (!rateLimited || attempt >= delays.length) {
+      throw new Error(`${label}: ${error.message}`);
+    }
+    await new Promise((resolve) => setTimeout(resolve, delays[attempt]));
+  }
+}
+
 export function adminClient(): AnyClient {
   return createClient(url!, serviceKey!, {
     auth: { autoRefreshToken: false, persistSession: false },
@@ -135,12 +163,7 @@ export async function setupFixture(): Promise<Fixture> {
     });
 
     const cli: AnyClient = createClient(url!, anonKey!);
-    const { error: signInError } = await cli.auth.signInWithPassword({
-      email,
-      password: PASSWORD,
-    });
-    if (signInError)
-      throw new Error(`sign-in ${roleCode}: ${signInError.message}`);
+    await signIn(cli, email, `sign-in ${roleCode}`);
 
     return { userId: created.user.id, email, cli };
   };
@@ -302,7 +325,16 @@ export async function teardownFixture(fx: Fixture): Promise<void> {
   }
   await admin.from("attendance_sessions").delete().in("centre_id", centres);
   await admin.from("student_documents").delete().in("centre_id", centres);
+  // Tables added after this helper was first written. Every one of them is
+  // centre-scoped and RESTRICT, so a suite that forgets its own cleanup
+  // leaves a centre that can never be deleted — which is how thirteen test
+  // tenants accumulated in the live project before this was noticed.
+  await admin.from("tickets").delete().in("centre_id", centres);
+  await admin.from("expense_entries").delete().in("centre_id", centres);
+  await admin.from("study_materials").delete().in("centre_id", centres);
   await admin.from("enrolments").delete().in("centre_id", centres);
+  // After enrolments, whose batch_id references these.
+  await admin.from("batches").delete().in("centre_id", centres);
   await admin.from("students").delete().in("centre_id", centres);
   await admin.from("memberships").delete().in("centre_id", centres);
   await admin.from("document_sequences").delete().in("centre_id", centres);

@@ -1110,6 +1110,34 @@ export interface Database {
         Update: never;
         Relationships: [];
       };
+      study_materials: {
+        Row: {
+          id: string;
+          organization_id: string;
+          centre_id: string | null;
+          course_id: string | null;
+          batch_id: string | null;
+          title: string;
+          description: string | null;
+          kind: 'file' | 'link';
+          storage_path: string | null;
+          url: string | null;
+          status: Database['public']['Enums']['catalog_item_status'];
+          created_at: string;
+          created_by: string | null;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: Partial<
+          Database['public']['Tables']['study_materials']['Row']
+        > & {
+          organization_id: string;
+          title: string;
+          kind: 'file' | 'link';
+        };
+        Update: Partial<Database['public']['Tables']['study_materials']['Row']>;
+        Relationships: [];
+      };
       batches: {
         Row: {
           id: string;

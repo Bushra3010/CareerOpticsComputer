@@ -5,6 +5,7 @@ import {
   anonKey,
   hasCredentials,
   PASSWORD,
+  signIn,
   setupFixture,
   teardownFixture,
   url,
@@ -61,7 +62,7 @@ describe.skipIf(!hasCredentials)("notifications", () => {
       status: "active",
     });
     hoCli = createClient(url!, anonKey!);
-    await hoCli.auth.signInWithPassword({ email, password: PASSWORD });
+    await signIn(hoCli, email, "sign-in");
 
     // A student login at the main centre, for the student-recipient half.
     const studentEmail = `fx-notif-stu-${fx.suffix}@example.test`;
@@ -79,10 +80,7 @@ describe.skipIf(!hasCredentials)("notifications", () => {
       .update({ user_id: stuUser!.user!.id })
       .eq("id", fx.students[0].studentId);
     studentCli = createClient(url!, anonKey!);
-    await studentCli.auth.signInWithPassword({
-      email: studentEmail,
-      password: PASSWORD,
-    });
+    await signIn(studentCli, studentEmail, "sign-in");
   }, 120_000);
 
   afterAll(async () => {

@@ -5,6 +5,7 @@ import {
   anonKey,
   hasCredentials,
   PASSWORD,
+  signIn,
   setupFixture,
   teardownFixture,
   url,
@@ -82,11 +83,7 @@ describe.skipIf(!hasCredentials)("question banks", () => {
     });
 
     hoCli = createClient(url!, anonKey!);
-    const { error: signInError } = await hoCli.auth.signInWithPassword({
-      email,
-      password: PASSWORD,
-    });
-    if (signInError) throw new Error(`ho sign-in: ${signInError.message}`);
+    await signIn(hoCli, email, "ho sign-in");
 
     const { data: bank, error: bankError } = await fx.admin
       .from("question_banks")
@@ -338,7 +335,7 @@ describe.skipIf(!hasCredentials)("exams", () => {
     });
 
     hoCli = createClient(url!, anonKey!);
-    await hoCli.auth.signInWithPassword({ email, password: PASSWORD });
+    await signIn(hoCli, email, "sign-in");
 
     const { data: bank } = await fx.admin
       .from("question_banks")

@@ -5,6 +5,7 @@ import {
   anonKey,
   hasCredentials,
   PASSWORD,
+  signIn,
   setupFixture,
   teardownFixture,
   url,
@@ -64,11 +65,7 @@ describe.skipIf(!hasCredentials)("private student files", () => {
       .eq("id", fx.students[0].studentId);
 
     studentCli = createClient(url!, anonKey!);
-    const { error: signInError } = await studentCli.auth.signInWithPassword({
-      email,
-      password: PASSWORD,
-    });
-    if (signInError) throw new Error(`student sign-in: ${signInError.message}`);
+    await signIn(studentCli, email, "student sign-in");
   }, 90_000);
 
   afterAll(async () => {

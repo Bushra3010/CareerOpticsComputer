@@ -5,6 +5,7 @@ import {
   CalendarCheck,
   ClipboardList,
   FileBadge,
+  FileText,
   GraduationCap,
   LayoutDashboard,
   LifeBuoy,
@@ -66,6 +67,13 @@ export const CENTRE_NAV: NavGroup[] = [
         href: "/centre/batches",
         icon: CalendarCheck,
         permission: "batch.read",
+        matchPrefix: true,
+      },
+      {
+        label: "Study materials",
+        href: "/centre/materials",
+        icon: FileText,
+        permission: "material.read",
         matchPrefix: true,
       },
       {

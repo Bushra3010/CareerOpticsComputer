@@ -32,8 +32,16 @@ export default defineConfig({
     environment: "node",
     include: ["tests/integration/**/*.test.ts"],
     testTimeout: 30000,
-    hookTimeout: 30000,
+    // Sign-in is rate-limited by Supabase Auth and every fixture backs off
+    // and retries, so a cold hook can legitimately take minutes.
+    hookTimeout: 180000,
     globals: true,
+    // One file at a time. Each fixture signs in four or more users, and with
+    // eighteen suites running at once the burst reliably trips Supabase's
+    // auth rate limit — which then fails setup and *skips* whole files, so
+    // the run reports "passed" having tested almost nothing. Serial is
+    // slower and honest.
+    fileParallelism: false,
   },
   resolve: {
     alias: { "@": fileURLToPath(new URL("./", import.meta.url)) },

@@ -43,7 +43,6 @@ export const STUDENT_NAV: NavGroup[] = [
         href: "/student/materials",
         icon: FileText,
         matchPrefix: true,
-        planned: true,
       },
       {
         label: "Online exams",

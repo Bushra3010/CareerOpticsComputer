@@ -5,6 +5,7 @@ import {
   PASSWORD,
   anonKey,
   hasCredentials,
+  signIn,
   setupFixture,
   teardownFixture,
   url,
@@ -68,7 +69,7 @@ describe.skipIf(!hasCredentials)("exam and question-bank lifecycle", () => {
     });
 
     hoCli = createClient(url!, anonKey!);
-    await hoCli.auth.signInWithPassword({ email, password: PASSWORD });
+    await signIn(hoCli, email, "sign-in");
 
     const { data: bank } = await hoCli
       .from("question_banks")

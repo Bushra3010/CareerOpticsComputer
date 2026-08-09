@@ -11,6 +11,9 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
+// Only the sign-in helper — this file deliberately builds its own fixtures.
+import { signIn } from "./fixtures";
+
 // Untyped on purpose: postgrest-js's insert/rpc generics need a fully
 // code-generated Database type (see lib/db/rpc.ts) that our hand-maintained
 // one doesn't reproduce. This file talks to tables directly for fixture
@@ -63,8 +66,7 @@ describe.skipIf(!hasCredentials)("RLS proof tests (P1-P6)", () => {
 
   async function signedInClient(email: string): Promise<AnyClient> {
     const client: AnyClient = createClient(url!, anonKey!);
-    const { error } = await client.auth.signInWithPassword({ email, password });
-    if (error) throw new Error(`sign-in failed: ${error.message}`);
+    await signIn(client, email, "sign-in failed", password);
     return client;
   }
 

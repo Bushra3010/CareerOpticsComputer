@@ -4,6 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   PASSWORD,
   hasCredentials,
+  signIn,
   setupFixture,
   teardownFixture,
   url,
@@ -61,7 +62,7 @@ describe.skipIf(!hasCredentials)("centre lifecycle", () => {
     });
 
     hoCli = createClient(url!, anonKey!);
-    await hoCli.auth.signInWithPassword({ email, password: PASSWORD });
+    await signIn(hoCli, email, "sign-in");
   }, 120_000);
 
   afterAll(async () => {

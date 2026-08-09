@@ -5,6 +5,7 @@ import {
   anonKey,
   hasCredentials,
   PASSWORD,
+  signIn,
   setupFixture,
   teardownFixture,
   url,
@@ -79,7 +80,7 @@ describe.skipIf(!hasCredentials)("referrals and tickets", () => {
       status: "active",
     });
     hoCli = createClient(url!, anonKey!);
-    await hoCli.auth.signInWithPassword({ email, password: PASSWORD });
+    await signIn(hoCli, email, "sign-in");
 
     // Portal logins for a student at each centre — create_ticket resolves a
     // student caller through students.user_id, so the link is the identity.
@@ -102,10 +103,7 @@ describe.skipIf(!hasCredentials)("referrals and tickets", () => {
         .update({ user_id: u!.user!.id })
         .eq("id", studentId);
       const cli: AnyClient = createClient(url!, anonKey!);
-      await cli.auth.signInWithPassword({
-        email: studentEmail,
-        password: PASSWORD,
-      });
+      await signIn(cli, studentEmail, "sign-in");
       return cli;
     };
 

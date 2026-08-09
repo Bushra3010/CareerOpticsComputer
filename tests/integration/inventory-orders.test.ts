@@ -5,6 +5,7 @@ import {
   PASSWORD,
   anonKey,
   hasCredentials,
+  signIn,
   setupFixture,
   teardownFixture,
   url,
@@ -79,7 +80,7 @@ describe.skipIf(!hasCredentials)("inventory, shop and orders", () => {
       status: "active",
     });
     hoCli = createClient(url!, anonKey!);
-    await hoCli.auth.signInWithPassword({ email: hoEmail, password: PASSWORD });
+    await signIn(hoCli, hoEmail, "sign-in");
 
     // A second centre's owner, for the RLS cross-centre checks — reusing the
     // real `centre_owner` role (one row per org; membership carries the centre).
@@ -108,10 +109,7 @@ describe.skipIf(!hasCredentials)("inventory, shop and orders", () => {
       status: "active",
     });
     otherOwnerCli = createClient(url!, anonKey!);
-    await otherOwnerCli.auth.signInWithPassword({
-      email: otherEmail,
-      password: PASSWORD,
-    });
+    await signIn(otherOwnerCli, otherEmail, "sign-in");
 
     const { data: loc } = await hoCli
       .from("inventory_locations")

@@ -5,6 +5,7 @@ import {
   PASSWORD,
   anonKey,
   hasCredentials,
+  signIn,
   setupFixture,
   teardownFixture,
   url,
@@ -54,7 +55,7 @@ describe.skipIf(!hasCredentials)("announcements", () => {
       status: "active",
     });
     hoCli = createClient(url!, anonKey!);
-    await hoCli.auth.signInWithPassword({ email: hoEmail, password: PASSWORD });
+    await signIn(hoCli, hoEmail, "sign-in");
 
     const studentEmail = `fx-annstu-${fx.suffix}@example.test`;
     const { data: stuUser } = await fx.admin.auth.admin.createUser({
@@ -71,10 +72,7 @@ describe.skipIf(!hasCredentials)("announcements", () => {
       .update({ user_id: stuUser!.user!.id })
       .eq("id", fx.students[0].studentId);
     studentCli = createClient(url!, anonKey!);
-    await studentCli.auth.signInWithPassword({
-      email: studentEmail,
-      password: PASSWORD,
-    });
+    await signIn(studentCli, studentEmail, "sign-in");
 
     // A second centre's owner, reusing the real `centre_owner` role (one row
     // per org; the membership carries the centre) — the same pattern
@@ -103,10 +101,7 @@ describe.skipIf(!hasCredentials)("announcements", () => {
       status: "active",
     });
     otherOwnerCli = createClient(url!, anonKey!);
-    await otherOwnerCli.auth.signInWithPassword({
-      email: otherEmail,
-      password: PASSWORD,
-    });
+    await signIn(otherOwnerCli, otherEmail, "sign-in");
   }, 120_000);
 
   afterAll(async () => {

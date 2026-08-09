@@ -6,6 +6,7 @@ import {
   anonKey,
   hasCredentials,
   PASSWORD,
+  signIn,
   url,
   type AnyClient,
 } from "./fixtures";
@@ -51,7 +52,7 @@ describe.skipIf(!hasCredentials)("public notices", () => {
         is_platform_super_admin: platformAdmin,
       });
       const cli: AnyClient = createClient(url!, anonKey!);
-      await cli.auth.signInWithPassword({ email, password: PASSWORD });
+      await signIn(cli, email, "sign-in");
       return cli;
     };
 
