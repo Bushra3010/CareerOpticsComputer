@@ -23,6 +23,88 @@ export interface StudentReceipt {
   postedAt: string;
 }
 
+export interface StudentSelfProfile {
+  fullName: string;
+  registrationNumber: string;
+  centreName: string | null;
+  phone: string | null;
+  email: string | null;
+  guardianName: string | null;
+  dateOfBirth: string | null;
+  gender: string | null;
+  address: string | null;
+  admittedOn: string;
+  course: {
+    name: string;
+    durationLabel: string | null;
+    description: string | null;
+  } | null;
+}
+
+/**
+ * The signed-in student's own record, contact fields included — same
+ * no-parameter shape as getStudentOverview: the row comes from the session,
+ * and RLS is the backstop. Corrections go through the centre, so there is
+ * deliberately no edit action anywhere behind this.
+ */
+export async function getStudentSelfProfile(): Promise<StudentSelfProfile | null> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data: student } = await supabase
+    .from("students")
+    .select(
+      "id, full_name, registration_number, phone, email, guardian_name, date_of_birth, gender, address, created_at, centres(name)",
+    )
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (!student) return null;
+
+  const centre = (
+    Array.isArray(student.centres) ? student.centres[0] : student.centres
+  ) as { name: string } | null;
+
+  const { data: enrolment } = await supabase
+    .from("enrolments")
+    .select("courses(name, duration_label, description)")
+    .eq("student_id", student.id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const course = (
+    Array.isArray(enrolment?.courses)
+      ? enrolment?.courses[0]
+      : enrolment?.courses
+  ) as {
+    name: string;
+    duration_label: string | null;
+    description: string | null;
+  } | null;
+
+  return {
+    fullName: student.full_name,
+    registrationNumber: student.registration_number,
+    centreName: centre?.name ?? null,
+    phone: student.phone,
+    email: student.email,
+    guardianName: student.guardian_name,
+    dateOfBirth: student.date_of_birth,
+    gender: student.gender,
+    address: student.address,
+    admittedOn: student.created_at.slice(0, 10),
+    course: course
+      ? {
+          name: course.name,
+          durationLabel: course.duration_label,
+          description: course.description,
+        }
+      : null,
+  };
+}
+
 export interface StudentOverview {
   studentName: string;
   registrationNumber: string;

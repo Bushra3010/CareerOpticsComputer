@@ -37,12 +37,14 @@ export const STUDENT_NAV: NavGroup[] = [
         label: "Class schedule",
         href: "/student/timetable",
         icon: CalendarDays,
+        planned: true,
       },
       {
         label: "Study materials",
         href: "/student/materials",
         icon: FileText,
         matchPrefix: true,
+        planned: true,
       },
       {
         label: "Online exams",
@@ -90,7 +92,12 @@ export const STUDENT_NAV: NavGroup[] = [
  */
 export const STUDENT_BOTTOM_NAV: BottomNavItems = [
   { label: "Home", href: "/student", icon: LayoutDashboard },
-  { label: "Classes", href: "/student/timetable", icon: CalendarDays },
+  {
+    label: "Classes",
+    href: "/student/timetable",
+    icon: CalendarDays,
+    planned: true,
+  },
   {
     label: "Exams",
     href: "/student/exams",
