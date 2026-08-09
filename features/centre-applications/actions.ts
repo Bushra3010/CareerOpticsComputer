@@ -121,8 +121,10 @@ async function findOrInviteOwner(
   admin: ReturnType<typeof createServiceRoleClient>,
   email: string,
 ): Promise<{ userId?: string; error?: string }> {
-  const { data: invited, error } =
-    await admin.auth.admin.inviteUserByEmail(email);
+  const { data: invited, error } = await admin.auth.admin.inviteUserByEmail(
+    email,
+    { redirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/invite` },
+  );
 
   if (!error && invited.user) return { userId: invited.user.id };
 

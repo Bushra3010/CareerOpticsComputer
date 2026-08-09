@@ -67,8 +67,13 @@ export async function inviteStaff(
   // an unused auth user is harmless while a membership pointing at nobody is
   // not. On retry the invite reports the address is taken, so fall back to
   // finding the existing account rather than getting permanently stuck.
+  // Without an explicit target the link falls back to the project's Site URL
+  // — the public home page, which has no way to consume an invite token, so
+  // the invitation would dead-end there. `/invite` is the page that does.
   const { data: invited, error: inviteError } =
-    await admin.auth.admin.inviteUserByEmail(parsed.data.email);
+    await admin.auth.admin.inviteUserByEmail(parsed.data.email, {
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/invite`,
+    });
 
   let userId = invited?.user?.id;
   if (inviteError || !userId) {

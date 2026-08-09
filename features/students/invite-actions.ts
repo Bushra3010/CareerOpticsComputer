@@ -82,7 +82,9 @@ export async function inviteStudentToPortal(
 
   const admin = createServiceRoleClient();
   const { data: invited, error: inviteError } =
-    await admin.auth.admin.inviteUserByEmail(student.email);
+    await admin.auth.admin.inviteUserByEmail(student.email, {
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/invite`,
+    });
 
   if (inviteError || !invited.user) {
     return {
