@@ -1348,7 +1348,12 @@ export interface Database {
         Returns: string;
       };
       add_ticket_message: {
-        Args: { p_ticket_id: string; p_body: string; p_is_internal?: boolean };
+        Args: {
+          p_ticket_id: string;
+          p_body: string;
+          p_is_internal?: boolean;
+          p_attachments?: string[];
+        };
         Returns: string;
       };
       assign_ticket: {

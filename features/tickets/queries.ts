@@ -119,11 +119,17 @@ export async function listTicketsForStudent(): Promise<TicketListRow[]> {
   }));
 }
 
+export interface TicketAttachment {
+  name: string;
+  url: string;
+}
+
 export interface TicketMessageRow {
   id: string;
   senderType: "staff" | "student";
   body: string;
   isInternal: boolean;
+  attachments: TicketAttachment[];
   createdAt: string;
 }
 
@@ -169,9 +175,41 @@ export async function getTicketDetail(
 
   const { data: messages } = await supabase
     .from("ticket_messages")
-    .select("id, sender_type, body, is_internal, created_at")
+    .select("id, sender_type, body, is_internal, attachments, created_at")
     .eq("ticket_id", ticketId)
     .order("created_at", { ascending: true });
+
+  // Signed with the reader's own session — storage RLS decides whether each
+  // URL may exist at all, so a path the reader cannot see simply signs to
+  // nothing and is dropped.
+  const signAttachments = async (
+    paths: string[],
+  ): Promise<TicketAttachment[]> => {
+    const signed = await Promise.all(
+      paths.map(async (path) => {
+        const { data } = await supabase.storage
+          .from("support-private")
+          .createSignedUrl(path, 60 * 60);
+        if (!data?.signedUrl) return null;
+        // Display name: the original filename after the uniquifying UUID.
+        const base = path.split("/").pop() ?? path;
+        return {
+          name: base.replace(/^[0-9a-f-]{37}/, ""),
+          url: data.signedUrl,
+        };
+      }),
+    );
+    return signed.filter((a): a is TicketAttachment => a !== null);
+  };
+
+  const withAttachments = await Promise.all(
+    (messages ?? []).map(async (m) => ({
+      ...m,
+      signedAttachments: m.attachments.length
+        ? await signAttachments(m.attachments)
+        : [],
+    })),
+  );
 
   return {
     id: ticket.id,
@@ -184,11 +222,12 @@ export async function getTicketDetail(
     centreName: centre?.name ?? null,
     requesterType: ticket.requester_type,
     createdOn: ticket.created_at.slice(0, 10),
-    messages: (messages ?? []).map((m) => ({
+    messages: withAttachments.map((m) => ({
       id: m.id,
       senderType: m.sender_type,
       body: m.body,
       isInternal: m.is_internal,
+      attachments: m.signedAttachments,
       createdAt: m.created_at,
     })),
   };

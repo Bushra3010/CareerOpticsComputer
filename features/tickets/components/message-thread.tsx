@@ -39,6 +39,22 @@ export function MessageThread({
             <p className="text-body text-text mt-1 whitespace-pre-wrap">
               {m.body}
             </p>
+            {m.attachments.length > 0 ? (
+              <ul className="mt-2 flex flex-wrap gap-2">
+                {m.attachments.map((a) => (
+                  <li key={a.url}>
+                    <a
+                      href={a.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="border-border bg-surface-subtle text-meta text-brand-600 inline-flex min-h-[32px] items-center rounded-full border px-3 font-semibold hover:underline"
+                    >
+                      {a.name}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
           </li>
         ))}
       </ol>
@@ -92,9 +108,26 @@ function ReplyForm({
     >
       <p className="text-label text-text font-semibold">{label}</p>
       <Textarea name="body" rows={3} required maxLength={4000} />
-      {state.status === "error" && state.message ? (
+      <div>
+        <label
+          htmlFor={`files-${ticketId}-${isInternal ? "internal" : "public"}`}
+          className="text-meta text-text-secondary block"
+        >
+          Attach files (up to 5 · images, PDF or text · 10 MB each)
+        </label>
+        <input
+          id={`files-${ticketId}-${isInternal ? "internal" : "public"}`}
+          type="file"
+          name="files"
+          multiple
+          accept="image/jpeg,image/png,image/webp,application/pdf,text/plain"
+          className="text-body text-text file:border-border file:bg-surface-subtle file:text-text mt-1 block file:mr-3 file:cursor-pointer file:rounded-[var(--radius-control)] file:border file:px-3 file:py-1.5"
+        />
+      </div>
+      {state.status === "error" &&
+      (state.message || state.fieldErrors?.files) ? (
         <p role="alert" className="text-meta text-danger">
-          {state.message}
+          {state.fieldErrors?.files ?? state.message}
         </p>
       ) : null}
       <Button

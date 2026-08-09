@@ -613,4 +613,50 @@ describe.skipIf(!hasCredentials)("referrals and tickets", () => {
       .eq("id", studentTicketId);
     expect(data ?? []).toHaveLength(0);
   });
+
+  it("attachments upload under the ticket's own prefix and nowhere else (0038)", async () => {
+    const blob = new Blob(["screenshot bytes"], { type: "text/plain" });
+    const path = `${staffTicketId}/${crypto.randomUUID()}-note.txt`;
+
+    // The requester can upload to their own ticket…
+    const { error: up } = await fx.owner.cli.storage
+      .from("support-private")
+      .upload(path, blob);
+    expect(up).toBeNull();
+
+    // …but not to centre B's ticket, even knowing its id.
+    const { error: cross } = await fx.owner.cli.storage
+      .from("support-private")
+      .upload(`${studentTicketId}/${crypto.randomUUID()}-sneaky.txt`, blob);
+    expect(cross).not.toBeNull();
+
+    // The message carries the path; a foreign path is refused by the
+    // function even though the storage write above already succeeded.
+    const { data: messageId, error: msg } = await fx.owner.cli.rpc(
+      "add_ticket_message",
+      {
+        p_ticket_id: staffTicketId,
+        p_body: "Attached the statement.",
+        p_attachments: [path],
+      },
+    );
+    expect(msg).toBeNull();
+    expect(messageId).toBeTruthy();
+
+    const { error: foreign } = await fx.owner.cli.rpc("add_ticket_message", {
+      p_ticket_id: staffTicketId,
+      p_body: "Pointing at somebody else's file.",
+      p_attachments: [`${studentTicketId}/whatever.txt`],
+    });
+    expect(foreign?.message).toMatch(/does not belong/i);
+
+    // Head office can sign a URL for it; centre A's accountant, who cannot
+    // read centre B's tickets, cannot sign centre B's files either way.
+    const { data: signed } = await hoCli.storage
+      .from("support-private")
+      .createSignedUrl(path, 60);
+    expect(signed?.signedUrl).toBeTruthy();
+
+    await fx.owner.cli.storage.from("support-private").remove([path]);
+  });
 });

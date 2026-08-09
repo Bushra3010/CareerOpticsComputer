@@ -87,6 +87,19 @@ export async function createTicket(
   };
 }
 
+/** Mirrors the `support-private` bucket's own limits (migration 0032), so
+ *  an oversize or off-list file gets a field error rather than a storage
+ *  refusal after the upload has already been attempted. */
+const MAX_ATTACHMENTS = 5;
+const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024;
+const ATTACHMENT_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "application/pdf",
+  "text/plain",
+]);
+
 export async function addTicketMessage(
   ticketId: string,
   isInternal: boolean,
@@ -106,13 +119,66 @@ export async function addTicketMessage(
     };
   }
 
+  const files = formData
+    .getAll("files")
+    .filter((f): f is File => f instanceof File && f.size > 0);
+  if (files.length > MAX_ATTACHMENTS) {
+    return {
+      status: "error",
+      fieldErrors: { files: `Attach at most ${MAX_ATTACHMENTS} files.` },
+    };
+  }
+  for (const file of files) {
+    if (file.size > MAX_ATTACHMENT_BYTES) {
+      return {
+        status: "error",
+        fieldErrors: { files: `${file.name} is over 10 MB.` },
+      };
+    }
+    if (!ATTACHMENT_TYPES.has(file.type)) {
+      return {
+        status: "error",
+        fieldErrors: {
+          files: `${file.name}: only images, PDFs and plain text are accepted.`,
+        },
+      };
+    }
+  }
+
+  // Uploaded with the caller's own session, so the bucket's RLS (only
+  // someone who can read this ticket may write under its prefix) is the
+  // real gate — this action adds no service-role shortcut.
+  const paths: string[] = [];
+  for (const file of files) {
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(-80);
+    const path = `${ticketId}/${crypto.randomUUID()}-${safeName}`;
+    const { error: uploadError } = await supabase.storage
+      .from("support-private")
+      .upload(path, file);
+    if (uploadError) {
+      // Best effort: do not leave earlier files orphaned on a later failure.
+      if (paths.length) {
+        await supabase.storage.from("support-private").remove(paths);
+      }
+      return {
+        status: "error",
+        fieldErrors: { files: `Could not upload ${file.name}.` },
+      };
+    }
+    paths.push(path);
+  }
+
   const { error } = await callRpc(supabase, "add_ticket_message", {
     p_ticket_id: ticketId,
     p_body: parsed.data.body,
     p_is_internal: parsed.data.isInternal,
+    p_attachments: paths,
   });
 
   if (error) {
+    if (paths.length) {
+      await supabase.storage.from("support-private").remove(paths);
+    }
     return {
       status: "error",
       message: friendlyMessage(error.message, "Could not send the message."),

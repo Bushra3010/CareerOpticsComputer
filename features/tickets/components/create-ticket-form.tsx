@@ -73,6 +73,10 @@ export function CreateTicketForm({
       >
         <Textarea name="body" rows={5} required maxLength={4000} />
       </Field>
+      <p className="text-meta text-text-secondary">
+        Screenshots or documents can be attached from the reply box once the
+        ticket is raised.
+      </p>
 
       <RequiredLegend />
       {state.status === "error" && state.message ? (
