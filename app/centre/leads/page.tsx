@@ -1,24 +1,27 @@
 import type { Metadata } from "next";
 
+import { StatusBadge } from "@/components/ui/badge";
 import { EmptyState, PermissionDeniedState } from "@/components/states";
 import {
   MobileList,
   MobileListItem,
   ResponsiveCollection,
 } from "@/components/tables/mobile-list";
-import { StatusBadge } from "@/components/ui/badge";
 import { createClient } from "@/lib/db/server";
-import { getHeadOfficeContext } from "@/features/exams/access";
-import { listCentreOptions } from "@/features/exams/queries";
-import { listLeadsForAdmin } from "@/features/leads/queries";
-import { AssignCentreSelect } from "@/features/leads/components/assign-centre-select";
+import { getCurrentCentreContext } from "@/features/centres/current-membership";
+import { listLeadsForCentre } from "@/features/leads/queries";
 import { LeadStatusSelect } from "@/features/leads/components/status-select";
 
 export const metadata: Metadata = { title: "Leads", robots: { index: false } };
 
-export default async function AdminLeadsPage() {
+export default async function CentreLeadsPage() {
   const supabase = await createClient();
-  const context = await getHeadOfficeContext(supabase);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const context = user
+    ? await getCurrentCentreContext(supabase, user.id)
+    : null;
 
   if (!context) {
     return (
@@ -29,25 +32,23 @@ export default async function AdminLeadsPage() {
     );
   }
 
-  const [leads, centres] = await Promise.all([
-    listLeadsForAdmin(),
-    listCentreOptions(),
-  ]);
-  const centreOptions = centres.map((c) => ({ id: c.id, name: c.name }));
+  const leads = await listLeadsForCentre(context.centreId);
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-page-title text-navy-900">Leads</h1>
         <p className="text-body text-text-secondary mt-1">
-          Enquiries submitted from the public site. Most recent 200.
+          Enquiries head office has assigned to your centre. Work them from new
+          to contacted, and close them converted or lost — an admission itself
+          is recorded at <span className="font-semibold">New student</span>.
         </p>
       </div>
 
       {leads.length === 0 ? (
         <EmptyState
-          title="No enquiries yet"
-          description="Submissions from the admissions enquiry form appear here."
+          title="No leads assigned"
+          description="When head office assigns an enquiry to your centre, it appears here."
         />
       ) : (
         <ResponsiveCollection
@@ -61,7 +62,6 @@ export default async function AdminLeadsPage() {
                   status={<StatusBadge status={l.status} />}
                   fields={[
                     { label: "Interested in", value: l.courseInterest ?? "—" },
-                    { label: "Centre", value: l.centreName ?? "Unassigned" },
                     { label: "Received", value: l.createdOn },
                   ]}
                   action={
@@ -87,9 +87,6 @@ export default async function AdminLeadsPage() {
                     </th>
                     <th scope="col" className="text-label px-4 py-3">
                       Received
-                    </th>
-                    <th scope="col" className="text-label px-4 py-3">
-                      Centre
                     </th>
                     <th scope="col" className="text-label px-4 py-3">
                       Status
@@ -123,13 +120,6 @@ export default async function AdminLeadsPage() {
                       </td>
                       <td className="text-body text-text-secondary px-4 py-3">
                         {l.createdOn}
-                      </td>
-                      <td className="px-4 py-3">
-                        <AssignCentreSelect
-                          leadId={l.id}
-                          currentCentreId={l.centreId}
-                          centres={centreOptions}
-                        />
                       </td>
                       <td className="px-4 py-3">
                         <LeadStatusSelect

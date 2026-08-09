@@ -39,7 +39,6 @@ export const CENTRE_NAV: NavGroup[] = [
       {
         label: "Leads",
         href: "/centre/leads",
-        planned: true,
         icon: ClipboardList,
         permission: "lead.read",
         matchPrefix: true,

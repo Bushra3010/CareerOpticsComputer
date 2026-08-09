@@ -217,6 +217,7 @@ export interface Database {
         Row: {
           id: string;
           organization_id: string;
+          centre_id: string | null;
           full_name: string;
           phone: string;
           email: string | null;

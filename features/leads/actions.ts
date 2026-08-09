@@ -50,5 +50,43 @@ export async function setLeadStatus(
   }
 
   revalidatePath("/admin/leads");
+  revalidatePath("/centre/leads");
   return { status: "success", message: "Updated." };
+}
+
+/**
+ * Head-office assignment of a lead into a centre's pipeline. RLS
+ * (`leads_centre_update`, migration 0044) is the gate: only org-level
+ * `lead.manage` holders and platform admins can move a lead between
+ * centres or back to the pool — a centre's own staff cannot, by the same
+ * policy's WITH CHECK.
+ */
+export async function assignLeadToCentre(
+  leadId: string,
+  _prev: LeadActionState,
+  formData: FormData,
+): Promise<LeadActionState> {
+  const raw = formData.get("centreId")?.toString() ?? "";
+  const centreId = raw === "pool" ? null : raw;
+  if (centreId !== null && !/^[0-9a-f-]{36}$/.test(centreId)) {
+    return { status: "error", message: "Choose a centre." };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("leads")
+    .update({ centre_id: centreId })
+    .eq("id", leadId)
+    .select("id");
+
+  if (error || !data?.length) {
+    return {
+      status: "error",
+      message: "You do not have permission to assign leads.",
+    };
+  }
+
+  revalidatePath("/admin/leads");
+  revalidatePath("/centre/leads");
+  return { status: "success", message: "Assigned." };
 }
