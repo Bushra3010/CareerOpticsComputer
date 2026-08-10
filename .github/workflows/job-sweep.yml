@@ -1,0 +1,62 @@
+# Runs the background job sweep on the cadence it actually needs.
+#
+# Why this exists rather than a Vercel cron: the project is on a Vercel Hobby
+# plan, which permits **one cron run per day**. `vercel.json` originally asked
+# for `*/5 * * * *`, and Vercel does not degrade that gracefully — it rejects
+# the whole deployment with `cron_jobs_limits_reached`. Every push to main
+# between 6 and 11 August 2026 was refused for that reason, and production sat
+# 33 commits stale without an obvious symptom.
+#
+# The sweep auto-submits exam attempts whose deadline has passed. Once a day is
+# not good enough: a student whose attempt expires at 09:05 would stay unsubmitted
+# until the nightly run. So the daily Vercel cron stays as a backstop, and this
+# workflow carries the real five-minute cadence.
+#
+# GitHub's scheduler is best-effort and can run late under load, which is fine
+# here — the sweep is idempotent and catches up by design.
+#
+# Delete this workflow if the project moves to Vercel Pro; the cron in
+# vercel.json can then go back to `*/5 * * * *` and be the single mechanism.
+
+name: Job sweep
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch: # so it can be run by hand while debugging
+
+concurrency:
+  # A slow sweep must not stack up behind itself.
+  group: job-sweep
+  cancel-in-progress: false
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Trigger the sweep
+        env:
+          APP_URL: ${{ secrets.PRODUCTION_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$APP_URL" ] || [ -z "$CRON_SECRET" ]; then
+            echo "PRODUCTION_URL or CRON_SECRET is not set — skipping."
+            echo "Set both under Settings → Secrets and variables → Actions."
+            exit 0
+          fi
+
+          status=$(curl -sS -o /tmp/sweep.json -w '%{http_code}' \
+            -X POST "$APP_URL/api/internal/jobs/run" \
+            -H "Authorization: Bearer $CRON_SECRET")
+
+          echo "HTTP $status"
+          cat /tmp/sweep.json || true
+          echo
+
+          # A non-2xx here means expired attempts are not being submitted, which
+          # is a correctness problem for students, not just a failed job.
+          case "$status" in
+            2*) exit 0 ;;
+            *)  echo "::error::Job sweep failed with HTTP $status"; exit 1 ;;
+          esac
