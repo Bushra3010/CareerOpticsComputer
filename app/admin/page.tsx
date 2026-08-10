@@ -20,7 +20,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, KpiCard } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/badge";
-import { EmptyState, PermissionDeniedState } from "@/components/states";
+import {
+  EmptyState,
+  ErrorState,
+  PermissionDeniedState,
+} from "@/components/states";
 import { TrendChart } from "@/components/charts/trend-chart";
 import { PanelTable } from "@/components/tables/panel-table";
 import { ChartCard, SectionCard } from "@/components/dashboard";
@@ -76,11 +80,24 @@ export default async function AdminDashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("full_name, is_platform_super_admin")
     .eq("id", user!.id)
     .maybeSingle();
+
+  /* A failed lookup is not a denied one, and collapsing the two tells a
+     legitimate super admin they lack a permission they hold — which sends
+     them to fix the wrong thing. Observed live: one transient failure
+     rendered "You do not have access" to the platform owner. */
+  if (profileError) {
+    return (
+      <div>
+        <h1 className="text-page-title text-navy-900">Platform dashboard</h1>
+        <ErrorState kind="server" className="mt-8" />
+      </div>
+    );
+  }
 
   /* Every figure below is a cross-tenant aggregate, so gate the whole page on
      the platform-admin flag rather than rendering zeros to a signed-in centre

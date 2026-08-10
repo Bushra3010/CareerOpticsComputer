@@ -32,13 +32,13 @@ export async function getHeadOfficeContext(
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("is_platform_super_admin")
     .eq("id", user.id)
     .maybeSingle();
 
-  const { data: membership } = await supabase
+  const { data: membership, error: membershipError } = await supabase
     .from("memberships")
     .select("organization_id")
     .eq("user_id", user.id)
@@ -46,6 +46,15 @@ export async function getHeadOfficeContext(
     .eq("status", "active")
     .limit(1)
     .maybeSingle();
+
+  // Callers read null as "no head-office standing" and render the denied
+  // state. A query that failed is not that, and saying so to a platform
+  // admin is a lie they cannot act on — throw to the error boundary.
+  if (profileError || membershipError) {
+    throw new Error(
+      `Could not resolve head-office access: ${(profileError ?? membershipError)!.message}`,
+    );
+  }
 
   // A platform admin with no membership row still needs an organisation to
   // scope writes to. There is exactly one organisation today; when there are
