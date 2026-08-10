@@ -132,11 +132,22 @@ async function findOrInviteOwner(
   // the expected path on retry, not an error — find the existing account and
   // carry on, so approval is genuinely idempotent rather than permanently
   // stuck once the first attempt got this far.
-  const { data: list } = await admin.auth.admin.listUsers();
-  const existing = list?.users.find(
-    (u) => u.email?.toLowerCase() === email.toLowerCase(),
-  );
-  if (existing) return { userId: existing.id };
+  //
+  // Paginated, because listUsers() defaults to 50 per page and this project
+  // passed 50 real accounts long ago — an unpaginated lookup made the retry
+  // path silently fail for exactly the projects mature enough to need it.
+  for (let page = 1; page <= 20; page += 1) {
+    const { data: list, error: listError } = await admin.auth.admin.listUsers({
+      page,
+      perPage: 1000,
+    });
+    if (listError) break;
+    const existing = list.users.find(
+      (u) => u.email?.toLowerCase() === email.toLowerCase(),
+    );
+    if (existing) return { userId: existing.id };
+    if (list.users.length < 1000) break;
+  }
 
   return { error: "Could not create an account for the applicant." };
 }

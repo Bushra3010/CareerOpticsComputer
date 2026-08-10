@@ -55,6 +55,36 @@ export function AcceptInvitationForm() {
       const { data: existing } = await supabase.auth.getSession();
       if (existing.session) return settle(true);
 
+      // The implicit fragment (#access_token=…) a /auth/v1/verify redirect
+      // carries. The comment above used to say the browser client consumes
+      // this itself — it does not: createBrowserClient defaults to PKCE,
+      // which ignores implicit fragments entirely, so every invite email
+      // using the default {{ .ConfirmationURL }} template dead-ended at
+      // "Invitation not valid". Found by the onboarding journey E2E, which
+      // follows the same verify redirect a real email does.
+      const hash = window.location.hash.slice(1);
+      if (hash.includes("access_token=")) {
+        const fragment = new URLSearchParams(hash);
+        const accessToken = fragment.get("access_token");
+        const refreshToken = fragment.get("refresh_token");
+        if (accessToken && refreshToken) {
+          const { error: setError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+          if (!setError) {
+            // The tokens do not belong in the address bar, the history, or
+            // anything that copies the URL.
+            window.history.replaceState(
+              null,
+              "",
+              window.location.pathname + window.location.search,
+            );
+            return settle(true);
+          }
+        }
+      }
+
       const code = params.get("code");
       if (code) {
         const { error: exchangeError } =

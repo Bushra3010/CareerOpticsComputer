@@ -1,4 +1,23 @@
+import { readFileSync } from "node:fs";
+
 import { defineConfig, devices } from "@playwright/test";
+
+// The instructions below say "put the password in .env.local" — which only
+// works if something actually reads it into the test process. Next.js loads
+// the file for the dev server, not for Playwright, so without this the
+// journey spec and the auth projects silently skipped for anyone who
+// followed the instructions to the letter. Values already exported in the
+// shell win, matching Next's own precedence.
+try {
+  for (const line of readFileSync(".env.local", "utf8").split("\n")) {
+    const m = /^\s*([A-Z0-9_]+)\s*=\s*(.*?)\s*$/.exec(line);
+    if (m && process.env[m[1]] === undefined) {
+      process.env[m[1]] = m[2].replace(/^["']|["']$/g, "");
+    }
+  }
+} catch {
+  // No .env.local — CI provides real env vars instead.
+}
 
 /**
  * `npm run test:e2e` has been in package.json since the first commit with no
@@ -89,9 +108,12 @@ export default defineConfig({
     },
     // 360px is the width style guide §16 and PRD §8.4 make the floor: every
     // centre daily operation has to work there. Pixel 5 is 393; this is not.
+    // The onboarding journey is excluded here: it proves a flow, not a
+    // viewport, and re-running four sign-ins at 360px would double the
+    // slowest spec to re-prove what the axe scan already covers.
     {
       name: "mobile-360",
-      testIgnore: /portal\.spec\.ts/,
+      testIgnore: /portal\.spec\.ts|journey\.spec\.ts/,
       use: {
         ...devices["Desktop Chrome"],
         channel: "chrome",
