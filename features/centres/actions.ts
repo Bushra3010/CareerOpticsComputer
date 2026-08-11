@@ -140,3 +140,112 @@ export async function updateCentreProfile(
   revalidatePath(`/admin/centres/${centreId}`);
   return { status: "success", message: "Centre profile updated." };
 }
+
+const createSchema = profileSchema.extend({
+  code: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(
+      /^[A-Z0-9-]{3,16}$/,
+      "Use 3–16 characters: letters, digits or hyphens, e.g. CO-LKO03.",
+    ),
+});
+
+/**
+ * Create a centre directly, without waiting for a public application.
+ *
+ * The application → review → approval flow (PRD §6.1) remains the route for a
+ * franchisee who applies from the website. This is the head-office counterpart
+ * for a centre the organisation opens itself: there is no applicant to review,
+ * so `approve_centre_application` has nothing to approve, and until now the
+ * admin portal simply had no way to create one.
+ *
+ * No new privilege is introduced. `centres_write_platform` (migration 0003)
+ * already admits `is_platform_admin() or has_permission('centre.create', …)`,
+ * so RLS is the gate exactly as it was; this only supplies the missing screen.
+ * A caller without that grant gets 42501 back from Postgres, not a softer path.
+ *
+ * The centre starts `active`: an organisation creating its own centre has
+ * already made the decision that an application would have been reviewed for.
+ * Status changes afterwards go through `changeCentreStatus`, which demands a
+ * reason.
+ */
+export async function createCentre(
+  _prev: CentreActionState,
+  formData: FormData,
+): Promise<CentreActionState> {
+  const supabase = await createClient();
+
+  const context = await getHeadOfficeContext(supabase);
+  if (!context) {
+    return {
+      status: "error",
+      message: "Only head office can create a centre.",
+    };
+  }
+
+  const parsed = createSchema.safeParse({
+    code: formData.get("code")?.toString() ?? "",
+    name: formData.get("name")?.toString() ?? "",
+    address: formData.get("address")?.toString() ?? "",
+    city: formData.get("city")?.toString() ?? "",
+    state: formData.get("state")?.toString() ?? "",
+    pincode: formData.get("pincode")?.toString() ?? "",
+  });
+  if (!parsed.success) {
+    const fieldErrors: Record<string, string> = {};
+    for (const issue of parsed.error.issues) {
+      fieldErrors[String(issue.path[0])] = issue.message;
+    }
+    return { status: "error", fieldErrors };
+  }
+
+  const { data, error } = await supabase
+    .from("centres")
+    .insert({
+      organization_id: context.organizationId,
+      status: "active",
+      ...parsed.data,
+    })
+    .select("id, code")
+    .single();
+
+  if (error) {
+    /* 23505 is the (organization_id, code) unique index. Naming the offending
+       field beats a generic failure — the code is the one thing the operator
+       chose themselves and the one thing likely to collide. */
+    if (error.code === "23505") {
+      return {
+        status: "error",
+        fieldErrors: {
+          code: "A centre with this code already exists. Pick another.",
+        },
+      };
+    }
+    return {
+      status: "error",
+      message:
+        error.code === "42501"
+          ? "You do not have permission to create a centre."
+          : "Could not create the centre.",
+    };
+  }
+
+  await recordAudit(supabase, {
+    organizationId: context.organizationId,
+    actorId: context.userId,
+    action: "create_centre",
+    tableName: "centres",
+    rowId: data.id,
+    reason: `Created directly by head office as ${data.code}`,
+    after: { code: data.code, name: parsed.data.name, status: "active" },
+  });
+
+  revalidatePath("/admin/centres");
+  revalidatePath("/admin");
+  return {
+    status: "success",
+    message: `${parsed.data.name} created.`,
+  };
+}

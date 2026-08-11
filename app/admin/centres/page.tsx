@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { Plus } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/badge";
 import { EmptyState, PermissionDeniedState } from "@/components/states";
 import {
@@ -34,18 +36,32 @@ export default async function AdminCentresPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-page-title text-navy-900">Centres</h1>
-        <p className="text-body text-text-secondary mt-1">
-          Every centre across the franchise. Open one to edit its profile or
-          change its status.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="text-page-title text-navy-900">Centres</h1>
+          <p className="text-body text-text-secondary mt-1">
+            Every centre across the franchise. Open one to edit its profile or
+            change its status.
+          </p>
+        </div>
+        <Button asChild className="max-lg:w-full">
+          <Link href="/admin/centres/new">
+            <Plus /> New centre
+          </Link>
+        </Button>
       </div>
 
       {centres.length === 0 ? (
         <EmptyState
           title="No centres yet"
-          description="Centres are created when a franchise application is approved."
+          description="Approve a franchise application, or add a centre head office is opening itself."
+          action={
+            <Button asChild>
+              <Link href="/admin/centres/new">
+                <Plus /> New centre
+              </Link>
+            </Button>
+          }
         />
       ) : (
         <ResponsiveCollection
