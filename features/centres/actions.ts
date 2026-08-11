@@ -249,3 +249,90 @@ export async function createCentre(
     message: `${parsed.data.name} created.`,
   };
 }
+
+/**
+ * Delete a centre outright.
+ *
+ * Only sensible for a centre created by mistake. A centre that has traded has
+ * students, payments and possibly issued certificates hanging off it, and those
+ * must survive — PRD §4 makes the ledgers insert-only and §19.9 requires
+ * financial history to be preserved.
+ *
+ * That guard is not reimplemented here. Twenty-one of the twenty-two foreign
+ * keys referencing `centres` are NO ACTION, so Postgres refuses the delete
+ * itself and raises 23503. Counting dependants in application code would be a
+ * second implementation of the same rule, and the one that goes stale when a
+ * table is added. So the delete is attempted and 23503 is translated.
+ */
+export async function deleteCentre(
+  centreId: string,
+  _prev: CentreActionState,
+  formData: FormData,
+): Promise<CentreActionState> {
+  const supabase = await createClient();
+
+  const context = await getHeadOfficeContext(supabase);
+  if (!context) {
+    return {
+      status: "error",
+      message: "Only head office can delete a centre.",
+    };
+  }
+
+  const confirmation = formData.get("confirmCode")?.toString().trim() ?? "";
+
+  const { data: centre, error: loadError } = await supabase
+    .from("centres")
+    .select("code, name")
+    .eq("id", centreId)
+    .maybeSingle();
+
+  if (loadError || !centre) {
+    return { status: "error", message: "That centre could not be found." };
+  }
+
+  /* Typing the code is the deliberate step. §10.6 wants a destructive dialog to
+     name its target; making the operator reproduce the name is what stops a
+     mis-click deleting the wrong row from a list of near-identical ones. */
+  if (confirmation.toUpperCase() !== centre.code.toUpperCase()) {
+    return {
+      status: "error",
+      fieldErrors: {
+        confirmCode: `Type ${centre.code} exactly to confirm.`,
+      },
+    };
+  }
+
+  const { error } = await supabase.from("centres").delete().eq("id", centreId);
+
+  if (error) {
+    if (error.code === "23503") {
+      return {
+        status: "error",
+        message:
+          "This centre has students, payments or other records attached, so it cannot be deleted — that history has to survive. Set its status to Closed instead.",
+      };
+    }
+    return {
+      status: "error",
+      message:
+        error.code === "42501"
+          ? "Only a platform admin can delete a centre."
+          : "Could not delete the centre.",
+    };
+  }
+
+  await recordAudit(supabase, {
+    organizationId: context.organizationId,
+    actorId: context.userId,
+    action: "delete_centre",
+    tableName: "centres",
+    rowId: centreId,
+    reason: `Deleted ${centre.code} (${centre.name})`,
+    before: { code: centre.code, name: centre.name },
+  });
+
+  revalidatePath("/admin/centres");
+  revalidatePath("/admin");
+  return { status: "success", message: `${centre.name} deleted.` };
+}

@@ -10,6 +10,7 @@ import { getHeadOfficeContext } from "@/features/exams/access";
 import { getCentreForAdmin } from "@/features/centres/queries";
 import { CentreStatusForm } from "@/features/centres/components/admin/status-form";
 import { CentreProfileForm } from "@/features/centres/components/admin/profile-form";
+import { DeleteCentreForm } from "@/features/centres/components/admin/delete-centre-form";
 
 export const metadata: Metadata = { title: "Centre", robots: { index: false } };
 
@@ -82,6 +83,21 @@ export default async function AdminCentreDetailPage({
           </CardContent>
         </Card>
       </div>
+
+      {/* Kept apart from the everyday forms above, and last on the page, so it
+          is never the thing under the cursor when someone means to edit. */}
+      <Card className="border-danger-border">
+        <CardHeader>
+          <CardTitle>Delete centre</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <DeleteCentreForm
+            centreId={centre.id}
+            centreCode={centre.code}
+            centreName={centre.name}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -40,8 +40,8 @@ export default async function AdminCentresPage() {
         <div className="min-w-0">
           <h1 className="text-page-title text-navy-900">Centres</h1>
           <p className="text-body text-text-secondary mt-1">
-            Every centre across the franchise. Open one to edit its profile or
-            change its status.
+            Every centre across the franchise. Edit a profile, change a status,
+            or remove one added by mistake.
           </p>
         </div>
         <Button asChild className="max-lg:w-full">
@@ -99,6 +99,9 @@ export default async function AdminCentresPage() {
                     <th scope="col" className="text-label px-4 py-3">
                       Status
                     </th>
+                    <th scope="col" className="text-label px-4 py-3 text-right">
+                      <span className="sr-only">Actions</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -123,6 +126,15 @@ export default async function AdminCentresPage() {
                       </td>
                       <td className="px-4 py-3">
                         <StatusBadge status={c.status} />
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <Link
+                          href={`/admin/centres/${c.id}`}
+                          className="text-meta font-semibold text-blue-700 hover:underline"
+                        >
+                          Edit
+                          <span className="sr-only"> {c.name}</span>
+                        </Link>
                       </td>
                     </tr>
                   ))}
