@@ -115,7 +115,7 @@ export default async function HomePage() {
     <>
       {/* ---------- Hero ---------------------------------------------- */}
       <section className="from-canvas to-surface bg-gradient-to-b">
-        <div className="container-public grid items-center gap-8 py-8 lg:grid-cols-2 lg:py-12">
+        <div className="container-public-wide grid items-center gap-8 py-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:py-12">
           <div>
             <p className="text-meta text-text-secondary border-border bg-surface inline-flex items-center gap-2 rounded-[var(--radius-pill)] border px-3 py-1.5">
               <Users className="size-4 text-blue-700" aria-hidden="true" />
@@ -147,7 +147,7 @@ export default async function HomePage() {
               </Button>
             </div>
 
-            <ul className="tablet:grid-cols-2 mt-6 grid gap-3">
+            <ul className="tablet:grid-cols-2 wide:grid-cols-4 mt-6 grid gap-3">
               {PROMISES.map(({ icon: Icon, label }) => (
                 <li
                   key={label}
@@ -177,7 +177,7 @@ export default async function HomePage() {
       </section>
 
       {/* ---------- Popular courses ------------------------------------ */}
-      <section className="container-public py-10 lg:py-12">
+      <section className="container-public-wide py-10 lg:py-12">
         <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="text-meta font-semibold tracking-wide text-orange-500 uppercase">
@@ -202,7 +202,7 @@ export default async function HomePage() {
             </p>
           </Card>
         ) : (
-          <div className="tablet:grid-cols-2 grid gap-4 lg:grid-cols-4">
+          <div className="tablet:grid-cols-2 wide:gap-5 grid gap-4 lg:grid-cols-4">
             {featured.map((course, i) => {
               const Icon = COURSE_ICONS[i % COURSE_ICONS.length]!;
               return (
@@ -245,7 +245,7 @@ export default async function HomePage() {
 
       {/* ---------- Four promises -------------------------------------- */}
       <section className="border-border bg-surface border-y">
-        <div className="container-public tablet:grid-cols-2 grid gap-6 py-10 lg:grid-cols-4">
+        <div className="container-public-wide tablet:grid-cols-2 grid gap-6 py-10 lg:grid-cols-4">
           {PILLARS.map(({ icon: Icon, title, body }) => (
             <div key={title} className="flex gap-3">
               <span
@@ -264,7 +264,7 @@ export default async function HomePage() {
       </section>
 
       {/* ---------- Why Career Optics ---------------------------------- */}
-      <section className="container-public py-10 lg:py-12">
+      <section className="container-public-wide py-10 lg:py-12">
         <div className="mb-4 text-center">
           <p className="text-meta font-semibold tracking-wide text-orange-500 uppercase">
             Why Career Optics
@@ -274,7 +274,7 @@ export default async function HomePage() {
           </h2>
         </div>
 
-        <div className="tablet:grid-cols-2 grid gap-4 lg:grid-cols-4">
+        <div className="tablet:grid-cols-2 wide:gap-5 grid gap-4 lg:grid-cols-4">
           {REASONS.map(({ icon: Icon, title, body }) => (
             <Card key={title} className="p-5">
               <span
@@ -291,7 +291,7 @@ export default async function HomePage() {
       </section>
 
       {/* ---------- Closing call to action ----------------------------- */}
-      <section className="container-public pb-10 lg:pb-12">
+      <section className="container-public-wide pb-10 lg:pb-12">
         <div
           data-surface="navy"
           className="bg-navy-900 flex flex-wrap items-center justify-between gap-5 rounded-[var(--radius-card)] p-6 lg:p-8"
