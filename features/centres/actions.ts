@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { createClient } from "@/lib/db/action";
+import { createServiceRoleClient } from "@/lib/db/service-role";
 import { callRpc } from "@/lib/db/rpc";
 import { recordAudit } from "@/lib/audit";
 import { getHeadOfficeContext } from "@/features/exams/access";
@@ -12,6 +13,11 @@ export interface CentreActionState {
   status: "idle" | "error" | "success";
   message?: string;
   fieldErrors?: Record<string, string>;
+  /**
+   * Shown once, immediately after creating a centre with an owner. Never
+   * stored and never retrievable again — see the note on createCentre.
+   */
+  ownerCredentials?: { email: string; password: string };
 }
 
 const statusSchema = z.object({
@@ -142,6 +148,14 @@ export async function updateCentreProfile(
 }
 
 const createSchema = profileSchema.extend({
+  ownerName: z.string().trim().max(160).optional(),
+  ownerEmail: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .email("Enter a valid email address.")
+    .optional()
+    .or(z.literal("")),
   code: z
     .string()
     .trim()
@@ -186,6 +200,8 @@ export async function createCentre(
   }
 
   const parsed = createSchema.safeParse({
+    ownerName: formData.get("ownerName")?.toString() ?? "",
+    ownerEmail: formData.get("ownerEmail")?.toString() ?? "",
     code: formData.get("code")?.toString() ?? "",
     name: formData.get("name")?.toString() ?? "",
     address: formData.get("address")?.toString() ?? "",
@@ -201,12 +217,14 @@ export async function createCentre(
     return { status: "error", fieldErrors };
   }
 
+  const { ownerName, ownerEmail, ...centreFields } = parsed.data;
+
   const { data, error } = await supabase
     .from("centres")
     .insert({
       organization_id: context.organizationId,
       status: "active",
-      ...parsed.data,
+      ...centreFields,
     })
     .select("id, code")
     .single();
@@ -242,11 +260,70 @@ export async function createCentre(
     after: { code: data.code, name: parsed.data.name, status: "active" },
   });
 
+  /*
+   * Give the centre an owner, or it is unreachable: a centre with no
+   * membership has nobody who can sign in to it, which is how thirteen of the
+   * existing centres ended up orphaned.
+   *
+   * A temporary password is generated and shown once rather than emailed.
+   * PRD §11.2 prefers an invitation the owner completes themselves, and that
+   * remains the right end state — but no email provider is configured
+   * (EMAIL_PROVIDER is empty) and Supabase's Site URL still points at
+   * localhost, so an invite link would either not arrive or dead-end. A
+   * credential the operator can hand over beats a centre nobody can enter.
+   *
+   * It is never stored: `ownerCredentials` is returned to this one render and
+   * nothing writes it anywhere. The owner should change it on first sign-in.
+   */
+  let ownerCredentials: { email: string; password: string } | undefined;
+
+  if (ownerEmail) {
+    const admin = createServiceRoleClient();
+    const password = `CO-${Math.random().toString(36).slice(2, 10)}-${new Date().getFullYear()}`;
+
+    const { data: created, error: userError } =
+      await admin.auth.admin.createUser({
+        email: ownerEmail,
+        password,
+        email_confirm: true,
+      });
+
+    if (userError || !created?.user) {
+      return {
+        status: "error",
+        message: `Centre ${data.code} was created, but the owner account was not: ${userError?.message ?? "unknown error"}. Add an owner from the centre's page.`,
+      };
+    }
+
+    const { data: role } = await admin
+      .from("roles")
+      .select("id")
+      .eq("code", "centre_owner")
+      .maybeSingle();
+
+    await admin
+      .from("profiles")
+      .upsert({ id: created.user.id, full_name: ownerName || ownerEmail });
+
+    if (role?.id) {
+      await admin.from("memberships").insert({
+        user_id: created.user.id,
+        organization_id: context.organizationId,
+        centre_id: data.id,
+        role_id: role.id,
+        status: "active",
+      });
+    }
+
+    ownerCredentials = { email: ownerEmail, password };
+  }
+
   revalidatePath("/admin/centres");
   revalidatePath("/admin");
   return {
     status: "success",
-    message: `${parsed.data.name} created.`,
+    message: `${centreFields.name} created.`,
+    ownerCredentials,
   };
 }
 

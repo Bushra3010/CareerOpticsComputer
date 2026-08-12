@@ -29,6 +29,30 @@ export function CreateCentreForm() {
         </Alert>
       ) : null}
 
+      {/* Shown once. Nothing stores this, so it cannot be looked up again. */}
+      {state.ownerCredentials ? (
+        <Alert
+          tone="warning"
+          title="Copy these sign-in details now"
+          recovery="They are shown only once and are not stored anywhere. Send them to the centre owner and ask them to change the password after signing in."
+        >
+          <dl className="mt-2 space-y-1">
+            <div className="flex gap-2">
+              <dt className="text-text-secondary shrink-0">Email</dt>
+              <dd className="text-text font-semibold">
+                {state.ownerCredentials.email}
+              </dd>
+            </div>
+            <div className="flex gap-2">
+              <dt className="text-text-secondary shrink-0">Password</dt>
+              <dd className="text-text tabular font-semibold">
+                {state.ownerCredentials.password}
+              </dd>
+            </div>
+          </dl>
+        </Alert>
+      ) : null}
+
       <Field
         id="code"
         label="Centre code"
@@ -59,6 +83,24 @@ export function CreateCentreForm() {
           placeholder="Career Optics Aliganj"
         />
       </Field>
+
+      <div className="border-border tablet:grid-cols-2 grid gap-4 rounded-[var(--radius-card)] border p-4">
+        <p className="text-meta text-text-secondary tablet:col-span-2">
+          Centre owner — optional, but a centre with no owner has nobody who can
+          sign in to it.
+        </p>
+        <Field id="ownerName" label="Owner name">
+          <Input name="ownerName" maxLength={160} autoComplete="off" />
+        </Field>
+        <Field
+          id="ownerEmail"
+          label="Owner email"
+          error={state.fieldErrors?.ownerEmail}
+          help="Becomes their sign-in address."
+        >
+          <Input name="ownerEmail" type="email" autoComplete="off" />
+        </Field>
+      </div>
 
       <Field
         id="address"
