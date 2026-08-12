@@ -20,6 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { listPublishedCourses } from "@/features/academics/queries";
+import { listActiveCentres } from "@/features/centres/queries";
 import { formatPaise, paise } from "@/lib/money";
 
 export const metadata = {
@@ -102,8 +103,13 @@ const REASONS = [
 ];
 
 export default async function HomePage() {
-  const courses = await listPublishedCourses();
+  const [courses, centres] = await Promise.all([
+    listPublishedCourses(),
+    listActiveCentres(),
+  ]);
   const featured = courses.slice(0, 4);
+  const states = [...new Set(centres.map((c) => c.state).filter(Boolean))];
+  const nearest = centres.slice(0, 4);
 
   return (
     <>
@@ -161,7 +167,12 @@ export default async function HomePage() {
             </ul>
           </div>
 
-          <HeroVisual courseCount={courses.length} />
+          <HeroPanel
+            courseCount={courses.length}
+            centreCount={centres.length}
+            stateCount={states.length}
+            centres={nearest}
+          />
         </div>
       </section>
 
@@ -310,41 +321,87 @@ export default async function HomePage() {
 }
 
 /**
- * Hero visual.
+ * Hero panel.
  *
- * Deliberately geometric rather than photographic. §7.2 wants an authentic
- * photograph of a real lab and §12.2 forbids synthetic faces; with no approved
- * photograph available, brand geometry is the honest option. The floating stat
- * card mirrors the mockup and shows a real count from the catalogue.
+ * This started as a decorative gradient standing in for the photograph the
+ * mockup has and we do not. It read exactly as what it was — a large empty
+ * rectangle — so it now carries the network at a glance and the four nearest
+ * centres instead. Real figures, straight from the database, and a route into
+ * the thing a prospective student actually wants: a centre near them.
+ *
+ * If an approved photograph arrives later it belongs above this panel, not
+ * instead of it; the panel is doing work the picture would not.
  */
-function HeroVisual({ courseCount }: { courseCount: number }) {
+function HeroPanel({
+  courseCount,
+  centreCount,
+  stateCount,
+  centres,
+}: {
+  courseCount: number;
+  centreCount: number;
+  stateCount: number;
+  centres: {
+    id: string;
+    name: string;
+    city: string | null;
+    state: string | null;
+  }[];
+}) {
+  const stats = [
+    { value: centreCount, label: centreCount === 1 ? "centre" : "centres" },
+    { value: courseCount, label: courseCount === 1 ? "course" : "courses" },
+    { value: stateCount, label: stateCount === 1 ? "state" : "states" },
+  ];
+
   return (
-    <div className="relative">
-      <div
-        className="from-navy-900 aspect-[4/3] w-full rounded-[var(--radius-card)] bg-gradient-to-br to-blue-700"
-        aria-hidden="true"
-      >
-        <div className="grid h-full place-items-center">
-          <GraduationCap className="size-24 text-white/25" />
-        </div>
+    <Card className="overflow-hidden p-0">
+      <div data-surface="navy" className="bg-navy-900 p-5 lg:p-6">
+        <p className="text-meta text-white/70">The network at a glance</p>
+        <dl className="mt-3 grid grid-cols-3 gap-3">
+          {stats.map((s) => (
+            <div key={s.label}>
+              <dt className="sr-only">{s.label}</dt>
+              <dd>
+                <span className="text-kpi tabular block font-bold text-white">
+                  {s.value}
+                </span>
+                <span className="text-meta block text-white/70">{s.label}</span>
+              </dd>
+            </div>
+          ))}
+        </dl>
       </div>
 
-      <Card className="absolute -bottom-4 left-4 flex items-center gap-3 p-3 lg:-bottom-6 lg:left-6 lg:p-4">
-        <span
-          className="bg-success-bg text-success grid size-10 shrink-0 place-items-center rounded-[var(--radius-chip)]"
-          aria-hidden="true"
-        >
-          <BookOpen className="size-5" />
-        </span>
-        <span>
-          <span className="text-card-title text-navy-900 tabular block">
-            {courseCount}
-          </span>
-          <span className="text-meta text-text-secondary block">
-            courses on offer
-          </span>
-        </span>
-      </Card>
-    </div>
+      <div className="p-5 lg:p-6">
+        <h2 className="text-card-title text-navy-900">Centres near you</h2>
+        {centres.length === 0 ? (
+          <p className="text-meta text-text-secondary mt-2">
+            Centre listings are being prepared.
+          </p>
+        ) : (
+          <ul className="divide-border mt-2 divide-y">
+            {centres.map((c) => (
+              <li
+                key={c.id}
+                className="flex items-baseline justify-between gap-3 py-2"
+              >
+                <span className="text-body text-text min-w-0 truncate">
+                  {c.name}
+                </span>
+                <span className="text-meta text-text-secondary shrink-0">
+                  {c.city ?? c.state ?? ""}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+        <Button asChild variant="secondary" className="mt-4 w-full">
+          <Link href="/centres">
+            Find your nearest centre <ArrowRight />
+          </Link>
+        </Button>
+      </div>
+    </Card>
   );
 }
