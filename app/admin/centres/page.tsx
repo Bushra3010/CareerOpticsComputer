@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/badge";
+import { CentreRowStatusForm } from "@/features/centres/components/admin/row-status-form";
 import { EmptyState, PermissionDeniedState } from "@/components/states";
 import {
   MobileList,
@@ -125,7 +126,14 @@ export default async function AdminCentresPage() {
                         {c.studentCount}
                       </td>
                       <td className="px-4 py-3">
-                        <StatusBadge status={c.status} />
+                        <div className="space-y-2">
+                          <StatusBadge status={c.status} />
+                          <CentreRowStatusForm
+                            centreId={c.id}
+                            centreName={c.name}
+                            currentStatus={c.status}
+                          />
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-right">
                         <Link
