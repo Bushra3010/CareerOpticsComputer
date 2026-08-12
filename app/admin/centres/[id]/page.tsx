@@ -11,6 +11,8 @@ import { getCentreForAdmin } from "@/features/centres/queries";
 import { CentreStatusForm } from "@/features/centres/components/admin/status-form";
 import { CentreProfileForm } from "@/features/centres/components/admin/profile-form";
 import { DeleteCentreForm } from "@/features/centres/components/admin/delete-centre-form";
+import { CentreOwnerForm } from "@/features/centres/components/admin/owner-form";
+import { createServiceRoleClient } from "@/lib/db/service-role";
 
 export const metadata: Metadata = { title: "Centre", robots: { index: false } };
 
@@ -34,6 +36,30 @@ export default async function AdminCentreDetailPage({
 
   const centre = await getCentreForAdmin(id);
   if (!centre) notFound();
+
+  /* The owner's email lives in auth.users, outside the public schema, so an
+     RLS-scoped client cannot read it — this lookup needs the service role. */
+  const admin = createServiceRoleClient();
+  const { data: ownerMembership } = await admin
+    .from("memberships")
+    .select("user_id, roles!inner(code), profiles!inner(full_name)")
+    .eq("centre_id", centre.id)
+    .eq("status", "active")
+    .eq("roles.code", "centre_owner")
+    .maybeSingle();
+
+  let owner: { fullName: string | null; email: string | null } | null = null;
+  if (ownerMembership?.user_id) {
+    const { data: authUser } = await admin.auth.admin.getUserById(
+      ownerMembership.user_id as string,
+    );
+    owner = {
+      fullName:
+        (ownerMembership as { profiles?: { full_name?: string } }).profiles
+          ?.full_name ?? null,
+      email: authUser?.user?.email ?? null,
+    };
+  }
 
   return (
     <div className="space-y-8">
@@ -83,6 +109,15 @@ export default async function AdminCentreDetailPage({
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Centre sign-in</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <CentreOwnerForm centreId={centre.id} owner={owner} />
+        </CardContent>
+      </Card>
 
       {/* Kept apart from the everyday forms above, and last on the page, so it
           is never the thing under the cursor when someone means to edit. */}

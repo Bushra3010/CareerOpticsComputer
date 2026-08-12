@@ -413,3 +413,116 @@ export async function deleteCentre(
   revalidatePath("/admin");
   return { status: "success", message: `${centre.name} deleted.` };
 }
+
+/**
+ * Add an owner to a centre that has none, or reset the existing owner's
+ * password.
+ *
+ * A password cannot be displayed. Supabase stores a bcrypt hash, so the
+ * original is unrecoverable the instant it is set — the only way to produce a
+ * usable credential for an existing account is to replace it. That is what
+ * this does, and the new one is shown once and never stored.
+ *
+ * This is also the rescue path for a centre created before owner creation
+ * existed: thirteen had no membership at all and so no way in.
+ */
+export async function setCentreOwner(
+  centreId: string,
+  _prev: CentreActionState,
+  formData: FormData,
+): Promise<CentreActionState> {
+  const supabase = await createClient();
+  const context = await getHeadOfficeContext(supabase);
+  if (!context) {
+    return { status: "error", message: "Only head office can do this." };
+  }
+
+  const email = formData.get("ownerEmail")?.toString().trim().toLowerCase();
+  const fullName = formData.get("ownerName")?.toString().trim();
+  if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    return {
+      status: "error",
+      fieldErrors: { ownerEmail: "Enter a valid email address." },
+    };
+  }
+
+  const admin = createServiceRoleClient();
+  const password = `CO-${Math.random().toString(36).slice(2, 10)}-${new Date().getFullYear()}`;
+
+  // The account may already exist — this doubles as a password reset — so
+  // create, and fall back to updating the account that is already there.
+  const { data: created, error: createError } =
+    await admin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+    });
+
+  let userId = created?.user?.id;
+  if (createError || !userId) {
+    const { data: list } = await admin.auth.admin.listUsers();
+    userId = list?.users.find((u) => u.email?.toLowerCase() === email)?.id;
+    if (!userId) {
+      return {
+        status: "error",
+        message: `Could not create that account: ${createError?.message ?? "unknown error"}`,
+      };
+    }
+    await admin.auth.admin.updateUserById(userId, {
+      password,
+      email_confirm: true,
+    });
+  }
+
+  await admin
+    .from("profiles")
+    .upsert({ id: userId, full_name: fullName || email });
+
+  const { data: role } = await admin
+    .from("roles")
+    .select("id")
+    .eq("code", "centre_owner")
+    .maybeSingle();
+
+  if (role?.id) {
+    // Idempotent: re-running for the same person must not duplicate the
+    // membership, and must reactivate one that was suspended.
+    const { data: existing } = await admin
+      .from("memberships")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("centre_id", centreId)
+      .maybeSingle();
+
+    if (existing?.id) {
+      await admin
+        .from("memberships")
+        .update({ status: "active", role_id: role.id })
+        .eq("id", existing.id);
+    } else {
+      await admin.from("memberships").insert({
+        user_id: userId,
+        organization_id: context.organizationId,
+        centre_id: centreId,
+        role_id: role.id,
+        status: "active",
+      });
+    }
+  }
+
+  await recordAudit(admin, {
+    organizationId: context.organizationId,
+    actorId: context.userId,
+    action: "set_centre_owner",
+    tableName: "memberships",
+    rowId: centreId,
+    reason: `${email} set as centre owner with a new password`,
+  });
+
+  revalidatePath(`/admin/centres/${centreId}`);
+  return {
+    status: "success",
+    message: "Owner set. Copy the password below — it is not shown again.",
+    ownerCredentials: { email, password },
+  };
+}
