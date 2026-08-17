@@ -1,10 +1,9 @@
 "use server";
 
-import { headers } from "next/headers";
-
 import { createClient } from "@/lib/db/action";
 import { callRpc } from "@/lib/db/rpc";
-import { checkRateLimit } from "@/lib/rate-limit";
+
+import { allowVerificationLookup } from "./rate-limit";
 
 export interface CertificateResult {
   documentNumber: string;
@@ -31,18 +30,6 @@ export interface VerifyState {
   registration?: RegistrationResult;
 }
 
-/**
- * Rate-limit key. x-forwarded-for is client-supplied and therefore spoofable,
- * which is recorded as a known limitation — this raises the cost of casual
- * enumeration, it does not stop a determined attacker. The durable defence is
- * public_verification_logs, which records every lookup so scraping is visible.
- */
-async function clientKey(prefix: string) {
-  const h = await headers();
-  const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  return `${prefix}:${ip}`;
-}
-
 export async function verifyCertificate(
   _prev: VerifyState,
   formData: FormData,
@@ -52,9 +39,7 @@ export async function verifyCertificate(
     return { status: "error", message: "Enter a certificate number." };
   }
 
-  const { allowed } = await clientKey("verify-cert").then((key) =>
-    checkRateLimit(key, 20, 10 * 60 * 1000),
-  );
+  const allowed = await allowVerificationLookup();
   if (!allowed) {
     return {
       status: "error",
@@ -102,9 +87,7 @@ export async function verifyRegistration(
     return { status: "error", message: "Enter a registration number." };
   }
 
-  const { allowed } = await clientKey("verify-reg").then((key) =>
-    checkRateLimit(key, 20, 10 * 60 * 1000),
-  );
+  const allowed = await allowVerificationLookup();
   if (!allowed) {
     return {
       status: "error",

@@ -157,6 +157,14 @@ export async function postPayment(
     reference: formData.get("reference")?.toString() ?? "",
   });
 
+  /* One key per rendered form (migration 0046). A double click or a retry
+     sends the same key, and post_payment returns the ORIGINAL receipt
+     instead of writing a second one. Without it the counter posts the
+     amount twice and only a reversal can undo it — after the student has
+     the receipt in hand. */
+  const idempotencyKey =
+    formData.get("idempotencyKey")?.toString()?.slice(0, 64) || null;
+
   if (!parsed.success) {
     return {
       status: "error",
@@ -184,6 +192,7 @@ export async function postPayment(
     p_amount_paise: amountPaise,
     p_method: parsed.data.method,
     p_reference: parsed.data.reference || null,
+    p_idempotency_key: idempotencyKey,
   });
 
   if (error || !data || data.length === 0) {

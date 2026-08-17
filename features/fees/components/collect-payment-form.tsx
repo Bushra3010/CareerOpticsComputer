@@ -1,5 +1,7 @@
 "use client";
 
+import * as React from "react";
+
 import { useActionState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -31,6 +33,13 @@ export function CollectPaymentForm({
     initialState,
   );
 
+  /* Minted once per mounted form, not per submit: that is precisely what
+     makes a double click idempotent — both submissions carry the same key,
+     so the second returns the first one's receipt rather than posting
+     again (migration 0046). A fresh key only appears when the clerk opens
+     the form for a genuinely new payment. */
+  const idempotencyKey = React.useMemo(() => crypto.randomUUID(), []);
+
   if (state.status === "success") {
     return (
       <div className="rounded-[var(--radius-card)] border border-green-600 bg-green-50 p-4">
@@ -45,6 +54,7 @@ export function CollectPaymentForm({
 
   return (
     <form action={formAction} className="space-y-4">
+      <input type="hidden" name="idempotencyKey" value={idempotencyKey} />
       <div className="grid gap-4 sm:grid-cols-3">
         <Field
           id="amountRupees"

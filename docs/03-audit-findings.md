@@ -267,3 +267,99 @@ issued in error is the same authority as issuing it. Migration `0030` grants
 it to `centre_owner`, matching `certificate.issue` exactly. Found because the
 integration test written alongside `0029` assumed the grant existed and
 failed until it did.
+
+---
+
+# PRD §19 acceptance pass — 18 August 2026
+
+A test-led pass over the twelve **Global Acceptance Criteria** in PRD §19,
+run against the live project as an outsider: not "does the feature work"
+but "is the promise the PRD makes to the business actually kept". Encoded
+as `tests/integration/prd-acceptance.test.ts` so it stays kept.
+
+Unlike the August 4 audit, every line below was **reproduced against the
+live database** before it was written down. Two defects were found, both
+confirmed by measurement, both fixed and re-measured.
+
+## Defect 1 — a duplicate payment double-posted (HIGH)
+
+**Criterion:** §19.4, "duplicate submission cannot double-post."
+
+**Measured:** two identical `post_payment` calls issued together were both
+accepted. Two payment rows, two receipt numbers, two sets of allocations —
+**₹2,000 posted against a single ₹1,000 tender**.
+
+This is the ordinary shape of the bug, not an exotic one: a double click at
+a busy counter, or a retry on a flaky connection. The ledger is insert-only,
+so the correction is a reversal — after the student has already been handed
+a receipt.
+
+**Cause:** `post_payment` had no idempotency parameter and `payments` had no
+uniqueness guard beyond its primary key and a receipt number generated fresh
+on every call. Nothing in the path could tell a retry from a second payment.
+
+**Fix:** migration `0046` — a nullable `idempotency_key` with a partial
+unique index, following migration `0028`'s wallet idiom rather than
+inventing a second mechanism. A replay returns the **original receipt**
+instead of raising: an error would read as failure to the clerk, who would
+then post it a third time. The form mints one key per render, so a double
+click carries the same key and a genuinely new payment carries a new one.
+
+**Two further defects surfaced while fixing it**, both caught by the suite
+before reaching anyone:
+
+- `0047` — adding a parameter created a second overload rather than
+  replacing the function, and PostgREST refuses ambiguous overloads. That
+  would have taken fee collection down entirely. Same trap `0038` hit.
+- `0048` — the rewritten allocation loop lost `::public.fee_instalment_status`
+  from its CASE. The original carried a comment saying the cast was
+  required. Every payment failed until it was restored.
+
+## Defect 2 — public verification was enumerable (MEDIUM)
+
+**Criterion:** §19.12, "public verification is rate-limited and reveals only
+minimum necessary data."
+
+**Measured:** 40 consecutive anonymous lookups against
+`/verify/c/{number}` — **none refused**. The two form actions were limited
+to 20 per 10 minutes; the QR landing route, which reads the same data from
+the URL, had no budget at all. Certificate numbers are sequential, so the
+route allowed walking the entire series and harvesting student name, course,
+centre and result.
+
+**Fix:** `features/verification/rate-limit.ts` — one budget shared by every
+verification surface. Separate per-route budgets would only mean an attacker
+alternates between them and gets the sum. Re-measured: 20 answered, then
+refused.
+
+**Still true, and inherited:** the limiter keys on `x-forwarded-for`, which
+is client-supplied and spoofable, and `RATE_LIMIT_PROVIDER=memory` is
+per-process. This raises the cost of casual enumeration; it does not stop a
+determined attacker. The durable control is `public_verification_logs`,
+which records every lookup. Swap in the Upstash provider before running more
+than one instance.
+
+## Criteria confirmed sound
+
+| Criterion                      | Evidence                                                                                                            |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| §19.1 tenant isolation         | Ten tenant tables swept, plus a targeted cross-centre update by primary key — all zero rows                         |
+| §19.2 student isolation        | Students, enrolments, payments, documents, attendance and results each probed with a classmate's id — all zero rows |
+| §19.3 suspension               | A suspended membership cannot admit or read its old centre; head office still reads the history                     |
+| §19.5 wallet integrity         | Balance equals the ledger sum; an overdraft is refused                                                              |
+| §19.6 exam attempts            | Already covered: refresh does not reset the deadline, ten simultaneous starts produce one attempt                   |
+| §19.7 result immutability      | `published_at IS NULL` in the write policy freezes a result at publication — an update after that changes nothing   |
+| §19.8 certificate verification | An issued certificate verifies; a revoked one reports `revoked` rather than going silent                            |
+| §19.9 reversals                | Ledger `UPDATE` is revoked at privilege level, so an original cannot be edited away                                 |
+| §19.10 attribution             | Every audit row carries an action and timestamp; the log is not writable by the roles it records                    |
+| §19.11 private files           | Anonymous public read fails, the bucket allow-lists mime types, and access is signed-URL only                       |
+
+## Note on the earlier deviation
+
+§19.5 says a wallet "cannot become negative unless a specifically designed
+overdraft feature is later approved". `reverse_commission` (migration
+`0032`) can still take a wallet negative when a paid commission is clawed
+back after the money has been spent. That is deliberate and documented in
+the migration: a negative balance is what "the centre now owes head office"
+means. It is a **designed** exception, but it has not been **approved** —
+raise it with the owner rather than leaving it implied.

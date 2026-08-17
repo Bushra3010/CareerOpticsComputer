@@ -425,6 +425,7 @@ export interface Database {
       };
       payments: {
         Row: {
+          idempotency_key: string | null;
           id: string;
           organization_id: string;
           centre_id: string;
@@ -1598,6 +1599,8 @@ export interface Database {
           p_amount_paise: number;
           p_method: 'cash' | 'upi' | 'bank_transfer' | 'cheque' | 'card' | 'wallet';
           p_reference: string | null;
+          /** Migration 0046: replay guard against a double-posted payment. */
+          p_idempotency_key?: string | null;
         };
         Returns: { payment_id: string; receipt_number: string }[];
       };
