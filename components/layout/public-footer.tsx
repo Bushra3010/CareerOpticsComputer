@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Mail, MapPin, Phone } from "lucide-react";
 import { BRAND } from "@/lib/brand";
 import { LogoLockup } from "@/components/brand/logo";
 
@@ -50,30 +49,6 @@ export function PublicFooter() {
             <p className="text-body mt-4 max-w-xs text-white/70">
               {BRAND.supportingPhrase}
             </p>
-
-            <ul className="text-body mt-5 space-y-2.5 text-white/80">
-              <li className="flex items-start gap-2.5">
-                <MapPin
-                  className="mt-0.5 size-[18px] shrink-0"
-                  aria-hidden="true"
-                />
-                <span>Head office address to be confirmed</span>
-              </li>
-              <li className="flex items-start gap-2.5">
-                <Phone
-                  className="mt-0.5 size-[18px] shrink-0"
-                  aria-hidden="true"
-                />
-                <span>Contact number to be confirmed</span>
-              </li>
-              <li className="flex items-start gap-2.5">
-                <Mail
-                  className="mt-0.5 size-[18px] shrink-0"
-                  aria-hidden="true"
-                />
-                <span>Contact email to be confirmed</span>
-              </li>
-            </ul>
           </div>
 
           {COLUMNS.map((col) => (
