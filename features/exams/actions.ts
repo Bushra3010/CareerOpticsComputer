@@ -342,10 +342,9 @@ export async function publishExam(
     // The database refuses an empty or unassigned paper (migration 0022's
     // publish guard). Its message is the useful one, so it is passed through
     // rather than replaced with something vaguer.
-    return {
-      status: "error",
-      message: error.message.replace(/^.*:\s*/, ""),
-    };
+    // [FIXED: LOW CWE-209 info leak — log raw error, return generic message to client]
+    console.error("[publishExam] RPC error:", error.code, error.message);
+    return { status: "error", message: "Could not publish the exam." };
   }
 
   revalidatePath(`/admin/exams/${examId}`);

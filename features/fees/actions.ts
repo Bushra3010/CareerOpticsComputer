@@ -196,11 +196,10 @@ export async function postPayment(
   });
 
   if (error || !data || data.length === 0) {
-    // post_payment raises when the amount exceeds the outstanding balance;
-    // surface that specific case rather than a generic failure.
-    const overpaid = error?.message?.includes(
-      "exceeds the outstanding balance",
-    );
+    // [FIXED: LOW CWE-209 fragile string match — prefer SQLSTATE code over message text]
+    const overpaid =
+      error?.code === "P0001" &&
+      error?.message?.toLowerCase().includes("exceeds");
     return {
       status: "error",
       message: overpaid

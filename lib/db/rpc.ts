@@ -15,7 +15,12 @@ export async function callRpc<Fn extends keyof Database["public"]["Functions"]>(
   args: Database["public"]["Functions"][Fn]["Args"],
 ): Promise<{
   data: Database["public"]["Functions"][Fn]["Returns"] | null;
-  error: { message: string } | null;
+  error: {
+    message: string;
+    code?: string;
+    details?: string;
+    hint?: string;
+  } | null;
 }> {
   const client = supabase as unknown as {
     rpc: (
@@ -23,7 +28,12 @@ export async function callRpc<Fn extends keyof Database["public"]["Functions"]>(
       args: unknown,
     ) => Promise<{
       data: Database["public"]["Functions"][Fn]["Returns"] | null;
-      error: { message: string } | null;
+      error: {
+        message: string;
+        code?: string;
+        details?: string;
+        hint?: string;
+      } | null;
     }>;
   };
   return client.rpc(fn, args);
