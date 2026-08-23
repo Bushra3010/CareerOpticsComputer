@@ -160,7 +160,7 @@ export function TopBarSearch({
         type="search"
         placeholder={placeholder}
         aria-label={placeholder}
-        className="border-border bg-canvas text-body placeholder:text-text-muted h-10 w-full rounded-[var(--radius-control)] border pr-3 pl-9"
+        className="border-border bg-canvas text-body placeholder:text-text-muted h-[42px] w-full rounded-[var(--radius-control)] border pr-3 pl-9"
         {...props}
       />
     </div>

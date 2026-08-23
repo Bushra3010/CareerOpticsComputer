@@ -29,7 +29,11 @@ export function VerifyForm({ kind }: { kind: "certificate" | "registration" }) {
 
   return (
     <div>
-      <form action={action} className="flex flex-wrap items-end gap-3">
+      <form
+        action={action}
+        aria-label={kind === "certificate" ? "Verify a certificate" : "Verify a registration"}
+        className="flex flex-wrap items-end gap-3"
+      >
         <Field
           id="number"
           label={label}

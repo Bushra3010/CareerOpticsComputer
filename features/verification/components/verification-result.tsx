@@ -4,7 +4,7 @@ import type { CertificateResult, RegistrationResult } from "../actions";
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div>
+    <div role="group">
       <dt className="text-meta text-text-secondary uppercase">{label}</dt>
       <dd className="text-body text-text mt-1">{value}</dd>
     </div>
@@ -29,8 +29,8 @@ export function VerificationResult({
       <div
         className={`rounded-[var(--radius-card)] border p-6 ${
           revoked
-            ? "border-danger bg-danger-bg"
-            : "border-green-600 bg-green-50"
+            ? "border-danger-border bg-danger-bg"
+            : "border-success-border bg-success-bg"
         }`}
       >
         <StatusBadge
@@ -61,7 +61,7 @@ export function VerificationResult({
 
   if (registration) {
     return (
-      <div className="rounded-[var(--radius-card)] border border-green-600 bg-green-50 p-6">
+      <div className="rounded-[var(--radius-card)] border border-success-border bg-success-bg p-6">
         <StatusBadge status="verified" label="Registered" />
         <dl className="mt-4 grid gap-4 sm:grid-cols-2">
           <Row

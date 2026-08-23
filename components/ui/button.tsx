@@ -99,7 +99,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           aria-busy="true"
           {...props}
         >
-          <span className="invisible contents">{children}</span>
+          <span className="hidden">{children}</span>
           <span className="absolute inset-0 flex items-center justify-center">
             <Loader2 className="animate-spin" aria-hidden="true" />
           </span>

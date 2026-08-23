@@ -44,7 +44,7 @@ export const metadata = {
 const COURSE_ICONS = [BookOpen, MonitorSmartphone, Calculator, Code2];
 const COURSE_ACCENTS = [
   "bg-blue-100 text-blue-700",
-  "bg-warning-bg text-orange-600",
+  "bg-blue-100 text-navy-900",
   "bg-success-bg text-success",
   "bg-blue-100 text-navy-900",
 ] as const;
@@ -202,39 +202,38 @@ export default async function HomePage() {
             </p>
           </Card>
         ) : (
-          <div className="tablet:grid-cols-2 wide:gap-5 grid gap-4 lg:grid-cols-4">
+          <div className="tablet:grid-cols-2 grid gap-4 lg:gap-5 lg:grid-cols-4">
             {featured.map((course, i) => {
               const Icon = COURSE_ICONS[i % COURSE_ICONS.length]!;
               return (
                 <Card
                   key={course.id}
-                  className="hover:border-border-strong flex flex-col p-5 transition-colors"
+                  className="flex flex-col p-5 transition-colors"
                 >
-                  <span
-                    className={`grid size-11 place-items-center rounded-[var(--radius-chip)] ${COURSE_ACCENTS[i % COURSE_ACCENTS.length]}`}
-                    aria-hidden="true"
-                  >
-                    <Icon className="size-5" />
-                  </span>
-                  <h3 className="text-card-title text-navy-900 mt-3">
-                    {course.name}
-                  </h3>
-                  <p className="text-meta text-text-secondary mt-1 line-clamp-2">
-                    {course.shortDescription}
-                  </p>
-                  <div className="text-meta text-text-secondary mt-3 flex items-center justify-between">
-                    <span>{course.durationLabel}</span>
-                    <span className="text-navy-900 tabular font-semibold">
-                      {formatPaise(paise(course.feePaise), {
-                        showDecimals: false,
-                      })}
-                    </span>
-                  </div>
                   <Link
                     href={`/courses/${course.slug}`}
-                    className="text-meta mt-4 inline-flex items-center gap-1 font-semibold text-blue-700 underline-offset-4 hover:underline"
+                    className="flex flex-1 flex-col"
                   >
-                    View details <ArrowRight className="size-3.5" />
+                    <span
+                      className={`grid size-11 place-items-center rounded-[var(--radius-chip)] ${COURSE_ACCENTS[i % COURSE_ACCENTS.length]}`}
+                      aria-hidden="true"
+                    >
+                      <Icon className="size-5" />
+                    </span>
+                    <h3 className="text-card-title text-navy-900 mt-3">
+                      {course.name}
+                    </h3>
+                    <p className="text-meta text-text-secondary mt-1 line-clamp-2">
+                      {course.shortDescription}
+                    </p>
+                    <div className="text-meta text-text-secondary mt-3 flex items-center justify-between">
+                      <span>{course.durationLabel}</span>
+                      <span className="text-navy-900 tabular font-semibold">
+                        {formatPaise(paise(course.feePaise), {
+                          showDecimals: false,
+                        })}
+                      </span>
+                    </div>
                   </Link>
                 </Card>
               );
@@ -377,7 +376,7 @@ function HeroPanel({
         <h2 className="text-card-title text-navy-900">Centres near you</h2>
         {centres.length === 0 ? (
           <p className="text-meta text-text-secondary mt-2">
-            Centre listings are being prepared.
+            No centres listed yet — check back soon.
           </p>
         ) : (
           <ul className="divide-border mt-2 divide-y">

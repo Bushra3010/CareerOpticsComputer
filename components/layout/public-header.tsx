@@ -127,7 +127,13 @@ export function PublicHeader() {
       {menuOpen ? (
         <div
           id="public-nav-sheet"
-          className="bg-surface fixed inset-x-0 top-[calc(4rem+env(safe-area-inset-top,0px))] bottom-0 z-40 overflow-y-auto lg:hidden"
+          className="bg-surface fixed inset-x-0 bottom-0 z-40 overflow-y-auto lg:hidden"
+          style={{
+            top:
+              "calc(" +
+              (scrolled ? "4rem" : "4.25rem") +
+              " + env(safe-area-inset-top, 0px))",
+          }}
         >
           <nav aria-label="Site" className="container-public py-4">
             <ul className="divide-border divide-y">
