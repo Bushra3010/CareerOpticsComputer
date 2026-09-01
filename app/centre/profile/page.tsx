@@ -2,7 +2,11 @@ import { redirect } from "next/navigation";
 
 import { StatusBadge } from "@/components/ui/badge";
 import { createClient } from "@/lib/db/server";
-import { getCurrentCentreContext } from "@/features/centres/current-membership";
+import {
+  getCurrentCentreContext,
+  listCentreMemberships,
+} from "@/features/centres/current-membership";
+import { CentreSwitcher } from "@/features/centres/components/centre-switcher";
 import { SignOutButton } from "@/features/auth/components/sign-out-button";
 
 function Row({ label, value }: { label: string; value: string }) {
@@ -26,6 +30,8 @@ export default async function CentreProfilePage() {
 
   const context = await getCurrentCentreContext(supabase, user.id);
   if (!context) redirect("/centre");
+
+  const memberships = await listCentreMemberships(supabase, user.id);
 
   const { data: centre } = await supabase
     .from("centres")
@@ -72,6 +78,22 @@ export default async function CentreProfilePage() {
           section a centre user on a desktop has no way to end their session.
           The account is named because a shared centre machine gets shared
           logins, and "sign out" should say whose. */}
+      {/* Only renders for a login that holds more than one centre. Without it
+          such a user reached whichever centre the database returned first and
+          had no route to the other, so a centre's students looked as though
+          they had disappeared. */}
+      {memberships.length > 1 ? (
+        <section className="border-border mt-10 max-w-2xl border-t pt-6">
+          <h2 className="text-section text-navy-900">Switch centre</h2>
+          <div className="mt-4">
+            <CentreSwitcher
+              centres={memberships}
+              activeCentreId={context.centreId}
+            />
+          </div>
+        </section>
+      ) : null}
+
       <section className="border-border mt-10 max-w-2xl border-t pt-6">
         <h2 className="text-section text-navy-900">Your account</h2>
         {user.email ? (
