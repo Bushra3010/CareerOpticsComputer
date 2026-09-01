@@ -8,6 +8,10 @@ import {
   ResponsiveCollection,
 } from "@/components/tables/mobile-list";
 import { formatIst, listExams } from "@/features/exams/queries";
+import { CentreExamForm } from "@/features/exams/components/centre-exam-form";
+import { createClient } from "@/lib/db/server";
+import { getCurrentCentreContext } from "@/features/centres/current-membership";
+import { getPermissionCodes } from "@/features/centres/nav";
 
 export const metadata: Metadata = { title: "Exams", robots: { index: false } };
 
@@ -21,14 +25,51 @@ export const metadata: Metadata = { title: "Exams", robots: { index: false } };
  * reading tomorrow's questions today is the thing that policy exists to stop.
  */
 export default async function CentreExamsPage() {
-  const exams = await listExams();
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const context = user
+    ? await getCurrentCentreContext(supabase, user.id)
+    : null;
+
+  // `exam.author` is what migration 0056 gates centre-written exams on, and it
+  // is held by owners and managers only — a counsellor keeps the read-only
+  // page 0023 gave them rather than a button that would be refused.
+  const [exams, permissionCodes] = await Promise.all([
+    listExams(),
+    context && user
+      ? getPermissionCodes(supabase, user.id, context.centreId)
+      : new Set<string>(),
+  ]);
+  const canAuthor = permissionCodes.has("exam.author");
+
+  // Only this centre's own banks: an exam may not draw from head office's, and
+  // the trigger in 0056 would refuse it anyway.
+  const { data: bankRows } =
+    canAuthor && context
+      ? await supabase
+          .from("question_banks")
+          .select("id, name")
+          .eq("centre_id", context.centreId)
+          .eq("status", "active")
+          .order("name")
+      : { data: [] };
+  const banks = bankRows ?? [];
 
   return (
     <div>
-      <h1 className="text-page-title text-navy-900">Exams</h1>
-      <p className="text-body text-text-secondary mt-1">
-        Exams your centre has been assigned. Papers open at the scheduled time.
-      </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="text-page-title text-navy-900">Exams</h1>
+          <p className="text-body text-text-secondary mt-1">
+            {canAuthor
+              ? "Exams your centre has been assigned, and the ones it has written itself."
+              : "Exams your centre has been assigned. Papers open at the scheduled time."}
+          </p>
+        </div>
+        {canAuthor ? <CentreExamForm banks={banks} /> : null}
+      </div>
 
       {exams.length === 0 ? (
         <EmptyState
