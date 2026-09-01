@@ -20,6 +20,54 @@ export async function listStudentsForCentre(
   return data ?? [];
 }
 
+export interface CentreEnrolmentRow {
+  id: string;
+  studentId: string;
+  courseName: string | null;
+  batchId: string | null;
+}
+
+/**
+ * Active enrolments across a centre, for showing each student's batch in the
+ * student list.
+ *
+ * The course name comes from a second read rather than an embed: the generated
+ * types carry no enrolments→courses relation, so `courses(name)` resolves to a
+ * SelectQueryError and will not compile.
+ */
+export async function listEnrolmentsForCentre(
+  centreId: string,
+): Promise<CentreEnrolmentRow[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("enrolments")
+    .select("id, student_id, course_id, batch_id")
+    .eq("centre_id", centreId)
+    .eq("status", "active");
+
+  if (error) {
+    throw new Error(`Failed to load enrolments: ${error.message}`);
+  }
+
+  const rows = data ?? [];
+  if (rows.length === 0) return [];
+
+  const courseIds = [...new Set(rows.map((r) => r.course_id).filter(Boolean))];
+  const { data: courses } = await supabase
+    .from("courses")
+    .select("id, name")
+    .in("id", courseIds);
+
+  const names = new Map((courses ?? []).map((c) => [c.id, c.name]));
+
+  return rows.map((r) => ({
+    id: r.id,
+    studentId: r.student_id,
+    courseName: r.course_id ? (names.get(r.course_id) ?? null) : null,
+    batchId: r.batch_id,
+  }));
+}
+
 export interface AdminStudentRow {
   id: string;
   registrationNumber: string;
