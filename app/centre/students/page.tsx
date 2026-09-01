@@ -11,7 +11,7 @@ import { EmptyState } from "@/components/states";
 import { createClient } from "@/lib/db/server";
 import { getCurrentCentreContext } from "@/features/centres/current-membership";
 import { listStudentsForCentre } from "@/features/students/queries";
-import { InviteButton } from "@/features/students/components/invite-button";
+import { PortalCredentialsButton } from "@/features/students/components/portal-credentials-button";
 
 export default async function StudentsPage() {
   const supabase = await createClient();
@@ -50,13 +50,16 @@ export default async function StudentsPage() {
                   subtitle={student.registration_number}
                   href={`/centre/students/${student.id}`}
                   status={<StatusBadge status={student.status} />}
-                  fields={[
-                    { label: "Phone", value: student.phone },
-                    {
-                      label: "Portal",
-                      value: student.user_id ? "Has login" : "Not invited",
-                    },
-                  ]}
+                  fields={[{ label: "Phone", value: student.phone }]}
+                  // Portal state is not repeated as a field: the action below
+                  // already says "Has login" or offers to create one, and the
+                  // same words twice in a card this small reads as a bug.
+                  action={
+                    <PortalCredentialsButton
+                      studentId={student.id}
+                      hasLogin={Boolean(student.user_id)}
+                    />
+                  }
                 />
               ))}
             </MobileList>
@@ -82,7 +85,7 @@ export default async function StudentsPage() {
                       <td className="text-body px-4 py-3">
                         <Link
                           href={`/centre/students/${student.id}`}
-                          className="text-brand-600 font-semibold hover:underline"
+                          className="font-semibold text-blue-700 hover:underline"
                         >
                           {student.full_name}
                         </Link>
@@ -92,13 +95,10 @@ export default async function StudentsPage() {
                         <StatusBadge status={student.status} />
                       </td>
                       <td className="px-4 py-3">
-                        {student.user_id ? (
-                          <span className="text-meta text-text-secondary">
-                            Has login
-                          </span>
-                        ) : (
-                          <InviteButton studentId={student.id} />
-                        )}
+                        <PortalCredentialsButton
+                          studentId={student.id}
+                          hasLogin={Boolean(student.user_id)}
+                        />
                       </td>
                     </tr>
                   ))}

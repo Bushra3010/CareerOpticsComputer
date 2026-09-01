@@ -51,6 +51,28 @@ export async function admitStudent(
     };
   }
 
+  // `students_insert` additionally requires app.centre_is_operational(), which
+  // holds only for status 'active'. Without this check RLS refuses the insert
+  // and the caller gets the generic failure at the bottom of this action —
+  // which tells a suspended or closed centre to "try again", advice that can
+  // never come true. RLS stays the backstop; this is the readable error, and
+  // it runs before validation because no amount of fixing the form will help.
+  const { data: centre } = await supabase
+    .from("centres")
+    .select("status")
+    .eq("id", context.centreId)
+    .maybeSingle();
+
+  if (centre && centre.status !== "active") {
+    return {
+      status: "error",
+      message:
+        centre.status === "suspended"
+          ? "This centre is suspended, so new admissions are on hold. Contact head office to restore it."
+          : "This centre is closed and can no longer admit students. Contact head office.",
+    };
+  }
+
   const parsed = admitStudentSchema.safeParse({
     fullName: formData.get("fullName")?.toString() ?? "",
     phone: formData.get("phone")?.toString() ?? "",
@@ -91,6 +113,10 @@ export async function admitStudent(
   });
 
   if (error || !data || data.length === 0) {
+    // The generic message below is all the user should see, but swallowing the
+    // cause entirely made this branch undiagnosable in production — an RLS
+    // refusal and a genuine outage looked identical from the outside.
+    console.error("[students] admit_student failed:", error);
     return {
       status: "error",
       message: "Could not admit the student. Please try again.",

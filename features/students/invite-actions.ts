@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import type { AuthError } from "@supabase/supabase-js";
 
 import { createClient } from "@/lib/db/action";
 import { createServiceRoleClient } from "@/lib/db/service-role";
@@ -11,6 +12,29 @@ import { getCurrentCentreContext } from "@/features/centres/current-membership";
 export interface InviteState {
   status: "idle" | "error" | "success";
   message?: string;
+}
+
+/**
+ * Turns an Auth API failure into something the person at the centre desk can
+ * act on.
+ *
+ * The three below are configuration, not bad luck: no amount of retrying fixes
+ * a project whose mail sender is not set up, and telling staff to "try again"
+ * sends them round the same loop while the real fix sits in a dashboard nobody
+ * has been pointed at. Anything unrecognised keeps the retry wording, because
+ * a genuine transient failure is the one case where retrying is right.
+ */
+function inviteFailureMessage(error: AuthError | null): string {
+  switch (error?.code) {
+    case "over_email_send_rate_limit":
+      return "Too many invitations have been sent recently. Wait an hour and try again.";
+    case "email_address_not_authorized":
+      return "The email service is not configured to send to this address. Head office needs to set up SMTP before portal invitations will work.";
+    case "validation_failed":
+      return "The invitation was rejected as invalid — usually the site's redirect URL is not on the allowed list. Contact head office.";
+    default:
+      return "Could not send the invitation. Please try again.";
+  }
 }
 
 /**
@@ -87,9 +111,15 @@ export async function inviteStudentToPortal(
     });
 
   if (inviteError || !invited.user) {
+    // Swallowing this made the failure undiagnosable from outside: a mail
+    // provider that is not configured, a rate limit and a rejected redirect
+    // URL all looked like the same "try again" to the centre staff, and
+    // nothing at all reached the server logs.
+    console.error("[students] portal invitation failed:", inviteError);
+
     return {
       status: "error",
-      message: "Could not send the invitation. Please try again.",
+      message: inviteFailureMessage(inviteError),
     };
   }
 
@@ -102,6 +132,9 @@ export async function inviteStudentToPortal(
   });
 
   if (linkError) {
+    // Support cannot act on "contact support" without the cause, and this
+    // branch leaves an orphaned auth account behind — worth a log line.
+    console.error("[students] link_student_login failed:", linkError);
     return {
       status: "error",
       message:
