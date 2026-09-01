@@ -70,10 +70,20 @@ export async function createCentreQuestionBank(
       context.organizationId,
       context.centreId,
     );
-  } catch {
+  } catch (err) {
+    // Distinct from the RLS refusal below on purpose. Both used to say the
+    // same sentence, which made them indistinguishable from the outside — and
+    // they have different causes and different fixes: this one is a missing
+    // grant, that one is a policy the row does not satisfy.
+    console.error("[exams] question.author denied:", {
+      organizationId: context.organizationId,
+      centreId: context.centreId,
+      err,
+    });
     return {
       status: "error",
-      message: "You do not have permission to create question banks.",
+      message:
+        "Your role does not hold question.author at this centre. Head office grants it.",
     };
   }
 
@@ -98,12 +108,13 @@ export async function createCentreQuestionBank(
   });
 
   if (error) {
+    console.error("[exams] question bank insert failed:", error);
     return {
       status: "error",
       message:
         error.code === "42501"
-          ? "You do not have permission to create question banks."
-          : "Could not create the question bank.",
+          ? "The database refused the question bank. Your permission is right, so this is the row-level policy — head office needs to look at it."
+          : `Could not create the question bank (${error.code ?? "unknown"}).`,
     };
   }
 
@@ -127,10 +138,16 @@ export async function createCentreExam(
       context.organizationId,
       context.centreId,
     );
-  } catch {
+  } catch (err) {
+    console.error("[exams] exam.author denied:", {
+      organizationId: context.organizationId,
+      centreId: context.centreId,
+      err,
+    });
     return {
       status: "error",
-      message: "You do not have permission to create exams.",
+      message:
+        "Your role does not hold exam.author at this centre. Head office grants it.",
     };
   }
 
@@ -171,14 +188,15 @@ export async function createCentreExam(
     // The picker only offers this centre's banks, so this is a stale form or a
     // crafted request rather than an ordinary mistake — but it should still
     // read as something other than "unknown error".
+    console.error("[exams] exam insert failed:", error);
     const sameCentre = error.message.includes("same centre");
     return {
       status: "error",
       message: sameCentre
         ? "That question bank belongs to another centre."
         : error.code === "42501"
-          ? "You do not have permission to create exams."
-          : "Could not create the exam.",
+          ? "The database refused the exam. Your permission is right, so this is the row-level policy — head office needs to look at it."
+          : `Could not create the exam (${error.code ?? "unknown"}).`,
     };
   }
 
