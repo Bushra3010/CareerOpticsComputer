@@ -34,6 +34,15 @@ export const batchSchema = z.object({
   endDate: z.string().trim().optional().or(z.literal("")),
 });
 
+/**
+ * Editing a batch, which is creating it minus the course.
+ *
+ * Course is omitted rather than made optional: students are already placed
+ * against the batch, and moving it to another course would quietly change what
+ * they are recorded as studying.
+ */
+export const batchEditSchema = batchSchema.omit({ courseId: true });
+
 export const scheduleSlotSchema = z.object({
   batchId: z.string().uuid(),
   weekday: z.coerce.number().int().min(0).max(6),

@@ -9,9 +9,17 @@ import {
 } from "@/components/tables/mobile-list";
 import { EmptyState } from "@/components/states";
 import { createClient } from "@/lib/db/server";
+import { businessDate } from "@/lib/dates";
 import { getCurrentCentreContext } from "@/features/centres/current-membership";
+import { getPermissionCodes } from "@/features/centres/nav";
 import { listStudentsForCentre } from "@/features/students/queries";
 import { PortalCredentialsButton } from "@/features/students/components/portal-credentials-button";
+import { listPublishedCourses } from "@/features/academics/queries";
+import { BatchManager } from "@/features/batches/components/batch-manager";
+import {
+  listBatchesForCentre,
+  listFacultyOptions,
+} from "@/features/batches/queries";
 
 export default async function StudentsPage() {
   const supabase = await createClient();
@@ -22,7 +30,27 @@ export default async function StudentsPage() {
   const context = user
     ? await getCurrentCentreContext(supabase, user.id)
     : null;
-  const students = context ? await listStudentsForCentre(context.centreId) : [];
+
+  // Batch management is shown here as well as on its own page, so a centre can
+  // set up a batch and place students without leaving this screen. Gated on
+  // `batch.manage` — the same permission the actions require — so a role that
+  // could only ever be refused is not shown the forms at all.
+  const [students, permissionCodes] = await Promise.all([
+    context ? listStudentsForCentre(context.centreId) : [],
+    context && user
+      ? getPermissionCodes(supabase, user.id, context.centreId)
+      : new Set<string>(),
+  ]);
+  const canManageBatches = permissionCodes.has("batch.manage");
+
+  const [batches, courses, faculty] =
+    context && canManageBatches
+      ? await Promise.all([
+          listBatchesForCentre(context.centreId),
+          listPublishedCourses(),
+          listFacultyOptions(context.centreId),
+        ])
+      : [[], [], []];
 
   return (
     <div>
@@ -108,6 +136,25 @@ export default async function StudentsPage() {
           }
         />
       )}
+
+      {canManageBatches ? (
+        <section className="border-border mt-10 border-t pt-8">
+          <h2 className="text-section text-navy-900">Batches and timetable</h2>
+          <p className="text-body text-text-secondary mt-1 max-w-prose">
+            A batch groups students taking one course together on a weekly
+            timetable. Create one here, give it slots, then place a student into
+            it from their own page.
+          </p>
+          <div className="mt-4">
+            <BatchManager
+              batches={batches}
+              courses={courses.map((c) => ({ id: c.id, name: c.name }))}
+              faculty={faculty}
+              today={businessDate()}
+            />
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }
