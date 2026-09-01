@@ -566,6 +566,8 @@ export interface Database {
         Row: {
           id: string;
           organization_id: string;
+          /** Null is head office; set means the centre that owns it (0056). */
+          centre_id: string | null;
           course_id: string | null;
           name: string;
           description: string | null;
@@ -631,6 +633,8 @@ export interface Database {
         Row: {
           id: string;
           organization_id: string;
+          /** Null is head office; set means the centre that authored it (0056). */
+          centre_id: string | null;
           bank_id: string;
           course_id: string | null;
           title: string;
