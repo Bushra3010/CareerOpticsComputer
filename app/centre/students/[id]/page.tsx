@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/states";
 import { DocumentUpload } from "@/features/students/components/document-upload";
-import { InviteButton } from "@/features/students/components/invite-button";
+import { PortalCredentialsButton } from "@/features/students/components/portal-credentials-button";
 import {
   documentKindLabel,
   listStudentDocuments,
@@ -93,11 +93,10 @@ export default async function StudentDetailPage({
           </div>
           <div className="flex items-center gap-3">
             <StatusBadge status={student.status} />
-            {student.hasLogin ? (
-              <span className="text-meta text-text-secondary">Has login</span>
-            ) : (
-              <InviteButton studentId={student.id} />
-            )}
+            <PortalCredentialsButton
+              studentId={student.id}
+              hasLogin={student.hasLogin}
+            />
           </div>
         </div>
       </div>
@@ -206,7 +205,7 @@ export default async function StudentDetailPage({
                       href={d.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-body text-brand-600 font-semibold hover:underline"
+                      className="text-body font-semibold text-blue-700 hover:underline"
                     >
                       Open
                     </a>
