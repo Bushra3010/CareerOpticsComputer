@@ -46,13 +46,18 @@ export default async function CentreExamsPage() {
 
   // Only this centre's own banks: an exam may not draw from head office's, and
   // the trigger in 0056 would refuse it anyway.
+  //
+  // Retired banks are excluded and drafts are not. A bank is created as a
+  // draft, so filtering to `active` hid every bank the moment it was made —
+  // the form went on insisting the centre had no bank while refusing to create
+  // another by that name.
   const { data: bankRows } =
     canAuthor && context
       ? await supabase
           .from("question_banks")
           .select("id, name")
           .eq("centre_id", context.centreId)
-          .eq("status", "active")
+          .neq("status", "retired")
           .order("name")
       : { data: [] };
   const banks = bankRows ?? [];
