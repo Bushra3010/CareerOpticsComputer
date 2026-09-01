@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { StatusBadge } from "@/components/ui/badge";
 import { createClient } from "@/lib/db/server";
 import { getCurrentCentreContext } from "@/features/centres/current-membership";
+import { SignOutButton } from "@/features/auth/components/sign-out-button";
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
@@ -18,9 +19,12 @@ export default async function CentreProfilePage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const context = user
-    ? await getCurrentCentreContext(supabase, user.id)
-    : null;
+  // Guarded before the membership lookup rather than folded into it, so `user`
+  // narrows to non-null for the account section below. Same destination either
+  // way — the layout has already bounced a signed-out visitor to sign-in.
+  if (!user) redirect("/centre");
+
+  const context = await getCurrentCentreContext(supabase, user.id);
   if (!context) redirect("/centre");
 
   const { data: centre } = await supabase
@@ -60,6 +64,25 @@ export default async function CentreProfilePage() {
         To change these details, contact head office. Self-service editing and
         document uploads are planned.
       </p>
+
+      {/* Sign out lives here because the shell only offers it on mobile: the
+          layout passes SignOutButton as `headerAction`, and that lands in
+          AppHeader, which is hidden at `lg`. The desktop TopBar carries only
+          notifications, help and a link to this page (§8.2), so without this
+          section a centre user on a desktop has no way to end their session.
+          The account is named because a shared centre machine gets shared
+          logins, and "sign out" should say whose. */}
+      <section className="border-border mt-10 max-w-2xl border-t pt-6">
+        <h2 className="text-section text-navy-900">Your account</h2>
+        {user.email ? (
+          <p className="text-body text-text-secondary mt-2">
+            Signed in as {user.email}.
+          </p>
+        ) : null}
+        <div className="mt-4">
+          <SignOutButton />
+        </div>
+      </section>
     </div>
   );
 }
