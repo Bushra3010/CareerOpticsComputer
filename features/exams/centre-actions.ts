@@ -109,6 +109,16 @@ export async function createCentreQuestionBank(
 
   if (error) {
     console.error("[exams] question bank insert failed:", error);
+
+    if (error.code === "23505") {
+      return {
+        status: "error",
+        fieldErrors: {
+          name: "Your centre already has a question bank with this name.",
+        },
+      };
+    }
+
     return {
       status: "error",
       message:
