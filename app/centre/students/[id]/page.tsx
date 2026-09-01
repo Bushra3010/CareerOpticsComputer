@@ -15,6 +15,7 @@ import { getStudentProfile } from "@/features/students/queries";
 import { PlaceStudentSelect } from "@/features/batches/components/place-student-select";
 import { listBatchOptions } from "@/features/batches/queries";
 import { getCurrentCentreContext } from "@/features/centres/current-membership";
+import { getPermissionCodes } from "@/features/centres/nav";
 import { createClient } from "@/lib/db/server";
 
 export const metadata: Metadata = {
@@ -43,9 +44,12 @@ export default async function StudentDetailPage({
   const documents = await listStudentDocuments(id);
   const photo = documents.find((d) => d.kind === "photo" && d.url);
 
-  // Batch options come from the viewer's own centre. A viewer without
-  // `batch.manage` gets an empty list from RLS, and the select is not
-  // rendered at all — the action would refuse them anyway.
+  // Batch options come from the viewer's own centre, and `batches_select`
+  // gates them on `batch.read`, so an empty list means one of two different
+  // things: the centre has no batches yet, or this viewer may not see them.
+  // `batch.manage` is what placing a student actually needs, so it decides
+  // whether the empty case gets a pointer at Batches or stays silent — better
+  // nothing than sending a receptionist to a page that will refuse them.
   const supabase = await createClient();
   const {
     data: { user },
@@ -53,7 +57,13 @@ export default async function StudentDetailPage({
   const context = user
     ? await getCurrentCentreContext(supabase, user.id)
     : null;
-  const batches = context ? await listBatchOptions(context.centreId) : [];
+  const [batches, permissionCodes] = await Promise.all([
+    context ? listBatchOptions(context.centreId) : [],
+    context && user
+      ? getPermissionCodes(supabase, user.id, context.centreId)
+      : new Set<string>(),
+  ]);
+  const canManageBatches = permissionCodes.has("batch.manage");
 
   return (
     <div className="space-y-8">
@@ -160,6 +170,18 @@ export default async function StudentDetailPage({
                             batches={batches}
                           />
                         </div>
+                      ) : canManageBatches ? (
+                        <p className="text-meta text-text-secondary mt-2">
+                          No batches yet, so there is nowhere to place this
+                          student.{" "}
+                          <Link
+                            href="/centre/batches"
+                            className="font-semibold text-blue-700 underline-offset-4 hover:underline"
+                          >
+                            Create one under Batches and timetable
+                          </Link>
+                          , give it a weekly timetable, then come back here.
+                        </p>
                       ) : null}
                     </div>
                     <StatusBadge status={e.status} />
