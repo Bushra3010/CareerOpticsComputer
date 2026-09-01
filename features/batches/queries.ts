@@ -16,6 +16,8 @@ export interface BatchRow {
   code: string;
   name: string;
   courseName: string | null;
+  /** The id as well as the name, so the edit form can preselect the faculty. */
+  facultyId: string | null;
   facultyName: string | null;
   capacity: number | null;
   enrolledCount: number;
@@ -136,6 +138,7 @@ export async function listBatchesForCentre(
       code: b.code,
       name: b.name,
       courseName: course?.name ?? null,
+      facultyId: b.faculty_id,
       facultyName: b.faculty_id ? (names.get(b.faculty_id) ?? null) : null,
       capacity: b.capacity,
       enrolledCount: counts.get(b.id) ?? 0,
