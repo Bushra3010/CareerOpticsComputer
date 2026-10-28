@@ -1,0 +1,48 @@
+
+html{scroll-behavior:smooth}
+
+body{
+    font-family:Arial,"Noto Sans Devanagari",sans-serif;
+}
+
+.drop-content{
+    max-height:0;
+    overflow:hidden;
+    transition:max-height:.6s ease;
+}
+
+.drop-content.show{
+    max-height:50000px;
+}
+
+.arrow{
+    transition:.3s ease;
+}
+
+.arrow.rotate{
+    transform:rotate(180deg);
+}
+
+.topic-content{
+    display:none;
+}
+
+.topic-content.show{
+    display:block;
+}
+
+.topic-btn{
+    transition:.25s ease;
+}
+
+.topic-btn:hover{
+    transform:translateX(5px);
+}
+
+.info-card{
+    transition:.25s ease;
+}
+
+.info-card:hover{
+    transform:translateY(-4px);
+}

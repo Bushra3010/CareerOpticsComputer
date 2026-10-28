@@ -1,0 +1,54 @@
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            overflow-x: hidden;
+        }
+
+        .accordion-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height .35s ease;
+        }
+
+        .accordion-item.active .accordion-body {
+            max-height: 700px;
+        }
+
+        .accordion-item.active .arrow {
+            transform: rotate(180deg);
+        }
+
+        .hero-pattern {
+            background-image:
+              
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        .float {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .gradient-text {
+            background: linear-gradient(
+                90deg,
+                #c4b5fd,
+                #f9a8d4,
+                #fbcfe8
+            );
+
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+    

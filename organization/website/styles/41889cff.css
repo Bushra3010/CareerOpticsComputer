@@ -1,0 +1,152 @@
+
+/* =========================================================
+   AI PRODUCTIVITY & WORKFLOW — MODERN COURSE PAGE
+   ========================================================= */
+
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 90px;
+}
+
+body {
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+    background: #0f172a;
+    color: #fff;
+}
+
+/* Hero */
+.hero-grid {
+    background-image:
+        linear-gradient(rgba(148,163,184,.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148,163,184,.08) 1px, transparent 1px);
+    background-size: 40px 40px;
+}
+
+.gradient-text {
+    background: linear-gradient(90deg, #2563eb, #7c3aed, #db2777);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.glass {
+    background: rgba(255,255,255,.78);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255,255,255,.8);
+}
+
+/* Cards */
+.modern-card {
+    transition: all .3s ease;
+}
+
+.modern-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 45px rgba(15,23,42,.10);
+}
+
+.sticky-card {
+    position: sticky;
+    top: 100px;
+}
+
+/* Modules */
+.course-module {
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    border-radius: 18px;
+    transition: all .25s ease;
+}
+
+.course-module:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 12px 30px rgba(15,23,42,.06);
+}
+
+.module-header {
+    cursor: pointer;
+}
+
+.module-content {
+    display: none;
+    border-top: 1px solid #e2e8f0;
+}
+
+.module-content.active {
+    display: block;
+}
+
+.lesson-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    transition: all .2s ease;
+}
+
+.lesson-box:hover {
+    background: #fff;
+    border-color: #cbd5e1;
+    transform: translateX(3px);
+}
+
+/* Tool cards */
+.tool-card {
+    transition: all .25s ease;
+}
+
+.tool-card:hover {
+    transform: translateY(-5px);
+}
+
+/* FAQ */
+.faq-item {
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.faq-answer {
+    display: none;
+}
+
+.faq-answer.active {
+    display: block;
+}
+
+/* Form */
+.form-input {
+    width: 100%;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    padding: 13px 15px;
+    outline: none;
+    transition: all .2s ease;
+    background: #fff;
+}
+
+.form-input:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99,102,241,.10);
+}
+
+/* Section spacing */
+.section-space {
+    padding-top: 80px;
+    padding-bottom: 80px;
+}
+
+@media(max-width:768px) {
+    .section-space {
+        padding-top: 55px;
+        padding-bottom: 55px;
+    }
+
+    .sticky-card {
+        position: static;
+    }
+}

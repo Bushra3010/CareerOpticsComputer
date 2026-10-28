@@ -1,0 +1,837 @@
+   /* =========================================================
+   COMPACT TEXT SIZE
+========================================================= */
+
+/* Body */
+body {
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* Navbar */
+nav a,
+.desktop-nav a {
+    font-size: 13px !important;
+}
+
+/* Main Headings */
+h1 {
+    font-size: 38px !important;
+    line-height: 1.15 !important;
+}
+
+h2 {
+    font-size: 28px !important;
+    line-height: 1.2 !important;
+}
+
+h3 {
+    font-size: 18px !important;
+    line-height: 1.3 !important;
+}
+
+h4 {
+    font-size: 16px !important;
+}
+
+/* Paragraph */
+p {
+    font-size: 13px;
+    line-height: 1.65;
+}
+
+/* Small text */
+.text-sm {
+    font-size: 12px !important;
+}
+
+.text-xs {
+    font-size: 11px !important;
+}
+
+/* Buttons */
+button,
+.btn {
+    font-size: 12px !important;
+}
+
+/* Cards */
+.course-card h3,
+.service-card h3,
+.feature-card h3 {
+    font-size: 16px !important;
+}
+
+.course-card p,
+.service-card p,
+.feature-card p {
+    font-size: 12px !important;
+}
+
+/* Hero */
+.hero-title {
+    font-size: 38px !important;
+}
+
+.hero-subtitle {
+    font-size: 13px !important;
+}
+
+/* Section titles */
+.section-title {
+    font-size: 28px !important;
+}
+
+.section-description {
+    font-size: 13px !important;
+}
+
+
+/* =========================================================
+   MOBILE TEXT SIZE
+========================================================= */
+
+@media (max-width: 768px) {
+
+    body {
+        font-size: 13px;
+    }
+
+    h1,
+    .hero-title {
+        font-size: 28px !important;
+    }
+
+    h2,
+    .section-title {
+        font-size: 23px !important;
+    }
+
+    h3 {
+        font-size: 16px !important;
+    }
+
+    h4 {
+        font-size: 14px !important;
+    }
+
+    p {
+        font-size: 12px !important;
+        line-height: 1.6;
+    }
+
+    nav a,
+    .desktop-nav a {
+        font-size: 12px !important;
+    }
+
+    button,
+    .btn {
+        font-size: 11px !important;
+    }
+
+    .course-card h3,
+    .service-card h3,
+    .feature-card h3 {
+        font-size: 15px !important;
+    }
+
+    .course-card p,
+    .service-card p,
+    .feature-card p {
+        font-size: 11px !important;
+    }
+
+}
+
+
+/* =========================================================
+   EXTRA SMALL MOBILE
+========================================================= */
+
+@media (max-width: 480px) {
+
+    h1,
+    .hero-title {
+        font-size: 24px !important;
+    }
+
+    h2,
+    .section-title {
+        font-size: 20px !important;
+    }
+
+    h3 {
+        font-size: 15px !important;
+    }
+
+    p {
+        font-size: 11px !important;
+    }
+
+}
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Poppins", sans-serif;
+            overflow-x: hidden;
+            background: #ffffff;
+            color: #111827;
+        }
+
+        /* =========================================
+           ANIMATIONS
+        ========================================= */
+
+        @keyframes fadeDown {
+            from {
+                opacity: 0;
+                transform: translateY(-25px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes floatPerson {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-12px);
+            }
+        }
+
+        @keyframes floatLabel {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-7px);
+            }
+        }
+
+        @keyframes rotateSlow {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes rotateReverse {
+            from {
+                transform: rotate(360deg);
+            }
+
+            to {
+                transform: rotate(0deg);
+            }
+        }
+
+        @keyframes pulseDot {
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: .7;
+            }
+
+            50% {
+                transform: scale(1.7);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulseRing {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.025);
+            }
+        }
+
+        @keyframes gradientMove {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        @keyframes shine {
+            0% {
+                left: -100%;
+            }
+
+            100% {
+                left: 130%;
+            }
+        }
+
+        .animate-fade-down {
+            animation: fadeDown .8s ease both;
+        }
+
+        .animate-fade-left {
+            animation: fadeLeft .9s ease both;
+        }
+
+        .animate-fade-right {
+            animation: fadeRight 1s ease both;
+        }
+
+        .person-float {
+            animation: floatPerson 4s ease-in-out infinite;
+        }
+
+        .label-float {
+            animation: floatLabel 3.5s ease-in-out infinite;
+        }
+
+        /* =========================================
+           NAVBAR
+        ========================================= */
+
+        .nav-shadow {
+            box-shadow: 0 1px 0 rgba(0, 0, 0, .08);
+        }
+
+        .nav-item {
+            position: relative;
+            transition: all .25s ease;
+        }
+
+        .nav-item:hover {
+            color: #0b0b9d;
+        }
+
+        .nav-plus {
+            transition: transform .3s ease;
+        }
+
+        .nav-item:hover .nav-plus {
+            transform: rotate(90deg);
+        }
+
+        .dropdown {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition:
+                opacity .25s ease,
+                transform .25s ease,
+                visibility .25s ease;
+        }
+
+        .dropdown-parent:hover .dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        /* =========================================
+           HERO
+        ========================================= */
+
+        .hero {
+            min-height: 530px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .hero-container {
+            max-width: 1280px;
+            margin: auto;
+            padding: 0 25px;
+        }
+
+        .hero-title {
+            font-size: clamp(40px, 4.4vw, 60px);
+            line-height: 1.02;
+            letter-spacing: -2px;
+        }
+
+        /* =========================================
+           VISUAL AREA
+        ========================================= */
+
+        .visual-area {
+            width: 650px;
+            height: 530px;
+            position: relative;
+            margin-left: auto;
+        }
+
+        .ring {
+            position: absolute;
+            border-radius: 50%;
+            border-style: dashed;
+        }
+
+        .ring-1 {
+            width: 590px;
+            height: 590px;
+            left: 30px;
+            top: -25px;
+            border-width: 1.5px;
+            border-color: #ff7bd5;
+            animation: rotateSlow 25s linear infinite;
+        }
+
+        .ring-2 {
+            width: 500px;
+            height: 500px;
+            left: 75px;
+            top: 20px;
+            border-width: 1.5px;
+            border-color: #8d88ff;
+            animation: rotateReverse 20s linear infinite;
+        }
+
+        .ring-3 {
+            width: 390px;
+            height: 390px;
+            left: 130px;
+            top: 75px;
+            border-width: 1.5px;
+            border-color: #ffc575;
+            animation: pulseRing 3s ease-in-out infinite;
+        }
+
+        /* =========================================
+           PERSON
+        ========================================= */
+
+        .person {
+            position: absolute;
+            z-index: 10;
+            width: 485px;
+            height: 495px;
+            object-fit: cover;
+            object-position: center top;
+            left: 105px;
+            bottom: -15px;
+            animation:
+                fadeRight 1s ease both,
+                floatPerson 4s ease-in-out 1.1s infinite;
+        }
+
+        /* =========================================
+           DOTS
+        ========================================= */
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            position: absolute;
+            z-index: 15;
+            animation: pulseDot 2.2s ease-in-out infinite;
+        }
+
+        .dot-1 {
+            background: #fa4bc1;
+            top: 55px;
+            right: 185px;
+        }
+
+        .dot-2 {
+            background: #7659ff;
+            top: 300px;
+            right: 90px;
+            animation-delay: .5s;
+        }
+
+        .dot-3 {
+            background: #ff9d5c;
+            top: 145px;
+            right: 130px;
+            animation-delay: .9s;
+        }
+
+        .dot-4 {
+            background: #1cc76b;
+            top: 155px;
+            left: 245px;
+            animation-delay: 1.2s;
+        }
+
+        .dot-5 {
+            background: #f748b7;
+            top: 230px;
+            right: 140px;
+            animation-delay: 1.6s;
+        }
+
+        /* =========================================
+           FLOATING LABELS
+        ========================================= */
+
+        .skill {
+            position: absolute;
+            z-index: 20;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 13px;
+            font-weight: 500;
+            border-radius: 4px;
+            box-shadow: 0 7px 18px rgba(0, 0, 0, .10);
+            white-space: nowrap;
+            transition: transform .3s ease;
+        }
+
+        .skill:hover {
+            transform: scale(1.04) translateY(-3px);
+        }
+
+        .skill-1 {
+            width: 270px;
+            right: 0;
+            top: 45px;
+            background: linear-gradient(
+                90deg,
+                #f84ac3,
+                #ff7020
+            );
+        }
+
+        .skill-2 {
+            width: 215px;
+            right: 0;
+            top: 120px;
+            background: linear-gradient(
+                90deg,
+                #39ed72,
+                #ff8a50
+            );
+            animation-delay: .5s;
+        }
+
+        .skill-3 {
+            width: 280px;
+            right: -25px;
+            top: 195px;
+            background: linear-gradient(
+                90deg,
+                #ff8b55,
+                #f744c1
+            );
+            animation-delay: 1s;
+        }
+
+        .skill-4 {
+            width: 205px;
+            right: 0;
+            top: 290px;
+            background: linear-gradient(
+                90deg,
+                #6755ff,
+                #22e879
+            );
+            animation-delay: 1.5s;
+        }
+
+        .skill-5 {
+            width: 225px;
+            left: 0;
+            top: 130px;
+            background: linear-gradient(
+                90deg,
+                #2559ff,
+                #00c5ad
+            );
+            animation-delay: 2s;
+        }
+
+        /* =========================================
+           BUTTON
+        ========================================= */
+
+        .main-btn {
+            position: relative;
+            overflow: hidden;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(
+                90deg,
+                #ff4d22,
+                #ff7825
+            );
+            background-size: 200% 200%;
+            animation: gradientMove 4s ease infinite;
+            color: #fff;
+            padding: 11px 25px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all .3s ease;
+        }
+
+        .main-btn::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 45%;
+            height: 100%;
+            background: rgba(255,255,255,.2);
+            transform: skewX(-25deg);
+        }
+
+        .main-btn:hover::after {
+            animation: shine .7s ease;
+        }
+
+        .main-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(255, 87, 34, .25);
+        }
+
+        /* =========================================
+           CARDS
+        ========================================= */
+
+        .course-card {
+            transition:
+                transform .35s ease,
+                box-shadow .35s ease;
+        }
+
+        .course-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 18px 35px rgba(0,0,0,.10);
+        }
+
+        /* =========================================
+           FLOAT CONTACT
+        ========================================= */
+
+        .floating-contact {
+            position: fixed;
+            bottom: 22px;
+            z-index: 100;
+        }
+
+        .whatsapp {
+            left: 0;
+        }
+
+        .call {
+            right: 0;
+        }
+
+        .float-btn {
+            width: 51px;
+            height: 51px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 5px 18px rgba(0,0,0,.18);
+            transition: all .3s ease;
+        }
+
+        .float-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .whatsapp .float-btn {
+            background: #35c653;
+        }
+
+        .call .float-btn {
+            background: #f4511e;
+        }
+
+        .float-label {
+            position: absolute;
+            top: 9px;
+            background: white;
+            color: #333;
+            padding: 6px 11px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(0,0,0,.15);
+        }
+
+        .whatsapp .float-label {
+            left: 68px;
+        }
+
+        .call .float-label {
+            right: 68px;
+        }
+
+        /* =========================================
+           MOBILE
+        ========================================= */
+
+        @media(max-width: 500px) {
+
+            .desktop-nav {
+                gap: 17px !important;
+            }
+
+            .desktop-nav a,
+            .desktop-nav button {
+                font-size: 13px !important;
+            }
+
+            .visual-area {
+                transform: scale(.9);
+                transform-origin: center;
+                margin-right: -30px;
+            }
+
+            .hero-title {
+                font-size: 47px;
+            }
+        }
+
+        @media(max-width: 900px) {
+
+            .desktop-nav {
+                display: none !important;
+            }
+
+            .mobile-button {
+                display: flex !important;
+            }
+
+            /* minmax(0, …): a plain 1fr grows to the picture's full width
+               and pushed the heading off the side of a phone. */
+            .hero-grid {
+                grid-template-columns: minmax(0, 1fr) !important;
+                min-height: 0 !important;
+            }
+
+            /* Clears the fixed header, whose logo makes it ~100px tall. */
+            .hero-left {
+                text-align: center;
+                padding-top: 125px;
+            }
+
+            .visual-wrapper {
+                justify-content: center;
+            }
+
+            /* zoom, not transform: the picture then takes only the room
+               it shows in, instead of its full desktop width. */
+            .visual-area {
+                margin: 0 auto;
+                transform: none;
+                zoom: .78;
+            }
+        }
+
+        @media(max-width: 600px) {
+
+            .navbar-height {
+                height: 75px;
+            }
+
+            .logo-img {
+                width: 100px !important;
+            }
+
+            .hero-title {
+                font-size: 36px;
+                letter-spacing: -1px;
+            }
+
+            .hero {
+                min-height: auto;
+            }
+
+            .hero-left {
+                padding-top: 120px;
+            }
+
+            .visual-area {
+                width: 500px;
+                height: 430px;
+                margin: 0 auto;
+                transform: none;
+                zoom: .62;
+            }
+
+            .float-label {
+                display: none;
+            }
+
+            /* The course tags and dots sat across the face on a phone. */
+            .skill,
+            .dot {
+                display: none;
+            }
+
+            .floating-contact {
+                bottom: 12px;
+            }
+        }
+
+        @media(max-width: 400px) {
+
+            .hero-title {
+                font-size: 31px;
+            }
+
+            .visual-area {
+                zoom: .55;
+            }
+        }

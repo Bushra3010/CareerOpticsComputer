@@ -1,0 +1,33 @@
+
+body{
+    font-family:Arial,"Noto Sans Devanagari",sans-serif;
+}
+html{
+    scroll-behavior:smooth;
+}
+.drop-content{
+    max-height:0;
+    overflow:hidden;
+    transition:max-height:.55s ease;
+}
+.drop-content.show{
+    max-height:25000px;
+}
+.arrow{
+    transition:transform:.3s ease;
+}
+.arrow.rotate{
+    transform:rotate(180deg);
+}
+.chapter-content{
+    display:none;
+}
+.chapter-content.show{
+    display:block;
+}
+.chapter-btn{
+    transition:.25s ease;
+}
+.chapter-btn:hover{
+    transform:translateX(3px);
+}

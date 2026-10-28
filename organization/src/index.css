@@ -1,0 +1,296 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Career Optics Computer Centre ERP — design system.
+   The DriveWay system (github.com/Alok16012/driveway): a cool lavender canvas,
+   white borderless cards on a soft shadow, a blue primary that runs into a
+   darker blue, gold for the one thing that must be found (the current page in
+   the sidebar, highlights), and a navy gradient sidebar. Poppins throughout. */
+
+@layer base {
+  :root {
+    /* --app-bg #eef1fb, --ink #0f1729 */
+    --background: 226 61% 96%;
+    --foreground: 222 46% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 46% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 46% 11%;
+
+    /* --blue #0b5cff, white text. */
+    --primary: 220 100% 52%;
+    --primary-foreground: 0 0% 100%;
+
+    /* --bg-secondary #f0f2f8 */
+    --secondary: 225 43% 96%;
+    --secondary-foreground: 222 46% 11%;
+
+    --muted: 225 43% 96%;
+    /* --ink-soft #5b6478 */
+    --muted-foreground: 222 14% 41%;
+
+    /* --blue-tint #e8effe: hover and "selected" surfaces. */
+    --accent: 221 91% 95%;
+    --accent-foreground: 220 92% 41%;
+
+    /* --blue fills, --blue-dark #0847c7 for small text and the gradient's end. */
+    --brand: 220 100% 52%;
+    --brand-foreground: 0 0% 100%;
+    --brand-ink: 220 92% 41%;
+
+    /* --gold #f5a623, with --blue-dark text on it. */
+    --gold: 37 91% 55%;
+    --gold-foreground: 220 92% 41%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 72% 29%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 32 95% 44%;
+    --warning-foreground: 0 0% 100%;
+
+    --info: 226 71% 40%;
+    --info-foreground: 0 0% 100%;
+
+    /* --line #e6eaf5 */
+    --border: 224 43% 93%;
+    --input: 224 43% 91%;
+    --ring: 220 100% 52%;
+
+    --radius: 0.875rem;
+
+    /* Navy, #04246b running to #020b24 (the gradient is in .app-sidebar). */
+    --sidebar-background: 221 93% 22%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 37 91% 55%;
+    --sidebar-primary-foreground: 220 92% 41%;
+    --sidebar-accent: 221 55% 27%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 221 55% 27%;
+    --sidebar-ring: 37 91% 55%;
+
+    --chart-1: 220 100% 52%;
+    --chart-2: 37 91% 55%;
+    --chart-3: 158 52% 40%;
+    --chart-4: 262 83% 58%;
+    --chart-5: 188 72% 47%;
+
+    --font-sans: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+
+    --shadow-sm: 0 1px 3px rgba(15, 23, 41, 0.06);
+    --shadow: 0 2px 10px rgba(15, 23, 41, 0.05);
+    --shadow-md: 0 2px 10px rgba(15, 23, 41, 0.06);
+    --shadow-lg: 0 4px 16px rgba(15, 23, 41, 0.08);
+    --shadow-xl: 0 8px 24px rgba(15, 23, 41, 0.1);
+    --shadow-card: 0 2px 10px rgba(15, 23, 41, 0.05);
+    --shadow-blue: 0 6px 16px rgba(11, 92, 255, 0.3);
+  }
+
+  .dark {
+    /* Slate-950 ground, the same cool family as the website's dark footer. */
+    --background: 229 84% 5%;
+    --foreground: 210 40% 96%;
+
+    --card: 222 47% 9%;
+    --card-foreground: 210 40% 96%;
+
+    --popover: 222 47% 10%;
+    --popover-foreground: 210 40% 96%;
+
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 217 33% 15%;
+    --secondary-foreground: 210 40% 96%;
+
+    --muted: 217 33% 14%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 40% 96%;
+
+    --brand: 217 91% 60%;
+    --brand-foreground: 0 0% 100%;
+    --brand-ink: 213 94% 72%;
+
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 152 56% 46%;
+    --success-foreground: 229 84% 5%;
+
+    --warning: 27 96% 58%;
+    --warning-foreground: 229 84% 5%;
+
+    --info: 199 89% 56%;
+    --info-foreground: 229 84% 5%;
+
+    --border: 217 33% 17%;
+    --input: 217 33% 20%;
+    --ring: 217 91% 60%;
+
+    --sidebar-background: 222 47% 7%;
+    --sidebar-foreground: 214 32% 88%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 217 33% 15%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217 33% 17%;
+    --sidebar-ring: 217 91% 60%;
+
+    /* Light slate rather than blue: a bar series is too much surface area to
+       spend the accent on, so the dominant value stays neutral and only the
+       series that needs chasing is coloured. */
+    --chart-1: 214 32% 78%;
+    --chart-2: 152 56% 48%;
+    --chart-3: 217 91% 64%;
+    --chart-4: 21 90% 60%;
+    --chart-5: 199 89% 56%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-variant-numeric: tabular-nums;
+    text-rendering: optimizeLegibility;
+    -webkit-text-size-adjust: 100%;
+    overflow-x: hidden;
+  }
+
+  /* Poppins runs wide; pull headings in slightly so they read as one block. */
+  h1, h2, h3, h4 { letter-spacing: -0.02em; }
+
+  html { overflow-x: hidden; }
+
+  @media (max-width: 767px) {
+    /* 16px form text prevents Safari from zooming the entire ERP on focus. */
+    input, textarea, select { font-size: 16px !important; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    button { touch-action: manipulation; }
+  }
+
+  ::selection { background: hsl(var(--brand) / .28); color: hsl(var(--foreground)); }
+
+  /* Digits in a data product should line up in their columns. */
+  th, td, .tabular { font-variant-numeric: tabular-nums; }
+}
+
+@layer components {
+  /* The reference's one genuinely portable device: a small gold label that
+     names what a number is, so a card can be identified without reading it. */
+  /* DriveWay's small label over a title or a figure ("Pick your ride"). */
+  .eyebrow {
+    @apply text-[12.5px] font-medium leading-tight text-muted-foreground;
+  }
+
+  .eyebrow-muted {
+    @apply text-[12.5px] font-medium leading-tight text-muted-foreground;
+  }
+
+  /* Headline figures, as DriveWay's stat cards set them. */
+  .metric {
+    @apply text-2xl font-extrabold leading-none;
+    letter-spacing: -.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* State as form, not just colour: a delta reads as up/down before it's read. */
+  .delta {
+    @apply inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-semibold;
+    font-variant-numeric: tabular-nums;
+  }
+  .delta-up { background: hsl(var(--success) / .13); color: hsl(var(--success)); }
+  .delta-down { background: hsl(var(--warning) / .15); color: hsl(var(--warning)); }
+  .delta-flat { @apply bg-muted text-muted-foreground; }
+}
+
+  /* Formatted prose -- what the writing editor produces and every screen that
+     shows a question renders. Tailwind's reset strips headings and lists back
+     to plain text, so the editor would otherwise show none of its own work. */
+  .rich-text { @apply text-sm leading-relaxed; }
+  .rich-text > :first-child { margin-top: 0; }
+  .rich-text > :last-child { margin-bottom: 0; }
+  .rich-text h1 { @apply mb-2 mt-4 text-xl font-semibold; }
+  .rich-text h2 { @apply mb-2 mt-4 text-lg font-semibold; }
+  .rich-text h3 { @apply mb-1 mt-3 text-base font-semibold; }
+  .rich-text h4 { @apply mb-1 mt-3 text-sm font-semibold; }
+  .rich-text p { @apply my-2; }
+  .rich-text ul { @apply my-2 list-disc pl-6; }
+  .rich-text ol { @apply my-2 list-decimal pl-6; }
+  .rich-text li { @apply my-1; }
+  .rich-text a { @apply text-primary underline underline-offset-2; }
+  .rich-text blockquote {
+    @apply my-3 border-l-4 pl-4 italic text-muted-foreground;
+    border-color: hsl(var(--border));
+  }
+  .rich-text pre {
+    @apply my-3 overflow-x-auto rounded-lg bg-muted p-3 font-mono text-xs;
+  }
+  .rich-text code { @apply rounded bg-muted px-1 py-0.5 font-mono text-xs; }
+  .rich-text pre code { @apply bg-transparent p-0; }
+  .rich-text hr { @apply my-4 border-t; }
+  .rich-text img { @apply my-2 inline-block max-w-full rounded-md; }
+  .rich-text table { @apply my-3 w-full text-sm; }
+  .rich-text th { @apply bg-muted font-semibold; }
+  .rich-text th, .rich-text td { @apply border p-1.5 align-top; }
+
+  /* The box is never truly empty -- the browser keeps a stray <br> in it -- so
+     the placeholder is driven by what the editor last emitted, not :empty. */
+  .rich-text-editor[data-empty]::before {
+    content: attr(data-placeholder);
+    @apply pointer-events-none block text-muted-foreground;
+  }
+
+@layer components {
+  /* The navy sidebar, on desktop and in the phone drawer alike. */
+  [data-sidebar="sidebar"] {
+    background: linear-gradient(180deg, #04246b 0%, #020b24 100%);
+  }
+
+  /* Stat cards sit two to a row on a phone, as DriveWay's do, whatever
+     column count the page asked for on wider screens. */
+  @media (max-width: 767px) {
+    .grid:has(> .stats-card) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  /* Tap feedback, as a native app gives it. */
+  .press { transition: transform .12s ease, opacity .12s ease; }
+  .press:active { transform: scale(.97); opacity: .9; }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
+/* A control the signed-in role has no permission for (PermissionGuard). */
+[data-perm-denied="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

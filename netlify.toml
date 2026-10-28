@@ -1,0 +1,12 @@
+[build]
+  base = "organization"
+  command = "npm run build"
+  publish = "organization/dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+  VITE_SUPABASE_URL = "https://etxhjiawkpinmardkjzv.supabase.co"
+  VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0eGhqaWF3a3Bpbm1hcmRranp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwODQzNjcsImV4cCI6MjEwODY2MDM2N30.Cy62wg-XxfmZz_Bwt4L7Ie1-Z-7pHR0tbHPGLFkTh9k"
+
+# Routing lives in dist/_redirects, written by the build: the website is
+# served from /, the ERP from /computercentre/ (see vite.config.ts).

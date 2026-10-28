@@ -1,0 +1,52 @@
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    font-family:Arial,"Noto Sans",sans-serif;
+}
+
+.sem-content{
+    max-height:0;
+    overflow:hidden;
+    transition:max-height .6s ease;
+}
+
+.sem-content.open{
+    max-height:100000px;
+}
+
+.subject-content{
+    max-height:0;
+    overflow:hidden;
+    transition:max-height .45s ease;
+}
+
+.subject-content.open{
+    max-height:5000px;
+}
+
+.rotate{
+    transform:rotate(180deg);
+}
+
+.arrow{
+    transition:.3s ease;
+}
+
+.subject-card{
+    transition:.25s ease;
+}
+
+.subject-card:hover{
+    transform:translateY(-2px);
+}
+
+.unit-item{
+    transition:.2s ease;
+}
+
+.unit-item:hover{
+    transform:translateX(4px);
+}

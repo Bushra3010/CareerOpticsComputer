@@ -1,0 +1,30 @@
+
+        /* Body aur Outer space ko reset karne ke liye */
+        html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            overflow-x: hidden; /* Mobile par horizontal scroll rokne ke liye */
+            background-color: #f0f4f9;
+        }
+
+        /* Full Width Container Setup */
+        .full-width-container {
+            width: 100% !important;
+            min-height: 100vh;
+            
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Fully Responsive Iframe */
+        .full-width-container iframe {
+            width: 100% !important;
+            min-width: 100% !important;
+            height: 100vh !important;
+            border: 2 !important;
+            outline: none !important;
+            display: block;
+        }
+    

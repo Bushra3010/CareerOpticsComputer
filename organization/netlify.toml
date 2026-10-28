@@ -1,0 +1,90 @@
+[build]
+  # Vite build output directory
+  publish = "dist"
+  # Build command
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "20"
+  VITE_SUPABASE_URL = "https://etxhjiawkpinmardkjzv.supabase.co"
+  VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0eGhqaWF3a3Bpbm1hcmRranp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwODQzNjcsImV4cCI6MjEwODY2MDM2N30.Cy62wg-XxfmZz_Bwt4L7Ie1-Z-7pHR0tbHPGLFkTh9k"
+
+
+# Headers for security
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Caching. Pages themselves are always revalidated, so an edit or a deploy
+# shows at once; what they load is kept by the browser and the CDN:
+#  - names that carry a content hash never change, so keep them for a year;
+#  - images keep their names when replaced, so a week, refreshed in the
+#    background after a day;
+#  - the site's own small scripts and styles, an hour.
+[[headers]]
+  for = "/computercentre/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/computercentre/coder/livecodes/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800, stale-while-revalidate=86400"
+
+[[headers]]
+  for = "/image/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800, stale-while-revalidate=86400"
+
+[[headers]]
+  for = "/logo.webp"
+  [headers.values]
+    Cache-Control = "public, max-age=604800, stale-while-revalidate=86400"
+
+[[headers]]
+  for = "/logo.png"
+  [headers.values]
+    Cache-Control = "public, max-age=604800, stale-while-revalidate=86400"
+
+[[headers]]
+  for = "/computercentre/career-optics-logo.webp"
+  [headers.values]
+    Cache-Control = "public, max-age=604800, stale-while-revalidate=86400"
+
+[[headers]]
+  for = "/computercentre/career-optics-logo.png"
+  [headers.values]
+    Cache-Control = "public, max-age=604800, stale-while-revalidate=86400"
+
+[[headers]]
+  for = "/cms.js"
+  [headers.values]
+    Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"
+
+[[headers]]
+  for = "/cms-config.js"
+  [headers.values]
+    Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"
+
+[[headers]]
+  for = "/style.css"
+  [headers.values]
+    Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"
+
+# The Code Lab (self-hosted LiveCodes): its compiler runs on LiveCodes'
+# sandbox origin and loads these scripts cross-origin.
+[[headers]]
+  for = "/computercentre/coder/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+
+# Routing lives in dist/_redirects, written by the build: the website is
+# served from /, the ERP from /computercentre/ (see vite.config.ts).

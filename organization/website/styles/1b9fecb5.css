@@ -1,0 +1,215 @@
+
+/* =========================================================
+   AI FOR STUDENTS & TEACHERS — MODERN COURSE PAGE
+   ========================================================= */
+
+html{
+    scroll-behavior:smooth;
+    scroll-padding-top:90px;
+}
+
+body{
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+}
+
+::selection{
+    background:#4f46e5;
+    color:#fff;
+}
+
+/* ===== Hero ===== */
+.hero-grid{
+    background:
+        radial-gradient(circle at 15% 20%, rgba(99,102,241,.18), transparent 30%),
+        radial-gradient(circle at 85% 15%, rgba(14,165,233,.16), transparent 30%),
+        linear-gradient(135deg,#f8fafc,#eef2ff 50%,#f0f9ff);
+}
+
+.gradient-text{
+    background:linear-gradient(135deg,#4f46e5,#7c3aed,#0891b2);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+}
+
+.glass{
+    background:rgba(255,255,255,.82);
+    backdrop-filter:blur(18px);
+    -webkit-backdrop-filter:blur(18px);
+    border:1px solid rgba(255,255,255,.75);
+    box-shadow:0 20px 60px rgba(15,23,42,.08);
+}
+
+/* ===== Cards ===== */
+.modern-card{
+    background:#fff;
+    border:1px solid #e2e8f0;
+    border-radius:20px;
+    transition:.3s ease;
+}
+
+.modern-card:hover{
+    transform:translateY(-4px);
+    box-shadow:0 20px 45px rgba(15,23,42,.10);
+    border-color:#c7d2fe;
+}
+
+/* ===== Modules ===== */
+.course-module{
+    background:#fff;
+    border:1px solid #e2e8f0;
+    border-radius:18px;
+    margin-bottom:14px;
+    overflow:hidden;
+    transition:.3s ease;
+}
+
+.course-module:hover{
+    border-color:#c7d2fe;
+    box-shadow:0 12px 30px rgba(15,23,42,.06);
+}
+
+.module-header{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:15px;
+    padding:20px;
+    text-align:left;
+    cursor:pointer;
+    background:#fff;
+}
+
+.module-header:hover{
+    background:#f8fafc;
+}
+
+.module-arrow{
+    transition:.3s ease;
+}
+
+.course-module.active .module-arrow{
+    transform:rotate(180deg);
+}
+
+.module-content{
+    display:none;
+    border-top:1px solid #e2e8f0;
+    padding:20px;
+    background:#f8fafc;
+}
+
+.course-module.active .module-content{
+    display:block;
+}
+
+.lesson-box{
+    background:#fff;
+    border:1px solid #e2e8f0;
+    border-radius:12px;
+    padding:13px 15px;
+    margin-bottom:9px;
+    transition:.2s ease;
+}
+
+.lesson-box:hover{
+    border-color:#a5b4fc;
+    transform:translateX(3px);
+}
+
+/* ===== Sticky ===== */
+.sticky-card{
+    position:sticky;
+    top:100px;
+}
+
+/* ===== Tool Cards ===== */
+.tool-card{
+    position:relative;
+    overflow:hidden;
+}
+
+.tool-card:before{
+    content:"";
+    position:absolute;
+    width:100px;
+    height:100px;
+    border-radius:50%;
+    background:rgba(99,102,241,.08);
+    right:-30px;
+    top:-30px;
+}
+
+/* ===== FAQ ===== */
+.faq-item{
+    background:#fff;
+    border:1px solid #e2e8f0;
+    border-radius:16px;
+    overflow:hidden;
+}
+
+.faq-question{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:15px;
+    padding:18px 20px;
+    text-align:left;
+    font-weight:700;
+}
+
+.faq-answer{
+    display:none;
+    padding:0 20px 20px;
+    color:#64748b;
+    line-height:1.7;
+}
+
+.faq-item.active .faq-answer{
+    display:block;
+}
+
+.faq-item.active .faq-arrow{
+    transform:rotate(180deg);
+}
+
+.faq-arrow{
+    transition:.3s ease;
+}
+
+/* ===== Form ===== */
+.form-input{
+    width:100%;
+    border:1px solid #cbd5e1;
+    border-radius:12px;
+    padding:13px 15px;
+    outline:none;
+    transition:.2s ease;
+    background:#fff;
+}
+
+.form-input:focus{
+    border-color:#6366f1;
+    box-shadow:0 0 0 4px rgba(99,102,241,.10);
+}
+
+/* ===== Responsive ===== */
+@media(max-width:768px){
+
+    .module-header{
+        padding:16px;
+    }
+
+    .module-content{
+        padding:15px;
+    }
+
+    .sticky-card{
+        position:relative;
+        top:auto;
+    }
+
+}

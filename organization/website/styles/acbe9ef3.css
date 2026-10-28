@@ -1,0 +1,29 @@
+
+
+@media (max-width: 640px) {
+
+    .module-header {
+        padding: 16px;
+    }
+
+    .module-header h3 {
+        font-size: 15px;
+        line-height: 1.4;
+    }
+
+    .module-header p {
+        font-size: 12px;
+    }
+
+    .module-header > div:first-child {
+        gap: 10px;
+    }
+
+    .module-header .w-11 {
+        width: 38px;
+        height: 38px;
+        min-width: 38px;
+    }
+
+}
+

@@ -1,0 +1,1077 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================
+// User — Unified authentication for all users
+// ============================================
+
+model User {
+  id              String    @id @default(cuid())
+
+  // Type & Identity
+  userType        UserType
+  name            String
+  email           String    @unique
+  phone           String?   @unique
+  username        String    @unique
+  password        String    @db.Text
+  role            SystemRole @default(STAFF)
+  avatar          Json?
+
+  // Status & Audit
+  isActive        Boolean   @default(true)
+  lastLoginAt     DateTime?
+  deletedAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  organization    Organization?
+  branch          Branch?
+  student         Student?
+  sessions        RefreshSession[]
+  auditEvents     AuditEvent[]
+
+  @@index([userType])
+  @@map("users")
+}
+
+model RefreshSession {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  userAgent String?
+  ipAddress String?
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("refresh_sessions")
+}
+
+model AuditEvent {
+  id             String   @id @default(cuid())
+  actorId        String?
+  actor          User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  organizationId String?
+  branchId       String?
+  action         String
+  entityType     String
+  entityId       String?
+  before         Json?
+  after          Json?
+  ipAddress      String?
+  createdAt      DateTime @default(now())
+
+  @@index([organizationId, createdAt])
+  @@index([branchId, createdAt])
+  @@index([entityType, entityId])
+  @@map("audit_events")
+}
+
+// ============================================
+// Organization — Top-level entity
+// ============================================
+
+model Organization {
+  id              String    @id @default(cuid())
+
+  userId          String @unique
+  user            User      @relation(fields: [userId], references: [id])
+
+  // Basic Info
+  name            String
+  code            String    @unique
+  logo            Json?
+  email           String    @unique
+  phone           String
+  website         String?
+  description     String?   @db.Text
+
+  // Address
+  streetAddress   String    @db.Text
+  city            String
+  state           String
+  district        String
+  pincode         String
+  country         String    @default("India")
+
+  // Status
+  isActive        Boolean   @default(true)
+  deletedAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  branches        Branch[]
+  courses         Course[]
+
+  @@index([code])
+  @@map("organizations")
+}
+
+// ============================================
+// Branch — belongs to Organization
+// ============================================
+
+model Branch {
+  id String @id @default(cuid())
+
+  // Foreign key to Organization
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  // user id
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  // Branch Information
+  name            String
+  code            String        @unique
+  branchType      BranchType    @default(MAIN)
+  instituteType   InstituteType @default(COMPUTER)
+  academicYear    String
+  establishedYear Int?
+  website         String?
+  description     String?       @db.Text
+
+  // Contact Information
+  phone          String
+  altPhone       String?
+  whatsappNumber String?
+  email          String  @unique
+
+  // Space & Facilities
+  numComputers Int @default(0)
+  numFaculty   Int @default(0)
+  numRooms     Int @default(0)
+
+  // Branch Documents
+  branchMohar    Json?
+  branchPhoto    Json?
+  labPhoto       Json?
+  statusDocument Json?
+
+  // Branch Settings
+  branchLogo         Json?
+  isActive           Boolean @default(true)
+  onlineEnrollment   Boolean @default(true)
+  smsNotifications   Boolean @default(false)
+  emailNotifications Boolean @default(true)
+
+  // Soft delete & timestamps
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // Relations
+  students        Student[]
+  visitEnquiries  VisitEnquiry[]
+  itemDispatches  ItemDispatch[]
+  itemReceived    ItemReceive[]
+  assignedCourses BranchCourse[]
+  batches         Batch[]
+  exams           Exam[]
+
+  // Financial & Communication
+  wallet         BranchWallet?
+  settings       BranchSettings?
+  transactions   BranchTransaction[]
+  notices        BranchNotice[]
+
+  // Normalized Relations
+  director       BranchDirector?
+  address        BranchAddress?
+  license        BranchLicense?
+
+  @@index([organizationId])
+  @@index([code])
+  @@index([email])
+  @@map("branches")
+}
+
+model BranchDirector {
+  id             String   @id @default(cuid())
+  branchId       String   @unique
+  branch         Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
+  name           String
+  gender         Gender
+  dob            DateTime
+  bloodGroup     String?
+  photo          Json?
+  signature      Json?
+  aadharFront    Json?
+  aadharBack     Json?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("branch_directors")
+}
+
+model BranchAddress {
+  id            String  @id @default(cuid())
+  branchId      String  @unique
+  branch        Branch  @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
+  streetAddress String  @db.Text
+  state         String
+  district      String
+  block         String?
+  city          String
+  pincode       String
+  latitude      Float?
+  longitude     Float?
+  country       String  @default("India")
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("branch_addresses")
+}
+
+model BranchLicense {
+  id               String                 @id @default(cuid())
+  branchId         String                 @unique
+  branch           Branch                 @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
+  registrationDate DateTime
+  validDate        DateTime?
+  expiryDate       DateTime
+  referralCode     String?
+
+  renewals         BranchRenewalHistory[]
+
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+
+  @@map("branch_licenses")
+}
+
+model BranchRenewalHistory {
+  id              String        @id @default(cuid())
+  licenseId       String
+  license         BranchLicense @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+
+  renewalDate     DateTime
+  previousExpiry  DateTime
+  newExpiry       DateTime
+  amountPaid      Float?
+  remarks         String?       @db.Text
+
+  createdAt       DateTime      @default(now())
+
+  @@map("branch_renewal_history")
+}
+
+model BranchWallet {
+  id                String    @id @default(cuid())
+
+  branchId          String    @unique
+  branch            Branch    @relation(fields: [branchId], references: [id])
+
+  balance           Float     @default(0)
+  isActive          Boolean   @default(true)
+
+  lastRechargeAmount Float?
+  lastRechargeDate   DateTime?
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@map("branch_wallets")
+}
+
+model BranchTransaction {
+  id              String            @id @default(cuid())
+
+  branchId        String
+  branch          Branch            @relation(fields: [branchId], references: [id])
+
+  amount          Float
+  type            TransactionType   @default(CREDIT)
+  category        String
+  description     String?           @db.Text
+  reference       String?
+  status          TransactionStatus @default(COMPLETED)
+  paymentMethod   PaymentMethod     @default(UPI)
+  balanceAfter    Float
+
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([branchId])
+  @@map("branch_transactions")
+}
+
+model BranchNotice {
+  id              String         @id @default(cuid())
+
+  branchId        String?
+  branch          Branch?        @relation(fields: [branchId], references: [id])
+
+  title           String
+  content         String         @db.Text
+  type            NoticeType     @default(BRANCH)
+  batch           String?
+  priority        NoticePriority @default(MEDIUM)
+  isPinned        Boolean        @default(false)
+  views           Int            @default(0)
+
+  publishDate     DateTime       @default(now())
+  expiryDate      DateTime?
+
+  // Optional online-meeting details attached to a notice.
+  meetingTime     DateTime?
+  meetingLink     String?
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([branchId])
+  @@map("branch_notices")
+}
+
+model BranchSettings {
+  id              String    @id @default(cuid())
+
+  branchId        String    @unique
+  branch          Branch    @relation(fields: [branchId], references: [id])
+
+  // Website General
+  siteName        String?
+  tagline         String?
+  seoDescription  String?   @db.Text
+  seoKeywords     String?
+
+  // Domain
+  primaryDomain   String?
+  subdomain       String?
+  enableSsl       Boolean   @default(true)
+
+  // Media & Social
+  mediaAssets     Json?
+  socialLinks     Json?
+
+  // Feature Configuration
+  featureToggles  Json?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("branch_settings")
+}
+
+// ============================================
+// Reception Module — Visit, Dispatch & Receive
+// ============================================
+
+model VisitEnquiry {
+  id              String         @id @default(cuid())
+
+  // Relation to Branch
+  branchId        String
+  branch          Branch         @relation(fields: [branchId], references: [id])
+
+  // Visitor Information
+  visitorName     String
+  phone           String
+  email           String?
+  idType          VisitorIdType  @default(AADHAR)
+  idNumber        String?
+  company         String?
+  address         String?        @db.Text
+
+  // Visit Details
+  visitDate       DateTime
+  visitTime       String
+  purpose         VisitPurpose   @default(OTHER)
+  personToMeet    String
+  department      DepartmentType @default(ADMINISTRATION)
+  noOfPersons     Int            @default(1)
+  enquiryReason   String?        @db.Text
+  location        String?
+  remarks         String?        @db.Text
+
+  // Follow-up Details
+  followUpDate    DateTime?
+  followUpTime    String?
+  followUpNotes   String?        @db.Text
+
+  // Documents & Media
+  visitorPhoto    Json?
+  idDocument      Json?
+
+  // Enquiry status tracking
+  status          EnquiryStatus  @default(NEW)
+  closeNote       String?        @db.Text
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([branchId])
+  @@map("visit_enquiries")
+}
+
+model ItemDispatch {
+  id               String         @id @default(cuid())
+
+  branchId         String
+  branch           Branch         @relation(fields: [branchId], references: [id])
+
+  itemName         String
+  description      String?        @db.Text
+  quantity         Int
+
+  recipientName    String
+  recipientPhone   String
+  recipientAddress String         @db.Text
+
+  courierService   CourierService @default(SELF)
+  trackingNumber   String?
+  dispatchDate     DateTime
+  expectedDelivery DateTime?
+
+  status           ItemStatus     @default(PENDING)
+  remarks          String?        @db.Text
+
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([branchId])
+  @@map("item_dispatches")
+}
+
+model ItemReceive {
+  id               String         @id @default(cuid())
+
+  branchId         String
+  branch           Branch         @relation(fields: [branchId], references: [id])
+
+  itemName         String
+  description      String?        @db.Text
+  quantity         Int
+
+  senderName       String
+  senderPhone      String?
+  senderAddress    String?        @db.Text
+
+  courierService   CourierService @default(HAND_DELIVERY)
+  trackingNumber   String?
+  receivedDate     DateTime
+  department       DepartmentType @default(ADMINISTRATION)
+  condition        ItemCondition  @default(GOOD)
+  receivedBy       String
+
+  status           ItemStatus     @default(PENDING)
+  remarks          String?        @db.Text
+  attachments      Json?
+
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([branchId])
+  @@map("item_received")
+}
+
+// ============================================
+// Course & Batch
+// ============================================
+
+model Course {
+  id              String   @id @default(cuid())
+
+  // Relations
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  // Course Info
+  name            String
+  code            String   @unique
+  description     String?  @db.Text
+  category        CourseCategory
+  durationValue   Int
+  durationUnit    DurationUnit
+  durationMonths  Int?
+  baseFee         Float
+  registrationFee Float     @default(0)
+  examFee         Float     @default(0)
+  isActive        Boolean  @default(true)
+  deletedAt       DateTime?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  branchCourses   BranchCourse[]
+  batches         Batch[]
+  students        Student[]
+  exams           Exam[]
+
+  @@index([organizationId])
+  @@index([code])
+  @@map("courses")
+}
+
+model Batch {
+  id              String   @id @default(cuid())
+
+  // Relations
+  branchId        String
+  branch          Branch   @relation(fields: [branchId], references: [id])
+  courseId        String
+  course          Course   @relation(fields: [courseId], references: [id])
+
+  // Batch Info
+  name            String
+  code            String   @unique
+  startDate       DateTime
+  endDate         DateTime?
+  maxStudents     Int?
+  currentStudents Int       @default(0)
+  isActive        Boolean   @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  batchTimings    BatchTiming[]
+  students        Student[]
+  examAssignments ExamAssignment[]
+  exams           Exam[]
+
+  @@index([branchId])
+  @@index([courseId])
+  @@map("batches")
+}
+
+model BatchTiming {
+  id              String   @id @default(cuid())
+
+  // Relations
+  batchId         String
+  batch           Batch    @relation(fields: [batchId], references: [id])
+
+  // Timing Info
+  day             String   // MONDAY, TUESDAY, ...
+  startTime       String   // HH:mm format
+  endTime         String   // HH:mm format
+  subject         String?
+  instructor      String?
+  roomNo          String?
+  isActive        Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([batchId])
+  @@map("batch_timings")
+}
+
+model BranchCourse {
+  id              String   @id @default(cuid())
+
+  branchId        String
+  branch          Branch   @relation(fields: [branchId], references: [id])
+  courseId        String
+  course          Course   @relation(fields: [courseId], references: [id])
+
+  createdAt       DateTime @default(now())
+
+  @@unique([branchId, courseId])
+  @@map("branch_courses")
+}
+
+// ============================================
+// Student
+// ============================================
+
+model Student {
+  id              String   @id @default(cuid())
+
+  // Relations
+  branchId        String
+  branch          Branch   @relation(fields: [branchId], references: [id])
+  userId          String?   @unique
+  user            User?     @relation(fields: [userId], references: [id])
+  courseId        String?
+  course          Course?  @relation(fields: [courseId], references: [id])
+  batchId         String?
+  batch           Batch?   @relation(fields: [batchId], references: [id])
+
+  // Identification
+  enrollmentNo    String?  @unique
+  applicationNo   String?  @unique
+
+  // Personal Info
+  firstName       String
+  middleName      String?
+  lastName        String
+  dateOfBirth     DateTime
+  gender          Gender
+  bloodGroup      String?
+  category        String?
+  religion        String?
+  nationality     String   @default("Indian")
+
+  aadharNumber    String?
+  apaarNumber     String?
+
+  // Contact
+  phone           String
+  altPhone        String?
+  whatsappNumber  String?
+  email           String?
+
+  // Address
+  streetAddress   String   @db.Text
+  district        String?
+  city            String
+  state           String
+  pincode         String
+  country         String   @default("India")
+
+  // Academic
+  admissionDate   DateTime @default(now())
+  academicYear    String?
+
+  // Previous Education - 10th Standard
+  tenthSchoolName    String?
+  tenthBoard         String?
+  tenthYearOfPassing Int?
+  tenthPercentage    String?
+  tenthRollNo        String?
+  tenthSubjects      String?
+
+  // Previous Education - 12th Standard
+  twelfthSchoolName    String?
+  twelfthBoard         String?
+  twelfthYearOfPassing Int?
+  twelfthPercentage    String?
+  twelfthStream        String?
+  twelfthSubjects      String?
+
+  // Father's Details
+  fatherName         String
+  fatherOccupation   String?
+  fatherPhone        String?
+  fatherEmail        String?
+  fatherAnnualIncome String?
+
+  // Mother's Details
+  motherName       String
+  motherOccupation String?
+  motherPhone      String?
+
+  // Local Guardian Details
+  localGuardianName     String?
+  localGuardianRelation String?
+  localGuardianPhone    String?
+  localGuardianAddress  String? @db.Text
+
+  // Documents
+  photo               Json?
+  aadharFront         Json?
+  aadharBack          Json?
+  tenthMarksheet      Json?
+  twelfthMarksheet    Json?
+  transferCertificate Json?
+  apaarCard           Json?
+  casteCertificate    Json?
+  admissionForm       Json?
+
+  // Status
+  admissionStatus   AdmissionStatus @default(DRAFT)
+  isActive          Boolean         @default(true)
+  deletedAt         DateTime?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  // Relations
+  feeInvoices     FeeInvoice[]
+  feePayments     FeePayment[]
+  attendanceRecords AttendanceRecord[]
+  examResults     ExamResult[]
+
+  @@index([branchId])
+  @@index([courseId])
+  @@index([batchId])
+  @@index([enrollmentNo])
+  @@index([applicationNo])
+  @@map("students")
+}
+
+// ============================================
+// Financial
+// ============================================
+
+model FeeInvoice {
+  id              String   @id @default(cuid())
+
+  // Relations
+  studentId       String
+  student         Student  @relation(fields: [studentId], references: [id])
+  branchId        String
+
+  // Invoice Info
+  invoiceNo       String   @unique
+  invoiceNumber   String?  @unique
+  amount          Float
+  discountAmount  Float    @default(0)
+  netAmount       Float    @default(0)
+  totalAmount     Float    @default(0)
+  dueDate         DateTime
+  status          InvoiceStatus @default(DUE)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  items           FeeInvoiceItem[]
+  payments        FeePayment[]
+
+  @@index([studentId])
+  @@index([branchId])
+  @@index([status])
+  @@map("fee_invoices")
+}
+
+model FeeInvoiceItem {
+  id              String   @id @default(cuid())
+
+  invoiceId       String
+  invoice         FeeInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  feeType         String
+  amount          Float
+  description     String?
+
+  createdAt       DateTime @default(now())
+
+  @@index([invoiceId])
+  @@map("fee_invoice_items")
+}
+
+model FeePayment {
+  id              String   @id @default(cuid())
+
+  // Relations
+  invoiceId       String
+  invoice         FeeInvoice @relation(fields: [invoiceId], references: [id])
+  studentId       String
+  student         Student   @relation(fields: [studentId], references: [id])
+
+  // Payment Info
+  amount          Float
+  paymentMethod   PaymentMethod
+  transactionId   String?   @unique
+  referenceNumber String?
+  receiptNo       String?
+  notes           String?   @db.Text
+  paidAt          DateTime  @default(now())
+  receivedById    String?
+  reversedAt      DateTime?
+
+  createdAt       DateTime @default(now())
+
+  @@index([invoiceId])
+  @@index([studentId])
+  @@map("fee_payments")
+}
+
+// ============================================
+// Attendance
+// ============================================
+
+model AttendanceRecord {
+  id              String   @id @default(cuid())
+
+  // Relations
+  studentId       String
+  student         Student  @relation(fields: [studentId], references: [id])
+  branchId        String
+
+  // Attendance Info
+  date            DateTime @db.Date
+  status          AttendanceStatus
+  checkInTime     String?
+  checkOutTime    String?
+  remarks         String?  @db.Text
+  markedById      String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([studentId, date])
+  @@index([studentId])
+  @@index([branchId])
+  @@index([date])
+  @@map("attendance_records")
+}
+
+// ============================================
+// Exam
+// ============================================
+
+model Exam {
+  id              String   @id @default(cuid())
+
+  branchId        String
+  branch          Branch   @relation(fields: [branchId], references: [id])
+
+  courseId        String
+  course          Course   @relation(fields: [courseId], references: [id])
+  batchId         String?
+  batch           Batch?   @relation(fields: [batchId], references: [id])
+
+  // Exam Info
+  name            String
+  examType        ExamType
+  subject         String?
+  maxMarks        Int      @default(100)
+  passMarks       Int      @default(40)
+  examDate        DateTime
+  durationMinutes Int?
+  status          ExamStatus @default(MARKS_ENTRY)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  assignments     ExamAssignment[]
+  results         ExamResult[]
+
+  @@index([branchId])
+  @@index([courseId])
+  @@index([examDate])
+  @@map("exams")
+}
+
+model ExamAssignment {
+  id              String   @id @default(cuid())
+
+  examId          String
+  exam            Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+  batchId         String
+  batch           Batch    @relation(fields: [batchId], references: [id])
+
+  createdAt       DateTime @default(now())
+
+  @@unique([examId, batchId])
+  @@map("exam_assignments")
+}
+
+model ExamResult {
+  id              String   @id @default(cuid())
+
+  examId          String
+  exam            Exam     @relation(fields: [examId], references: [id])
+  studentId       String
+  student         Student  @relation(fields: [studentId], references: [id])
+
+  marks           Float?
+  grade           String?
+  remarks         String?  @db.Text
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([examId, studentId])
+  @@index([studentId])
+  @@map("exam_results")
+}
+
+// ============================================
+// Enums
+// ============================================
+
+enum UserType {
+  ORGANIZATION
+  BRANCH
+  STUDENT
+}
+
+enum SystemRole {
+  SUPER_ADMIN
+  ORGANIZATION_ADMIN
+  BRANCH_ADMIN
+  ACCOUNTANT
+  RECEPTIONIST
+  TEACHER
+  STAFF
+  STUDENT
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum BranchType {
+  MAIN
+  SUB
+  FRANCHISE
+}
+
+enum InstituteType {
+  COMPUTER
+  TYPING
+  PARAMEDICAL
+  OTHER
+}
+
+enum TransactionType {
+  CREDIT
+  DEBIT
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum PaymentMethod {
+  CASH
+  UPI
+  CARD
+  BANK_TRANSFER
+  CHEQUE
+  NET_BANKING
+}
+
+enum NoticeType {
+  BRANCH
+  BATCH
+}
+
+enum NoticePriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum EnquiryStatus {
+  NEW
+  CONTACTED
+  CONVERTED
+  CLOSED
+}
+
+enum VisitPurpose {
+  ADMISSION
+  FEE
+  MEETING
+  COMPLAINT
+  DELIVERY
+  INTERVIEW
+  OTHER
+}
+
+enum VisitorIdType {
+  AADHAR
+  PAN
+  DRIVING
+  PASSPORT
+  VOTER
+}
+
+enum DepartmentType {
+  ADMINISTRATION
+  ACADEMICS
+  ACCOUNTS
+  HR
+  IT
+  LIBRARY
+  SPORTS
+  LAB
+}
+
+enum ItemStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+}
+
+enum ItemCondition {
+  GOOD
+  DAMAGED
+  PARTIAL
+}
+
+enum CourierService {
+  BLUEDART
+  DTDC
+  FEDEX
+  DELHIVERY
+  INDIAPOST
+  SELF
+  HAND_DELIVERY
+}
+
+enum InvoiceStatus {
+  DUE
+  PENDING
+  PAID
+  PARTIAL
+  OVERDUE
+  CANCELLED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  HALF_DAY
+  LEAVE
+  EXCUSED
+}
+
+enum ExamType {
+  UNIT_TEST
+  MID_TERM
+  FINAL
+  PRACTICAL
+  ONLINE
+}
+
+enum CourseCategory {
+  COMPUTER
+  OTHER
+  VOCATIONAL
+  ACADEMIC
+  LANGUAGE
+  PROFESSIONAL
+  SKILL_DEVELOPMENT
+}
+
+enum DurationUnit {
+  DAYS
+  WEEKS
+  MONTHS
+  YEARS
+}
+
+enum ExamStatus {
+  MARKS_ENTRY
+  PUBLISHED
+}
+
+enum AdmissionStatus {
+  DRAFT
+  SUBMITTED
+  PENDING_PAYMENT
+  APPROVED
+  REJECTED
+}

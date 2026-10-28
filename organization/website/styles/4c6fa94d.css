@@ -1,0 +1,11 @@
+
+html{scroll-behavior:smooth}
+body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.accordion-content{display:none}
+.accordion-item.active .accordion-content{display:block}
+.accordion-item.active .plus{transform:rotate(45deg)}
+.plus{transition:.25s}
+.tab.active{
+    background:#0f172a;
+    color:#fff;
+}

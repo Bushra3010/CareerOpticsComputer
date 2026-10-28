@@ -1,0 +1,674 @@
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f8fafc;
+        }
+
+        /* =====================================
+           NAVBAR
+        ===================================== */
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 12px 35px rgba(15, 23, 42, 0.08);
+        }
+
+
+        /* =====================================
+           LOGO
+        ===================================== */
+
+        .logo-icon {
+            width: 44px;
+            height: 44px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 13px;
+
+            color: white;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #2563eb,
+                    #4f46e5
+                );
+
+            box-shadow:
+                0 8px 20px rgba(37, 99, 235, 0.25);
+
+            transition: .3s ease;
+        }
+
+        .logo-icon:hover {
+            transform: rotate(-5deg) scale(1.05);
+        }
+
+
+        /* =====================================
+           DESKTOP NAV LINKS
+        ===================================== */
+
+        .nav-link {
+            position: relative;
+
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 6px;
+
+            padding: 11px 13px;
+
+            border-radius: 10px;
+
+            color: #475569;
+
+            font-size: 13px;
+
+            font-weight: 700;
+
+            transition:
+                color .2s ease,
+                background .2s ease;
+        }
+
+        .nav-link:hover {
+            color: #2563eb;
+
+            background: #eff6ff;
+        }
+
+
+        /* =====================================
+           DESKTOP DROPDOWN
+        ===================================== */
+
+        .desktop-dropdown {
+            position: relative;
+        }
+
+        .desktop-dropdown-menu {
+
+            position: absolute;
+
+            top: calc(100% + 10px);
+
+            left: 50%;
+
+            width: 290px;
+
+            padding: 8px;
+
+            border-radius: 16px;
+
+            background: rgba(255,255,255,.98);
+
+            border: 1px solid #e2e8f0;
+
+            box-shadow:
+                0 20px 50px rgba(15,23,42,.15);
+
+            opacity: 0;
+
+            visibility: hidden;
+
+            pointer-events: none;
+
+            transform:
+                translate(-50%, 8px)
+                scale(.97);
+
+            transform-origin: top center;
+
+            transition:
+                opacity .2s ease,
+                transform .2s ease,
+                visibility .2s ease;
+
+            z-index: 100;
+        }
+
+
+        .desktop-dropdown.open
+        .desktop-dropdown-menu {
+
+            opacity: 1;
+
+            visibility: visible;
+
+            pointer-events: auto;
+
+            transform:
+                translate(-50%, 0)
+                scale(1);
+        }
+
+
+        .desktop-dropdown.open
+        .dropdown-chevron {
+
+            transform: rotate(180deg);
+        }
+
+
+        .dropdown-chevron {
+            transition: transform .25s ease;
+        }
+
+
+        /* =====================================
+           DROPDOWN ITEM
+        ===================================== */
+
+        .desktop-dropdown-menu a {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            padding: 11px;
+
+            border-radius: 11px;
+
+            text-decoration: none;
+
+            transition: .2s ease;
+        }
+
+        .desktop-dropdown-menu a:hover {
+
+            background: #eff6ff;
+
+            transform: translateX(3px);
+        }
+
+
+        .dropdown-icon {
+
+            width: 34px;
+            height: 34px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            flex-shrink: 0;
+
+            border-radius: 9px;
+
+            color: #2563eb;
+
+            background: #eff6ff;
+        }
+
+
+        .dropdown-title {
+
+            display: block;
+
+            color: #0f172a;
+
+            font-size: 12px;
+
+            font-weight: 800;
+        }
+
+
+        .dropdown-description {
+
+            display: block;
+
+            margin-top: 2px;
+
+            color: #64748b;
+
+            font-size: 10px;
+        }
+
+
+        /* =====================================
+           MOBILE MENU
+        ===================================== */
+
+        .mobile-menu {
+
+            position: absolute;
+
+            top: calc(100% + 8px);
+
+            left: 10px;
+
+            right: 10px;
+
+            background: rgba(255,255,255,.98);
+
+            backdrop-filter: blur(20px);
+
+            border: 1px solid #e2e8f0;
+
+            border-radius: 18px;
+
+            box-shadow:
+                0 20px 45px rgba(15,23,42,.14);
+
+            max-height:
+                calc(100vh - 90px);
+
+            overflow-y: auto;
+
+            opacity: 0;
+
+            visibility: hidden;
+
+            pointer-events: none;
+
+            transform:
+                translateY(-10px)
+                scale(.98);
+
+            transition:
+                opacity .25s ease,
+                transform .25s ease,
+                visibility .25s ease;
+
+            z-index: 999;
+        }
+
+
+        .mobile-menu.show {
+
+            opacity: 1;
+
+            visibility: visible;
+
+            pointer-events: auto;
+
+            transform:
+                translateY(0)
+                scale(1);
+        }
+
+
+        /* =====================================
+           MOBILE LINK
+        ===================================== */
+
+        .mobile-link {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            width: 100%;
+
+            min-height: 48px;
+
+            padding: 0 13px;
+
+            border-radius: 11px;
+
+            color: #334155;
+
+            font-size: 14px;
+
+            font-weight: 700;
+
+            text-decoration: none;
+
+            transition: .2s ease;
+        }
+
+
+        .mobile-link:hover {
+
+            color: #2563eb;
+
+            background: #eff6ff;
+
+            transform: translateX(3px);
+        }
+
+
+        .mobile-link-left {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+        }
+
+
+        .mobile-link svg {
+
+            width: 18px;
+            height: 18px;
+
+            color: #2563eb;
+        }
+
+
+        /* =====================================
+           MOBILE DROPDOWN
+        ===================================== */
+
+        .mobile-dropdown-btn {
+
+            width: 100%;
+
+            min-height: 48px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            padding: 0 13px;
+
+            border: none;
+
+            border-radius: 11px;
+
+            background: transparent;
+
+            color: #334155;
+
+            font-family: inherit;
+
+            font-size: 14px;
+
+            font-weight: 700;
+
+            cursor: pointer;
+
+            transition: .2s ease;
+        }
+
+
+        .mobile-dropdown-btn:hover,
+        .mobile-dropdown-btn.active {
+
+            color: #2563eb;
+
+            background: #eff6ff;
+        }
+
+
+        .mobile-dropdown-btn .arrow {
+
+            width: 16px;
+
+            height: 16px;
+
+            transition:
+                transform .25s ease;
+        }
+
+
+        .mobile-dropdown-btn.active .arrow {
+
+            transform: rotate(180deg);
+        }
+
+
+        /* =====================================
+           MOBILE SUBMENU
+        ===================================== */
+
+        .mobile-submenu {
+
+            display: grid;
+
+            grid-template-rows: 0fr;
+
+            overflow: hidden;
+
+            opacity: 0;
+
+            transition:
+                grid-template-rows .3s ease,
+                opacity .25s ease;
+        }
+
+
+        .mobile-submenu-inner {
+
+            min-height: 0;
+
+            overflow: hidden;
+        }
+
+
+        .mobile-dropdown.open
+        .mobile-submenu {
+
+            grid-template-rows: 1fr;
+
+            opacity: 1;
+        }
+
+
+        /* =====================================
+           SUBMENU LINKS
+        ===================================== */
+
+        .mobile-submenu a {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            min-height: 42px;
+
+            padding: 8px 12px 8px 44px;
+
+            color: #64748b;
+
+            font-size: 12px;
+
+            font-weight: 600;
+
+            text-decoration: none;
+
+            border-radius: 9px;
+
+            transition: .2s ease;
+        }
+
+
+        .mobile-submenu a:hover {
+
+            color: #2563eb;
+
+            background: #f8fafc;
+
+            padding-left: 48px;
+        }
+
+
+        .mobile-submenu a svg {
+
+            width: 15px;
+
+            height: 15px;
+
+            color: #3b82f6;
+        }
+
+
+        /* =====================================
+           MOBILE BUTTONS
+        ===================================== */
+
+        .mobile-actions {
+
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 9px;
+
+            padding: 12px 2px 3px;
+        }
+
+
+        .login-button,
+        .join-button {
+
+            min-height: 44px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 6px;
+
+            border-radius: 11px;
+
+            font-size: 13px;
+
+            font-weight: 800;
+
+            text-decoration: none;
+
+            transition: .25s ease;
+        }
+
+
+        .login-button {
+
+            color: #2563eb;
+
+            background: white;
+
+            border: 1px solid #dbeafe;
+        }
+
+
+        .login-button:hover {
+
+            background: #eff6ff;
+        }
+
+
+        .join-button {
+
+            color: white;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #2563eb,
+                    #4f46e5
+                );
+
+            box-shadow:
+                0 8px 20px rgba(37,99,235,.22);
+        }
+
+
+        .join-button:hover {
+
+            transform: translateY(-2px);
+
+            box-shadow:
+                0 12px 25px rgba(37,99,235,.3);
+        }
+
+
+        /* =====================================
+           SCROLLBAR
+        ===================================== */
+
+        .mobile-menu::-webkit-scrollbar {
+
+            width: 4px;
+        }
+
+
+        .mobile-menu::-webkit-scrollbar-thumb {
+
+            background: #cbd5e1;
+
+            border-radius: 20px;
+        }
+
+
+        /* =====================================
+           MOBILE SCREEN
+        ===================================== */
+
+        @media (max-width: 480px) {
+
+            .logo-icon {
+
+                width: 39px;
+
+                height: 39px;
+
+                border-radius: 11px;
+            }
+
+            .brand-name {
+
+                font-size: 15px !important;
+            }
+
+            .brand-subtitle {
+
+                font-size: 7px !important;
+
+                letter-spacing: 2px !important;
+            }
+
+            .mobile-menu {
+
+                left: 5px;
+
+                right: 5px;
+
+                border-radius: 15px;
+            }
+
+        }
+
+
+        /* =====================================
+           VERY SMALL MOBILE
+        ===================================== */
+
+        @media (max-width: 360px) {
+
+            .brand-subtitle {
+
+                display: none;
+            }
+
+            .brand-name {
+
+                font-size: 14px !important;
+            }
+
+        }

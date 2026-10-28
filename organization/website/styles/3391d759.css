@@ -1,0 +1,50 @@
+
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 90px;
+}
+
+body {
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+.course-module {
+    transition: all .3s ease;
+}
+
+.course-module.active {
+    border-color: #818cf8;
+    box-shadow: 0 12px 35px rgba(99,102,241,.10);
+}
+
+.module-content {
+    display: none;
+}
+
+.course-module.active .module-content {
+    display: block;
+}
+
+.rotate-icon {
+    transition: transform .3s ease;
+}
+
+.course-module.active .rotate-icon {
+    transform: rotate(180deg);
+}
+
+.lesson-box {
+    transition: all .2s ease;
+}
+
+.lesson-box:hover {
+    transform: translateX(4px);
+}
+
+.gradient-text {
+    background: linear-gradient(90deg,#4f46e5,#7c3aed,#db2777);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}

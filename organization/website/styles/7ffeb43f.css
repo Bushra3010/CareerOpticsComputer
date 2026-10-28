@@ -1,0 +1,64 @@
+
+    html {
+        scroll-behavior: smooth;
+        scroll-padding-top: 90px;
+    }
+
+    body {
+        overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    .course-module {
+        transition: all .3s ease;
+    }
+
+    .module-header {
+        cursor: pointer;
+    }
+
+    .lesson-box {
+        display: none;
+    }
+
+    .course-module.active .lesson-box {
+        display: block;
+    }
+
+    .course-module.active .module-arrow {
+        transform: rotate(180deg);
+    }
+
+    .module-arrow {
+        transition: transform .3s ease;
+    }
+
+    .gradient-text {
+        background: linear-gradient(90deg, #2563eb, #7c3aed, #db2777);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .shadow-premium {
+        box-shadow:
+            0 20px 50px rgba(15,23,42,.08),
+            0 5px 15px rgba(15,23,42,.04);
+    }
+
+    .lesson-item {
+        padding: 13px 16px;
+        border-radius: 12px;
+        background: #f8fafc;
+        color: #475569;
+        font-size: 14px;
+        line-height: 1.6;
+        border: 1px solid #f1f5f9;
+        transition: all .2s ease;
+    }
+
+    .lesson-item:hover {
+        background: #eff6ff;
+        color: #1d4ed8;
+        border-color: #dbeafe;
+        transform: translateX(3px);
+    }

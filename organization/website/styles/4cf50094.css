@@ -1,0 +1,30 @@
+
+html{scroll-behavior:smooth}
+
+.gradient-text{
+    background:linear-gradient(90deg,#2563eb,#7c3aed);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+.card-hover{
+    transition:.3s ease;
+}
+
+.card-hover:hover{
+    transform:translateY(-6px);
+    box-shadow:0 20px 45px rgba(15,23,42,.10);
+}
+
+.module-card{
+    transition:.25s ease;
+}
+
+.module-card:hover{
+    transform:translateY(-4px);
+    border-color:#93c5fd;
+}
+
+.glow{
+    box-shadow:0 0 80px rgba(37,99,235,.20);
+}

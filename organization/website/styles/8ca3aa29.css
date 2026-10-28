@@ -1,0 +1,66 @@
+
+    html {
+        scroll-behavior: smooth;
+        scroll-padding-top: 90px;
+    }
+
+    body {
+        overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    .hero-grid {
+        background-image:
+            linear-gradient(rgba(255,255,255,.07) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,.07) 1px, transparent 1px);
+        background-size: 35px 35px;
+    }
+
+    .glass {
+        background: rgba(255,255,255,.80);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255,255,255,.60);
+    }
+
+    .gradient-text {
+        background: linear-gradient(90deg,#10b981,#06b6d4,#6366f1);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .course-module {
+        transition: all .3s ease;
+    }
+
+    .course-module:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 30px rgba(15,23,42,.07);
+    }
+
+    .lesson-box {
+        display: none;
+    }
+
+    .lesson-box.active {
+        display: block;
+    }
+
+    .module-arrow {
+        transition: transform .3s ease;
+    }
+
+    .module-arrow.rotate {
+        transform: rotate(180deg);
+    }
+
+    .feature-card,
+    .pricing-card {
+        transition: all .3s ease;
+    }
+
+    .feature-card:hover,
+    .pricing-card:hover {
+        transform: translateY(-7px);
+    }

@@ -1,0 +1,174 @@
+
+/* =========================================================
+   NO-CODE AI AUTOMATION — MODERN COURSE PAGE
+   ========================================================= */
+
+html{
+    scroll-behavior:smooth;
+    scroll-padding-top:90px;
+}
+
+body{
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+}
+
+::selection{
+    background:#0f172a;
+    color:#fff;
+}
+
+/* ---------- Gradient Text ---------- */
+.gradient-text{
+    background:linear-gradient(90deg,#7c3aed,#2563eb,#06b6d4);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+}
+
+/* ---------- Hero ---------- */
+.hero-grid{
+    background-image:
+        linear-gradient(rgba(148,163,184,.10) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(148,163,184,.10) 1px,transparent 1px);
+    background-size:40px 40px;
+}
+
+.hero-glow{
+    position:absolute;
+    width:420px;
+    height:420px;
+    border-radius:9999px;
+    background:rgba(124,58,237,.15);
+    filter:blur(90px);
+    pointer-events:none;
+}
+
+/* ---------- Glass ---------- */
+.glass{
+    background:rgba(255,255,255,.82);
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+    border:1px solid rgba(226,232,240,.9);
+}
+
+/* ---------- Cards ---------- */
+.modern-card{
+    transition:all .3s ease;
+}
+
+.modern-card:hover{
+    transform:translateY(-5px);
+    box-shadow:0 20px 45px rgba(15,23,42,.10);
+}
+
+/* ---------- Module ---------- */
+.course-module{
+    border:1px solid #e2e8f0;
+    border-radius:18px;
+    overflow:hidden;
+    background:#fff;
+    transition:.3s ease;
+}
+
+.course-module:hover{
+    border-color:#c4b5fd;
+    box-shadow:0 12px 35px rgba(124,58,237,.08);
+}
+
+.module-header{
+    cursor:pointer;
+}
+
+.module-content{
+    display:none;
+}
+
+.module-content.active{
+    display:block;
+    animation:fadeIn .3s ease;
+}
+
+@keyframes fadeIn{
+    from{
+        opacity:0;
+        transform:translateY(-5px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+/* ---------- Sticky ---------- */
+.sticky-card{
+    position:sticky;
+    top:100px;
+}
+
+/* ---------- Tool Card ---------- */
+.tool-card{
+    transition:.3s ease;
+}
+
+.tool-card:hover{
+    transform:translateY(-6px);
+}
+
+/* ---------- FAQ ---------- */
+.faq-item{
+    border:1px solid #e2e8f0;
+    border-radius:16px;
+    overflow:hidden;
+    background:#fff;
+}
+
+.faq-answer{
+    display:none;
+}
+
+.faq-answer.active{
+    display:block;
+}
+
+/* ---------- Form ---------- */
+.form-input{
+    width:100%;
+    border:1px solid #cbd5e1;
+    border-radius:12px;
+    padding:13px 15px;
+    outline:none;
+    transition:.2s ease;
+    background:#fff;
+}
+
+.form-input:focus{
+    border-color:#7c3aed;
+    box-shadow:0 0 0 3px rgba(124,58,237,.10);
+}
+
+/* ---------- Number ---------- */
+.module-number{
+    min-width:42px;
+    height:42px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:12px;
+    background:linear-gradient(135deg,#7c3aed,#2563eb);
+    color:white;
+    font-weight:800;
+}
+
+/* ---------- Responsive ---------- */
+@media(max-width:768px){
+    .hero-glow{
+        width:250px;
+        height:250px;
+    }
+
+    .sticky-card{
+        position:relative;
+        top:auto;
+    }
+}
