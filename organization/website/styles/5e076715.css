@@ -1,0 +1,109 @@
+
+html{
+    scroll-behavior:smooth;
+    scroll-padding-top:90px;
+}
+
+body{
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+}
+
+::selection{
+    background:#4f46e5;
+    color:#fff;
+}
+
+.hero-grid{
+    background-image:
+        linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px);
+    background-size:42px 42px;
+}
+
+.glass{
+    background:rgba(255,255,255,.10);
+    border:1px solid rgba(255,255,255,.18);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+}
+
+.gradient-text{
+    background:linear-gradient(
+        90deg,
+        #67e8f9,
+        #818cf8,
+        #c084fc,
+        #f0abfc
+    );
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+}
+
+.course-module{
+    border:1px solid #e5e7eb;
+    border-radius:18px;
+    overflow:hidden;
+    background:#fff;
+    transition:.25s ease;
+}
+
+.course-module:hover{
+    border-color:#a5b4fc;
+    box-shadow:0 12px 30px rgba(79,70,229,.08);
+}
+
+.module-header{
+    cursor:pointer;
+    transition:.25s ease;
+}
+
+.module-content{
+    display:none;
+}
+
+.module-content.active{
+    display:block;
+}
+
+.module-arrow{
+    transition:transform .25s ease;
+}
+
+.module-arrow.rotate{
+    transform:rotate(180deg);
+}
+
+.lesson-box{
+    border-left:3px solid #6366f1;
+    background:#f8fafc;
+}
+
+.tool-card{
+    transition:.25s ease;
+}
+
+.tool-card:hover{
+    transform:translateY(-5px);
+    box-shadow:0 15px 35px rgba(79,70,229,.10);
+}
+
+.faq-answer{
+    display:none;
+}
+
+.faq-answer.active{
+    display:block;
+}
+
+@media(max-width:768px){
+    .hero-title{
+        font-size:2.6rem !important;
+        line-height:1.1 !important;
+    }
+
+    .hero-grid{
+        background-size:28px 28px;
+    }
+}

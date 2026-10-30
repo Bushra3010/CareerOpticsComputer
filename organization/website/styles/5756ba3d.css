@@ -1,0 +1,52 @@
+
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    background:#f7f8fa;
+}
+
+.course-tab.active{
+    background:#155eef;
+    color:white;
+}
+
+.lesson-box{
+    display:none;
+}
+
+.lesson-box.show{
+    display:block;
+}
+
+.rotate{
+    transform:rotate(180deg);
+}
+
+.lesson-arrow{
+    transition:.25s;
+}
+
+.course-card{
+    transition:.25s;
+}
+
+.course-card:hover{
+    transform:translateY(-3px);
+    box-shadow:0 15px 35px rgba(0,0,0,.08);
+}
+
+.sidebar-scroll{
+    scrollbar-width:thin;
+}
+
+@media(max-width:1023px){
+
+    .desktop-sidebar{
+        display:none;
+    }
+
+}
+

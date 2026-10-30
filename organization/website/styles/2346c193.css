@@ -1,0 +1,48 @@
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    overflow-x:hidden;
+}
+
+.accordion-body{
+    max-height:0;
+    overflow:hidden;
+    transition:max-height:.45s ease;
+}
+
+.accordion-item.active .accordion-body{
+    max-height:1200px;
+}
+
+.accordion-item.active .arrow{
+    transform:rotate(180deg);
+}
+
+    background:linear-gradient(90deg,red,black,magenta);
+
+}
+
+.gradient-text{
+    background:linear-gradient(
+        90deg,
+        #fef3c7,
+        #fed7aa,
+        #fbcfe8,
+        #ddd6fe
+    );
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+}
+
+.float{
+    animation:float 4s ease-in-out infinite;
+}
+
+@keyframes float{
+    0%,100%{transform:translateY(0)}
+    50%{transform:translateY(-8px)}
+}

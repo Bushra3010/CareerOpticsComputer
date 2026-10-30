@@ -1,0 +1,42 @@
+
+html{
+    scroll-behavior:smooth;
+}
+
+.level-content,
+.month-content{
+    max-height:0;
+    overflow:hidden;
+    transition:max-height .45s ease;
+}
+
+.level.active .level-content,
+.month.active .month-content{
+    max-height:2500px;
+}
+
+.arrow{
+    transition:transform .3s ease;
+}
+
+.level.active .arrow,
+.month.active .arrow{
+    transform:rotate(180deg);
+}
+
+.lesson-card{
+    transition:.25s ease;
+}
+
+.lesson-card:hover{
+    transform:translateY(-3px);
+}
+
+.progress-line{
+    position:absolute;
+    left:22px;
+    top:55px;
+    bottom:0;
+    width:2px;
+    background:#dbeafe;
+}

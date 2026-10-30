@@ -1,0 +1,157 @@
+
+        * {
+            font-family: "Inter", sans-serif;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            overflow-x: hidden;
+        }
+
+        /* HERO BACKGROUND */
+        .hero-bg {
+            background:
+                radial-gradient(
+                    circle at 10% 10%,
+                    rgba(59,130,246,.16),
+                    transparent 28%
+                ),
+                radial-gradient(
+                    circle at 90% 20%,
+                    rgba(6,182,212,.16),
+                    transparent 28%
+                ),
+                linear-gradient(
+                    135deg,
+                    #f8fbff 0%,
+                    #eef6ff 50%,
+                    #f8fafc 100%
+                );
+        }
+
+        /* GRADIENT TEXT */
+        .gradient-text {
+            background: linear-gradient(
+                90deg,
+                #2563eb,
+                #06b6d4
+            );
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* ROLE CARD */
+        .role-card {
+            position: relative;
+            overflow: hidden;
+            transition:
+                transform .35s ease,
+                box-shadow .35s ease,
+                border-color .35s ease;
+        }
+
+        .role-card::before {
+            content: "";
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            right: -45px;
+            top: -45px;
+            border-radius: 50%;
+            background: rgba(59,130,246,.06);
+            transition: .35s ease;
+        }
+
+        .role-card:hover {
+            transform: translateY(-8px);
+            box-shadow:
+                0 25px 55px rgba(15,23,42,.11);
+            border-color: rgba(59,130,246,.25);
+        }
+
+        .role-card:hover::before {
+            transform: scale(2.3);
+        }
+
+        /* ICON */
+        .role-icon {
+            transition: transform .35s ease;
+        }
+
+        .role-card:hover .role-icon {
+            transform: scale(1.08) rotate(-4deg);
+        }
+
+        /* BUTTON */
+        .apply-btn {
+            transition: all .3s ease;
+        }
+
+        .apply-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* FLOATING CARD */
+        .float-card {
+            animation: floatCard 4s ease-in-out infinite;
+        }
+
+        @keyframes floatCard {
+            0%,100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* SHINE */
+        .shine {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .shine::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -120%;
+            width: 70%;
+            height: 100%;
+            transform: skewX(-20deg);
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255,255,255,.25),
+                transparent
+            );
+            transition: .7s;
+        }
+
+        .shine:hover::after {
+            left: 140%;
+        }
+
+        /* MOBILE */
+        @media (max-width: 640px) {
+
+            .hero-title {
+                font-size: 2.15rem;
+                line-height: 1.12;
+            }
+
+            .hero-description {
+                font-size: .9rem;
+                line-height: 1.7;
+            }
+
+            .role-card {
+                border-radius: 20px;
+            }
+
+        }
+    

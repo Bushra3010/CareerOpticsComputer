@@ -1,0 +1,124 @@
+
+/* =========================================================
+   AI FOR CREATIVE DESIGN — MODERN COURSE PAGE
+   ========================================================= */
+
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 90px;
+}
+
+body {
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+    background: #7c3aed;
+    color: #fff;
+}
+
+/* Hero */
+.hero-grid {
+    background-image:
+        linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
+    background-size: 42px 42px;
+}
+
+.glass {
+    background: rgba(255,255,255,.10);
+    border: 1px solid rgba(255,255,255,.18);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+
+/* Gradient Text */
+.gradient-text {
+    background: linear-gradient(
+        90deg,
+        #f0abfc,
+        #c084fc,
+        #818cf8,
+        #67e8f9
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+/* Module */
+.course-module {
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+    overflow: hidden;
+    background: #fff;
+    transition: .25s ease;
+}
+
+.course-module:hover {
+    border-color: #c4b5fd;
+    box-shadow: 0 12px 30px rgba(124,58,237,.08);
+}
+
+.module-header {
+    cursor: pointer;
+    transition: .25s ease;
+}
+
+.module-content {
+    display: none;
+}
+
+.module-content.active {
+    display: block;
+}
+
+.module-arrow {
+    transition: transform .25s ease;
+}
+
+.module-arrow.rotate {
+    transform: rotate(180deg);
+}
+
+/* Lesson */
+.lesson-box {
+    border-left: 3px solid #8b5cf6;
+    background: #f9fafb;
+}
+
+/* Floating */
+.float-card {
+    animation: float 4s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%,100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+/* FAQ */
+.faq-answer {
+    display: none;
+}
+
+.faq-answer.active {
+    display: block;
+}
+
+/* Mobile */
+@media(max-width:768px) {
+    .hero-title {
+        font-size: 2.5rem !important;
+        line-height: 1.1 !important;
+    }
+
+    .hero-grid {
+        background-size: 28px 28px;
+    }
+}

@@ -1,0 +1,49 @@
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Noto Sans Devanagari', sans-serif;
+        }
+
+        .syllabus-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height .45s ease, padding .35s ease;
+        }
+
+        .syllabus-content.active {
+            max-height: 1200px;
+        }
+
+        .rotate-icon {
+            transition: transform .3s ease;
+        }
+
+        .rotate-icon.active {
+            transform: rotate(180deg);
+        }
+
+        .class-card {
+            transition: all .3s ease;
+        }
+
+        .class-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .unit-item {
+            transition: all .25s ease;
+        }
+
+        .unit-item:hover {
+            transform: translateX(4px);
+        }
+
+        .gradient-text {
+            background: linear-gradient(90deg, #2563eb, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    

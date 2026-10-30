@@ -1,0 +1,259 @@
+
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Inter',sans-serif;
+    background:#f8fafc;
+    color:#0f172a;
+}
+
+.hero-bg{
+    background:
+    radial-gradient(circle at 15% 20%,rgba(59,130,246,.28),transparent 30%),
+    radial-gradient(circle at 85% 15%,rgba(124,58,237,.30),transparent 30%),
+    radial-gradient(circle at 70% 90%,rgba(14,165,233,.30),transparent 32%),
+    linear-gradient(135deg,#0f172a,#1e3a8a 50%,#6d28d9);
+}
+
+.glass{
+    background:rgba(255,255,255,.10);
+    border:1px solid rgba(255,255,255,.18);
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+}
+
+.shadow-soft{
+    box-shadow:0 20px 60px rgba(15,23,42,.10);
+}
+
+.gradient-text{
+    background:linear-gradient(90deg,#2563eb,#7c3aed);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+.module-btn{
+    width:100%;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:14px;
+    border-radius:16px;
+    background:#fff;
+    border:1px solid #e2e8f0;
+    text-align:left;
+    transition:.25s ease;
+    cursor:pointer;
+}
+
+.module-btn:hover{
+    border-color:#93c5fd;
+    transform:translateX(3px);
+    box-shadow:0 10px 25px rgba(37,99,235,.08);
+}
+
+.module-btn.active{
+    color:#fff;
+    border-color:transparent;
+    background:linear-gradient(135deg,#2563eb,#7c3aed);
+    box-shadow:0 15px 35px rgba(37,99,235,.25);
+}
+
+.module-number{
+    width:40px;
+    height:40px;
+    min-width:40px;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:800;
+    background:#eff6ff;
+    color:#2563eb;
+}
+
+.module-btn.active .module-number{
+    background:rgba(255,255,255,.18);
+    color:#fff;
+}
+
+.module-content{
+    display:none;
+    animation:fadeIn .35s ease;
+}
+
+.module-content.active{
+    display:block;
+}
+
+@keyframes fadeIn{
+    from{
+        opacity:0;
+        transform:translateY(8px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+.topic-item{
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+    padding:12px 14px;
+    border:1px solid #e2e8f0;
+    background:#fff;
+    border-radius:12px;
+    transition:.2s;
+}
+
+.topic-item:hover{
+    border-color:#bfdbfe;
+    background:#f8fbff;
+    transform:translateY(-1px);
+}
+
+.topic-icon{
+    width:28px;
+    height:28px;
+    min-width:28px;
+    border-radius:8px;
+    background:#eff6ff;
+    color:#2563eb;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:12px;
+}
+
+.feature-card{
+    border:1px solid #e2e8f0;
+    background:#fff;
+    border-radius:20px;
+    padding:24px;
+    transition:.25s;
+}
+
+.feature-card:hover{
+    transform:translateY(-5px);
+    box-shadow:0 15px 35px rgba(15,23,42,.08);
+}
+
+.project-card{
+    position:relative;
+    overflow:hidden;
+    border-radius:22px;
+    padding:25px;
+    background:linear-gradient(135deg,#eff6ff,#f5f3ff);
+    border:1px solid #dbeafe;
+}
+
+.form-input{
+    width:100%;
+    border:1px solid #cbd5e1;
+    border-radius:12px;
+    padding:13px 14px;
+    outline:none;
+    transition:.2s;
+}
+
+.form-input:focus{
+    border-color:#2563eb;
+    box-shadow:0 0 0 3px rgba(37,99,235,.10);
+}
+
+.whatsapp{
+    position:fixed;
+    right:22px;
+    bottom:22px;
+    width:58px;
+    height:58px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#25D366;
+    color:#fff;
+    font-size:28px;
+    box-shadow:0 15px 35px rgba(37,211,102,.35);
+    z-index:100;
+    transition:.25s;
+}
+
+.whatsapp:hover{
+    transform:scale(1.08);
+}
+
+.mobile-menu{
+    display:none;
+}
+
+.app-menu{
+    position:sticky;
+    top:95px;
+}
+
+.badge{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:7px 13px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+}
+
+.scrollbar::-webkit-scrollbar{
+    width:5px;
+    height:5px;
+}
+
+.scrollbar::-webkit-scrollbar-thumb{
+    background:#cbd5e1;
+    border-radius:20px;
+}
+
+@media(max-width:900px){
+
+    .app-menu{
+        position:relative;
+        top:0;
+    }
+
+    .module-list{
+        display:flex;
+        overflow-x:auto;
+        gap:12px;
+        padding-bottom:10px;
+        scrollbar-width:thin;
+    }
+
+    .module-btn{
+        min-width:275px;
+        flex-shrink:0;
+    }
+
+    .module-btn:hover{
+        transform:none;
+    }
+
+}
+
+@media(max-width:640px){
+
+    .hero-title{
+        font-size:34px!important;
+        line-height:1.1;
+    }
+
+    .whatsapp{
+        right:15px;
+        bottom:15px;
+    }
+
+}
+

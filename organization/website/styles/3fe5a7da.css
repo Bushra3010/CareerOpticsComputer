@@ -1,0 +1,59 @@
+
+    html {
+        scroll-behavior: smooth;
+        scroll-padding-top: 90px;
+    }
+
+    body {
+        overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    ::selection {
+        background: #4f46e5;
+        color: #fff;
+    }
+
+    .hero-grid {
+        background-image:
+            linear-gradient(rgba(99,102,241,.08) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(99,102,241,.08) 1px, transparent 1px);
+        background-size: 40px 40px;
+    }
+
+    .glass {
+        background: rgba(255,255,255,.78);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+    }
+
+    .course-module {
+        transition: all .25s ease;
+    }
+
+    .course-module:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 30px rgba(15,23,42,.08);
+    }
+
+    .lesson-box {
+        animation: slideDown .25s ease;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-5px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .gradient-text {
+        background: linear-gradient(90deg,#4f46e5,#7c3aed,#9333ea);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }

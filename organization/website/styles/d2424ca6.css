@@ -1,0 +1,55 @@
+
+
+    /* Accordion content hidden by default */
+    .lesson-box {
+        display: none;
+    }
+
+    /* Open module */
+    .course-module.active .lesson-box {
+        display: block;
+    }
+
+    /* Arrow rotation */
+    .course-module.active .lesson-arrow {
+        transform: rotate(180deg);
+    }
+
+    /* Module hover */
+    .course-module > button {
+        transition: background-color 0.2s ease;
+    }
+
+    /* Mobile typography */
+    @media (max-width: 640px) {
+
+        #syllabus {
+            padding-top: 2.5rem;
+            padding-bottom: 2.5rem;
+        }
+
+        .course-module button {
+            padding: 1rem;
+        }
+
+        .lesson-box {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        .lesson-box .ml-14 {
+            margin-left: 0;
+        }
+
+        .course-module h3 {
+            font-size: 0.875rem;
+            line-height: 1.35rem;
+        }
+
+        .course-module p {
+            font-size: 0.7rem;
+            line-height: 1rem;
+        }
+
+    }
+

@@ -1,0 +1,51 @@
+
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 90px;
+}
+
+body {
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+    background: #4f46e5;
+    color: #fff;
+}
+
+.gradient-text {
+    background: linear-gradient(90deg,#4f46e5,#7c3aed,#db2777);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-grid {
+    background-image:
+        linear-gradient(rgba(99,102,241,.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(99,102,241,.08) 1px, transparent 1px);
+    background-size: 40px 40px;
+}
+
+.glass {
+    background: rgba(255,255,255,.82);
+    backdrop-filter: blur(14px);
+}
+
+.faq-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .35s ease;
+}
+
+.faq-item.active .faq-content {
+    max-height: 300px;
+}
+
+.faq-item.active .faq-icon {
+    transform: rotate(45deg);
+}
+
+.faq-icon {
+    transition: transform .3s ease;
+}

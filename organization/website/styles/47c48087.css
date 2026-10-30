@@ -1,0 +1,45 @@
+
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 90px;
+}
+
+body {
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+    background: #0f172a;
+    color: #fff;
+}
+
+.syllabus-content {
+    display: none;
+}
+
+.syllabus-item.active .syllabus-content {
+    display: block;
+}
+
+.syllabus-item.active .plus-icon {
+    transform: rotate(45deg);
+}
+
+.plus-icon {
+    transition: .3s ease;
+}
+
+.gradient-text {
+    background: linear-gradient(90deg, #2563eb, #7c3aed);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.card-hover {
+    transition: all .3s ease;
+}
+
+.card-hover:hover {
+    transform: translateY(-4px);
+}

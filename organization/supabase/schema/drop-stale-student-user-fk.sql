@@ -1,0 +1,49 @@
+-- =====================================================================
+-- Let students.userId hold the Supabase auth id it is now meant to hold
+-- =====================================================================
+-- students.userId came from the original Prisma schema, where public.users
+-- was the app's own account table -- it still carries a `password` column
+-- from that design -- and the column was constrained to it:
+--
+--   students_userId_fkey FOREIGN KEY ("userId") REFERENCES "users"("id")
+--     ON DELETE SET NULL ON UPDATE CASCADE
+--
+-- The organization app has since moved to Supabase auth and touches
+-- public.users nowhere at all. The portal resolves a signed-in student
+-- through students.userId -> auth.uid(), and create-student-user writes the
+-- auth account's id there. That id will never appear in public.users, so the
+-- constraint fails every attempt to issue a student login with:
+--
+--   insert or update on table "students" violates foreign key constraint
+--   "students_userId_fkey"
+--
+-- The constraint cannot simply be repointed at auth.users: students."userId"
+-- is TEXT and auth.users.id is uuid, and Postgres will not build a foreign
+-- key across incompatible types. So it is dropped rather than replaced.
+--
+-- What is given up: nothing the app relies on. Postgres will no longer refuse
+-- a userId that matches no account. create-student-user already undoes the
+-- account it minted if the link fails, and deleting an auth user by hand now
+-- leaves a stale id on the student instead of nulling it -- clear it manually
+-- if you ever do that.
+--
+-- What is kept: students_userId_key, the unique index, so two students still
+-- cannot share one login.
+--
+-- public.users itself is left alone. The older backend/ and api-server/
+-- services still read it.
+--
+-- Idempotent - safe to re-run.
+-- =====================================================================
+
+alter table public.students drop constraint if exists "students_userId_fkey";
+
+
+-- ---------------------------------------------------------------------
+-- Verify: this should come back with no rows.
+-- ---------------------------------------------------------------------
+-- select conname, pg_get_constraintdef(oid) as definition
+--   from pg_constraint
+--  where conrelid = 'public.students'::regclass
+--    and contype = 'f'
+--    and conname = 'students_userId_fkey';

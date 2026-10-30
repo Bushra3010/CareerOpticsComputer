@@ -1,0 +1,47 @@
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    font-family:Arial, sans-serif;
+}
+
+.drop-content{
+    max-height:0;
+    overflow:hidden;
+    transition:max-height:.6s ease;
+}
+
+.drop-content.show{
+    max-height:50000px;
+}
+
+.arrow{
+    transition:transform:.3s ease;
+}
+
+.arrow.rotate{
+    transform:rotate(180deg);
+}
+
+.chapter-content{
+    display:none;
+}
+
+.chapter-content.show{
+    display:block;
+}
+
+.chapter-btn{
+    transition:.25s ease;
+}
+
+.chapter-btn:hover{
+    transform:translateX(4px);
+}
+
+.badge{
+    font-size:11px;
+    letter-spacing:.5px;
+}
