@@ -1,9 +1,0 @@
--- Superseded by RUN-ALL.sql in this folder.
---
--- This file carried a "Probed 2026-09-07" note and a list of columns it said
--- were still missing. Every one of them has since been applied, so the note
--- was telling the reader the opposite of the truth — which is worse than
--- having no note. RUN-ALL.sql is generated from the migrations themselves,
--- carries the date it was probed, and is safe to re-run.
---
--- Run: supabase/schema/RUN-ALL.sql
