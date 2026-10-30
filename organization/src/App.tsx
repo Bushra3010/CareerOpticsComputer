@@ -45,6 +45,28 @@ const CentreDocuments = lazy(() => import("./pages/branch/CentreDocuments"));
 const WebsiteView = lazy(() => import("./pages/branch/WebsiteView"));
 const FranchiseLeads = lazy(() => import("./pages/branch/FranchiseLeads"));
 
+// Centre panel (the classic franchise panel)
+const CentreExpenses = lazy(() => import("./pages/centre/CentreExpenses"));
+const CentreMarketingExpenses = lazy(() => import("./pages/centre/CentreMarketingExpenses"));
+const CentreTickets = lazy(() => import("./pages/centre/CentreTickets"));
+const CentreAwards = lazy(() => import("./pages/centre/CentreAwards"));
+const CentreOrders = lazy(() => import("./pages/centre/CentreOrders"));
+const CentreWallet = lazy(() => import("./pages/centre/CentreWallet"));
+const CentreSampleCertificates = lazy(() => import("./pages/centre/CentreSampleCertificates"));
+const CentreDownloads = lazy(() => import("./pages/centre/CentreDownloads"));
+const CentreProfile = lazy(() => import("./pages/centre/CentreProfile"));
+const CentreEnquiry = lazy(() => import("./pages/centre/CentreEnquiry"));
+const CentreStudents = lazy(() => import("./pages/centre/CentreStudents"));
+const CentreAddStudent = lazy(() => import("./pages/centre/CentreAddStudent"));
+const CentreStudentPayments = lazy(() => import("./pages/centre/CentreStudentPayments"));
+const CentreAdmissionForms = lazy(() => import("./pages/centre/CentreAdmissionForms"));
+const CentreQuestions = lazy(() => import("./pages/centre/CentreQuestions"));
+const CentreExams = lazy(() => import("./pages/centre/CentreExams"));
+const CentreExamCreate = lazy(() => import("./pages/centre/CentreExamCreate"));
+const CentreBatches = lazy(() => import("./pages/centre/CentreBatches"));
+const CentreBatchStudents = lazy(() => import("./pages/centre/CentreBatchStudents"));
+const CentreAttendance = lazy(() => import("./pages/centre/CentreAttendance"));
+
 // Enquiry Management
 const BranchEnquiry = lazy(() => import("./pages/enquiry/BranchEnquiry"));
 const AdmissionLeads = lazy(() => import("./pages/enquiry/AdmissionLeads"));
@@ -269,6 +291,28 @@ const App = () => (
           <Route path="/documents/designer" element={<DocumentDesigner />} />
           {/* Admit cards are issued from the exam schedule now; the old bulk page redirects there. */}
           <Route path="/cards/generate-admit" element={<Navigate to="/exam/admit-cards" replace />} />
+
+          {/* Centre panel */}
+          <Route path="/centre/expenses" element={<CentreExpenses />} />
+          <Route path="/centre/marketing-expenses" element={<CentreMarketingExpenses />} />
+          <Route path="/centre/tickets" element={<CentreTickets />} />
+          <Route path="/centre/awards" element={<CentreAwards />} />
+          <Route path="/centre/orders" element={<CentreOrders />} />
+          <Route path="/centre/wallet" element={<CentreWallet />} />
+          <Route path="/centre/sample-certificates" element={<CentreSampleCertificates />} />
+          <Route path="/centre/downloads" element={<CentreDownloads />} />
+          <Route path="/centre/profile" element={<CentreProfile />} />
+          <Route path="/centre/enquiry" element={<CentreEnquiry />} />
+          <Route path="/centre/students" element={<CentreStudents />} />
+          <Route path="/centre/student-add" element={<CentreAddStudent />} />
+          <Route path="/centre/student-payments" element={<CentreStudentPayments />} />
+          <Route path="/centre/admission-forms" element={<CentreAdmissionForms />} />
+          <Route path="/centre/questions" element={<CentreQuestions />} />
+          <Route path="/centre/exams" element={<CentreExams />} />
+          <Route path="/centre/exam-create" element={<CentreExamCreate />} />
+          <Route path="/centre/batches" element={<CentreBatches />} />
+          <Route path="/centre/batch-students" element={<CentreBatchStudents />} />
+          <Route path="/centre/attendance" element={<CentreAttendance />} />
 
           {/* Certificates */}
           <Route path="/certificate/template" element={<DocumentDesigner />} />

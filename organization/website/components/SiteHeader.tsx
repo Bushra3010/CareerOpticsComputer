@@ -7,7 +7,7 @@ import { BRAND } from "./brand";
  *
  * The phone menu (#coMenuBtn / #coMobileMenu) is opened by the small script at
  * the bottom of this component. The pages' older header scripts looked for
- * #menuBtn / #coMobileMenu; they now step aside when those are absent.
+ * #menuBtn / #mobileMenu; they now step aside when those are absent.
  */
 
 type Link = { href: string; label: string; note?: string };

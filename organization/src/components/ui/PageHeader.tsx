@@ -18,36 +18,29 @@ interface PageHeaderProps {
 export function PageHeader({ title, description, breadcrumbs, actions }: PageHeaderProps) {
   // The crumb trail starts at whichever dashboard this authorisation owns.
   const { view } = useAuth();
+  // The classic panel: the page strip above already carries the breadcrumb, so
+  // this is the slate title bar with the page's actions on its right.
   return (
-    <div className="mb-5 space-y-1">
+    <div className="mb-4">
       {breadcrumbs && breadcrumbs.length > 0 && (
-        // On a phone the top bar carries a back arrow instead, as an app does.
-        <nav className="mb-3 hidden items-center gap-1 overflow-hidden text-xs text-muted-foreground sm:text-sm md:flex">
-          <Link to={VIEWS[view].home} className="hover:text-foreground transition-colors">
+        <nav className="hidden" aria-label="Breadcrumb">
+          <Link to={VIEWS[view].home}>
             <Home className="h-4 w-4" />
           </Link>
           {breadcrumbs.map((item, index) => (
-            <div key={index} className="flex min-w-0 items-center gap-1">
+            <div key={index}>
               <ChevronRight className="h-4 w-4" />
-              {item.href ? (
-                <Link to={item.href} className="hover:text-foreground transition-colors">
-                  {item.label}
-                </Link>
-              ) : (
-                <span className="truncate font-medium text-foreground">{item.label}</span>
-              )}
+              {item.href ? <Link to={item.href}>{item.label}</Link> : <span>{item.label}</span>}
             </div>
           ))}
         </nav>
       )}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-        <div>
-          <h1 className="text-[22px] font-bold sm:text-2xl">{title}</h1>
-          {description && (
-            <p className="text-sm text-muted-foreground mt-1">{description}</p>
-          )}
+      <div className="flex flex-col gap-3 rounded-sm bg-[#3d4451] px-5 py-3.5 text-white shadow-sm sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <div className="min-w-0">
+          <h1 className="text-[15px] font-bold">{title}</h1>
+          {description && <p className="mt-0.5 text-[12.5px] text-white/70">{description}</p>}
         </div>
-        {actions && <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end [&>button]:flex-1 sm:[&>button]:flex-none">{actions}</div>}
+        {actions && <div className="classic-actions flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end [&>button]:flex-1 sm:[&>button]:flex-none">{actions}</div>}
       </div>
     </div>
   );

@@ -240,6 +240,31 @@ export const menuItems: MenuItem[] = [
     items: [{ title: "Website Content", url: "/website/content", icon: LayoutTemplate }],
   },
   {
+    // The centre panel, laid out like the classic franchise panel (see
+    // lib/classicMenu.ts for the sidebar it becomes).
+    title: "Centre Panel",
+    icon: Building2,
+    items: [
+      { title: "Student Enquiry", url: "/centre/enquiry", icon: MessageSquare },
+      { title: "All Students", url: "/centre/students", icon: Users },
+      { title: "Add New Student", url: "/centre/student-add", icon: UserPlus },
+      { title: "Admission Forms", url: "/centre/admission-forms", icon: Globe },
+      { title: "Sample Certificate", url: "/centre/sample-certificates", icon: Award },
+      { title: "Downloads", url: "/centre/downloads", icon: FileText },
+      { title: "Question Bank", url: "/centre/questions", icon: ListChecks },
+      { title: "Exams", url: "/centre/exams", icon: ClipboardList },
+      { title: "Batch", url: "/centre/batches", icon: School },
+      { title: "Attendance", url: "/centre/attendance", icon: CalendarCheck },
+      { title: "Order Certificates", url: "/centre/orders", icon: Printer },
+      { title: "Awards", url: "/centre/awards", icon: Award },
+      { title: "Wallet History", url: "/centre/wallet", icon: Wallet },
+      { title: "Help & Support", url: "/centre/tickets", icon: MessageSquare },
+      { title: "Expanses", url: "/centre/expenses", icon: TrendingDown },
+      { title: "Marketing Expanses", url: "/centre/marketing-expenses", icon: TrendingUp },
+      { title: "My Profile", url: "/centre/profile", icon: User },
+    ],
+  },
+  {
     title: "System Settings",
     icon: Settings,
     items: [
@@ -269,6 +294,25 @@ function scope(title: string, urls: string[], rename?: string): MenuItem[] {
  * partner network, the user accounts and the session calendar.
  */
 const franchiseMenu: MenuItem[] = [
+  ...scope("Centre Panel", [
+    "/centre/enquiry",
+    "/centre/students",
+    "/centre/student-add",
+    "/centre/admission-forms",
+    "/centre/sample-certificates",
+    "/centre/downloads",
+    "/centre/questions",
+    "/centre/exams",
+    "/centre/batches",
+    "/centre/attendance",
+    "/centre/orders",
+    "/centre/awards",
+    "/centre/wallet",
+    "/centre/tickets",
+    "/centre/expenses",
+    "/centre/marketing-expenses",
+    "/centre/profile",
+  ]),
   ...scope("Reception", ["/reception/enquiry", "/reception/dispatch"]),
   ...scope("Enquiry Management", [
     "/enquiry/branch",
@@ -392,6 +436,10 @@ const SHARED_SIBLINGS: Record<string, string | string[]> = {
   "/exam/assign-marks": "/exam/results",
   "/exam/grade-management": "/exam/results",
   "/marksheet/generate": "/exam/results",
+  // Pages the centre panel opens from its lists.
+  "/centre/student-payments": "/centre/students",
+  "/centre/exam-create": "/centre/exams",
+  "/centre/batch-students": "/centre/batches",
 };
 const SIBLINGS: Record<View, Record<string, string | string[]>> = {
   admin: {

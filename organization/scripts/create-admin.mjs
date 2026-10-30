@@ -71,4 +71,9 @@ const { error: mirrorError } = await admin.from("users").upsert(
 );
 if (mirrorError) console.warn("users row:", mirrorError.message);
 if (organizationId) await admin.from("organizations").update({ userId: account.id }).eq("id", organizationId);
+// Row-level security and the edge functions read the role from app_metadata,
+// which only the service role can write.
+await admin.auth.admin.updateUserById(account.id, {
+  app_metadata: { role: "SUPER_ADMIN", userType: "ORGANIZATION", ...(organizationId ? { organizationId } : {}) },
+});
 console.log(`\n${existing ? "Password reset for" : "Created"} ${email}. Organization link follows automatically.`);

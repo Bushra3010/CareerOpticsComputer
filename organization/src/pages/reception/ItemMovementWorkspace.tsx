@@ -336,7 +336,7 @@ export default function ItemMovementWorkspace() {
 
   return (
     <AppLayout>
-      <div className="mb-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+      <div className="classic-head mb-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[.16em] text-muted-foreground">Reception</p>
           <h1 className="mt-1 text-3xl font-semibold tracking-[-.04em]">Item movement</h1>

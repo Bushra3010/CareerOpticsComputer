@@ -1,12 +1,8 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "./AppSidebar";
-import { AppHeader } from "./AppHeader";
-import { WorkspaceBar } from "./WorkspaceBar";
 import { useAuth } from "@/contexts/AuthContext";
-import { MobileNav } from "./MobileNav";
 import { PermissionGuard } from "./PermissionGuard";
+import { ClassicShell } from "./ClassicShell";
 import { loadInstituteLogo } from "@/lib/instituteLogo";
 
 interface AppLayoutProps {
@@ -24,28 +20,19 @@ export function AppLayout({ children }: AppLayoutProps) {
     void loadInstituteLogo(user?.branchId ?? null);
   }, [user?.branchId]);
 
+  // Always in sight while an admin works as a centre, with the way back.
+  const banner = actingAs ? (
+    <div className="sticky top-0 z-50 flex items-center justify-center gap-3 bg-gold px-4 py-1.5 text-[12.5px] font-semibold text-gold-foreground">
+      <span className="truncate">Viewing as {actingAs.name}{actingAs.studentId ? " (student portal)" : ""}</span>
+      <button type="button" onClick={() => { const student = !!actingAs.studentId; actAsCentre(null); navigate(student ? "/student/view" : "/"); }} className="shrink-0 rounded-full bg-white/80 px-3 py-0.5 text-xs font-bold hover:bg-white">
+        {actingAs.studentId ? "Back to students" : "Back to admin"}
+      </button>
+    </div>
+  ) : null;
+
   return (
-    <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-background">
-        <AppSidebar />
-        <div className="flex min-w-0 flex-1 flex-col">
-          {/* Always in sight while an admin works as a centre, with the way back. */}
-          {actingAs && (
-            <div className="sticky top-0 z-50 flex items-center justify-center gap-3 bg-gold px-4 py-1.5 text-[12.5px] font-semibold text-gold-foreground">
-              <span className="truncate">Viewing as {actingAs.name}{actingAs.studentId ? " (student portal)" : ""}</span>
-              <button type="button" onClick={() => { const student = !!actingAs.studentId; actAsCentre(null); navigate(student ? "/student/view" : "/"); }} className="shrink-0 rounded-full bg-white/80 px-3 py-0.5 text-xs font-bold hover:bg-white">
-                {actingAs.studentId ? "Back to students" : "Back to admin"}
-              </button>
-            </div>
-          )}
-          <AppHeader />
-          <WorkspaceBar />
-          <main className="min-w-0 flex-1 overflow-x-hidden px-4 pb-28 pt-4 sm:px-6 sm:pt-5 md:pb-10 lg:px-7 animate-fade-in">
-            <div className="mx-auto w-full max-w-[1600px]"><PermissionGuard>{children}</PermissionGuard></div>
-          </main>
-          <MobileNav />
-        </div>
-      </div>
-    </SidebarProvider>
+    <ClassicShell banner={banner}>
+      <PermissionGuard>{children}</PermissionGuard>
+    </ClassicShell>
   );
 }

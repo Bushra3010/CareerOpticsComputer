@@ -488,7 +488,7 @@ export default function AcademicsWorkspace() {
 
   return (
     <AppLayout>
-      <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div className="classic-head mb-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[.16em] text-muted-foreground">
             Academics

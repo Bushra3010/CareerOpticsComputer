@@ -294,3 +294,48 @@
   opacity: 0.45;
   cursor: not-allowed;
 }
+
+/* =====================================================================
+   Classic centre-panel look (components/layout/ClassicShell.tsx sets
+   .classic-ui on the page body). The shared UI components carry data-ui
+   marks, so every older page takes the same square, flat, slate-headed look
+   as the centre panel without each page being rewritten.
+   ===================================================================== */
+.classic-ui [data-ui="card"] {
+  border-radius: 2px;
+  border: 0;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+  background: #fff;
+}
+.classic-ui [data-ui="card-header"] {
+  background: #3d4451;
+  color: #fff;
+  border-radius: 2px 2px 0 0;
+  padding: 13px 20px;
+  margin-bottom: 18px;
+}
+.classic-ui [data-ui="card-header"] [data-ui="card-title"] { color: #fff; font-size: 14.5px; }
+.classic-ui [data-ui="card-header"] .text-muted-foreground { color: rgba(255, 255, 255, 0.72); }
+.classic-ui [data-ui="card-header"] > svg,
+.classic-ui [data-ui="card-header"] [data-ui="card-title"] svg { color: inherit; }
+.classic-ui [data-ui="btn"] { border-radius: 4px; box-shadow: none; font-weight: 500; }
+.classic-ui [data-ui="btn"]:active { transform: none; }
+.classic-ui [data-ui="btn"][data-variant="default"] { background: #2d8fd5; color: #fff; }
+.classic-ui [data-ui="btn"][data-variant="default"]:hover { background: #2479b8; filter: none; }
+.classic-ui [data-ui="btn"][data-variant="destructive"] { background: #f26b6b; }
+.classic-ui [data-ui="btn"][data-variant="success"] { background: #3ecf8e; }
+.classic-ui [data-ui="btn"][data-variant="outline"] { border-width: 1px; border-color: #cbd5e1; box-shadow: none; background: #fff; }
+.classic-ui .classic-actions [data-ui="btn"][data-variant="default"] { background: #f26b6b; }
+.classic-ui .classic-actions [data-ui="btn"][data-variant="default"]:hover { background: #e45454; }
+.classic-ui .classic-actions [data-ui="btn"][data-variant="outline"] { background: transparent; color: #fff; border-color: rgba(255, 255, 255, 0.45); }
+.classic-ui .classic-actions [data-ui="btn"][data-variant="outline"]:hover { background: rgba(255, 255, 255, 0.1); }
+.classic-ui [data-ui="input"] { border-radius: 4px; border-width: 1px; border-color: #cbd5e1; background: #fff; }
+.classic-ui input[data-ui="input"] { height: 2.5rem; }
+.classic-ui [data-ui="table"] thead th { font-weight: 700; color: #334155; }
+.classic-ui [data-ui="table"] thead tr { border-bottom-width: 2px; }
+/* Workspace pages with their own title block take the same slate title bar. */
+.classic-ui .classic-head { background: #3d4451; color: #fff; border-radius: 2px; padding: 14px 20px; }
+.classic-ui .classic-head .text-muted-foreground { color: rgba(255, 255, 255, 0.7); }
+.classic-ui .classic-head h1 { font-size: 15px; font-weight: 700; letter-spacing: 0; margin-top: 2px; }
+.classic-ui .classic-head [data-ui="btn"][data-variant="default"] { background: #f26b6b; }
+.classic-ui .classic-head [data-ui="btn"][data-variant="outline"] { background: transparent; color: #fff; border-color: rgba(255, 255, 255, 0.45); }
