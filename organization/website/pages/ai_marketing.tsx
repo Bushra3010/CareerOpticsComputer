@@ -1577,7 +1577,7 @@ export default function AiMarketing() {
                         Call Us
                       </div>
                       <div className="text-sm text-slate-500">
-                        +91 99999 99999
+                        +91 82525 32179
                       </div>
                     </div>
                   </div>

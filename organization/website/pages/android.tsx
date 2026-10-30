@@ -1774,10 +1774,10 @@ export default function Android() {
                 </h3>
                 <div className="text-sm space-y-3 mt-5">
                   <div>
-                    📞 +91 99999 99999
+                    📞 +91 82525 32179
                   </div>
                   <div>
-                    ✉️ info@pnsacademy.com
+                    ✉️ careeropticsconsultancy@gmail.com
                   </div>
                   <div>
                     📍 Bihar, India
@@ -1809,7 +1809,7 @@ export default function Android() {
             </div>
           </div>
         </footer>
-        <a href="https://wa.me/919999999999" target="_blank" className="fixed right-5 bottom-5 z-50 w-14 h-14 rounded-full bg-green-500 text-white flex items-center justify-center text-2xl shadow-2xl hover:scale-110 transition">
+        <a href="https://wa.me/918252532179" target="_blank" className="fixed right-5 bottom-5 z-50 w-14 h-14 rounded-full bg-green-500 text-white flex items-center justify-center text-2xl shadow-2xl hover:scale-110 transition">
           💬
         </a>
         <script dangerouslySetInnerHTML={{ __html: js_f19a7644 }} />

@@ -2065,16 +2065,16 @@ export default function Typing() {
                       <i data-lucide="phone" className="w-5 h-5 text-blue-400 shrink-0">
                         {" "}
                       </i>
-                      <a href="tel:+919876543210" className="hover:text-white">
-                        {" "}+91 98765 43210{" "}
+                      <a href="tel:+918252532179" className="hover:text-white">
+                        {" "}+91 82525 32179{" "}
                       </a>
                     </div>
                     <div className="flex gap-3">
                       <i data-lucide="mail" className="w-5 h-5 text-blue-400 shrink-0">
                         {" "}
                       </i>
-                      <a href="mailto:info@pnsacademy.in" className="hover:text-white">
-                        {" "}info@pnsacademy.in{" "}
+                      <a href="mailto:careeropticsconsultancy@gmail.com" className="hover:text-white">
+                        {" "}careeropticsconsultancy@gmail.com{" "}
                       </a>
                     </div>
                     <div className="flex gap-3">

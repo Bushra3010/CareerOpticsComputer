@@ -22,6 +22,9 @@ document.addEventListener(
         const mobileMenu =
             document.getElementById("mobileMenu");
 
+        // The shared site header (components/SiteHeader.tsx) runs its own menu.
+        if (!menuBtn || !mobileMenu) return;
+
 
         function openMobileMenu() {
 

@@ -876,11 +876,11 @@ export default function BiharPolice() {
                   Consistent preparation, smart strategy और regular practice के साथ अपने police career goal की तरफ पहला कदम बढ़ाएं.
                 </p>
                 <div className="mt-8 flex flex-wrap justify-center gap-4">
-                  <a href="tel:+919999999999" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-white text-blue-700 font-black hover:bg-blue-50">
+                  <a href="tel:+918252532179" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-white text-blue-700 font-black hover:bg-blue-50">
                     <i data-lucide="phone" className="w-4 h-4"></i>
                     Call Now
                   </a>
-                  <a href="https://wa.me/919999999999" target="_blank" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-green-500 text-white font-black hover:bg-green-600">
+                  <a href="https://wa.me/918252532179" target="_blank" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-green-500 text-white font-black hover:bg-green-600">
                     <i data-lucide="message-circle" className="w-4 h-4"></i>
                     WhatsApp
                   </a>

@@ -1,1001 +1,191 @@
-/** Shared by every page that carries it; written once here. */
+import { BRAND } from "./brand";
+
+/**
+ * The header every page carries: a contact strip with the two logins, then the
+ * logo and the menu. Its styles are self-contained (co-* classes) so it looks
+ * the same on every page, whatever that page's own CSS does.
+ *
+ * The phone menu (#coMenuBtn / #coMobileMenu) is opened by the small script at
+ * the bottom of this component. The pages' older header scripts looked for
+ * #menuBtn / #coMobileMenu; they now step aside when those are absent.
+ */
+
+type Link = { href: string; label: string; note?: string };
+type Menu = { label: string; href?: string; items?: Link[] };
+
+const MENU: Menu[] = [
+  { label: "Home", href: "index.html" },
+  { label: "About Us", href: "about.html" },
+  {
+    label: "Courses",
+    items: [
+      { href: "computer-course.html", label: "Certified Computer Courses", note: "DCA, ADCA, MS Office" },
+      { href: "accounting.html", label: "Accounting & Taxation", note: "Tally Prime, GST, Busy" },
+      { href: "typing.html", label: "Typing & Stenography", note: "Hindi & English" },
+      { href: "graphics.html", label: "Graphic Design", note: "Photoshop, CorelDRAW" },
+      { href: "coding.html", label: "Programming", note: "C, Python, Java" },
+      { href: "fullstack.html", label: "Web Development", note: "HTML, CSS, JS, React" },
+      { href: "ai_foundation.html", label: "AI Foundation", note: "AI tools & prompting" },
+      { href: "digital-marketing.html", label: "Digital Marketing", note: "SEO, social media" },
+      { href: "spoken-english.html", label: "Spoken English", note: "Personality development" },
+    ],
+  },
+  {
+    label: "Student Zone",
+    items: [
+      { href: BRAND.studentLogin, label: "Student Login" },
+      { href: "/computercentre/apply", label: "Online Admission" },
+      { href: "/verification.html#certificate", label: "Certificate Verification" },
+      { href: "/verification.html#result", label: "Result" },
+      { href: "/verification.html#admit", label: "Admit Card" },
+    ],
+  },
+  { label: "Certification", href: "certification.html" },
+  {
+    label: "Franchise",
+    items: [
+      { href: "franchise.html", label: "Franchise Opportunity" },
+      { href: "franchise.html#franchise", label: "Apply for Franchise" },
+      { href: BRAND.centreLogin, label: "Centre Login" },
+    ],
+  },
+  { label: "Contact Us", href: "index.html#contact" },
+];
+
+const CSS = `
+.co-top{background:#0b2350;color:#dbe4ff;font:500 13px/1.4 Poppins,system-ui,sans-serif}
+.co-top .co-wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:42px}
+.co-top-info{display:flex;flex-wrap:wrap;gap:6px 22px}
+.co-top-info a,.co-top-info span{display:inline-flex;align-items:center;gap:7px;color:inherit;text-decoration:none}
+.co-top-info svg,.co-top-info i{width:15px;height:15px;color:#fb923c}
+.co-top-btns{display:flex;gap:8px;flex-shrink:0}
+.co-top-btns a{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:6px;font-weight:600;font-size:12.5px;text-decoration:none;color:#fff;white-space:nowrap}
+.co-top-btns .co-stu{background:#f97316}.co-top-btns .co-ctr{background:#2563eb}
+.co-top-btns a:hover{filter:brightness(1.08)}
+.co-wrap{max-width:1240px;margin:0 auto;padding:0 16px}
+.co-head{position:sticky;top:0;z-index:60;background:#fff;box-shadow:0 2px 14px rgba(11,35,80,.09);font-family:Poppins,system-ui,sans-serif}
+.co-head .co-wrap{display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:84px}
+.co-brand{display:flex;align-items:center;gap:12px;text-decoration:none}
+.co-brand img{width:66px;height:66px;object-fit:contain}
+.co-brand b{display:block;color:#0b2350;font-size:19px;font-weight:800;line-height:1.1;letter-spacing:-.01em}
+.co-brand b span{color:#f97316}
+.co-brand small{display:block;color:#64748b;font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;margin-top:3px}
+.co-nav{display:flex;align-items:center;gap:2px}
+.co-nav>div{position:relative}
+.co-nav>div>a,.co-nav>div>button{display:inline-flex;align-items:center;gap:4px;padding:10px 12px;border:0;background:none;cursor:pointer;color:#0b2350;font:600 13.5px Poppins,system-ui,sans-serif;text-transform:uppercase;letter-spacing:.02em;text-decoration:none;border-radius:6px}
+.co-nav>div>a:hover,.co-nav>div>button:hover,.co-nav>div:focus-within>button{color:#f97316}
+.co-nav>div>a.co-active{color:#f97316}
+.co-nav .co-caret{width:14px;height:14px;transition:transform .2s}
+.co-nav>div:hover .co-caret{transform:rotate(180deg)}
+.co-drop{position:absolute;left:0;top:100%;min-width:270px;background:#fff;border-top:3px solid #f97316;border-radius:0 0 10px 10px;box-shadow:0 18px 40px rgba(11,35,80,.18);padding:8px;opacity:0;visibility:hidden;transform:translateY(8px);transition:.18s}
+.co-nav>div:hover .co-drop,.co-nav>div:focus-within .co-drop{opacity:1;visibility:visible;transform:none}
+.co-drop a{display:block;padding:9px 12px;border-radius:7px;color:#0b2350;text-decoration:none;font-size:14px;font-weight:600}
+.co-drop a small{display:block;color:#64748b;font-weight:500;font-size:12px}
+.co-drop a:hover{background:#fff4ec;color:#c2410c}
+.co-burger{display:none;width:44px;height:44px;border-radius:10px;border:1px solid #e2e8f0;background:#fff;color:#0b2350;align-items:center;justify-content:center;cursor:pointer}
+.co-burger svg,.co-burger i{width:22px;height:22px}
+#coMobileMenu{display:none;border-top:1px solid #e2e8f0;background:#fff;max-height:calc(100vh - 84px);overflow:auto}
+#coMobileMenu.show{display:block}
+#coMobileMenu a,#coMobileMenu summary{display:block;padding:13px 18px;border-bottom:1px solid #f1f5f9;color:#0b2350;font:600 15px Poppins,system-ui,sans-serif;text-decoration:none;cursor:pointer;list-style:none}
+#coMobileMenu summary::-webkit-details-marker{display:none}
+#coMobileMenu summary::after{content:"+";float:right;color:#f97316;font-weight:700}
+#coMobileMenu details[open] summary::after{content:"–"}
+#coMobileMenu details a{padding-left:32px;font-weight:500;font-size:14px;background:#f8fafc}
+#coMobileMenu .co-m-btns{display:flex;gap:10px;padding:14px 18px}
+#coMobileMenu .co-m-btns a{flex:1;text-align:center;border:0;border-radius:8px;color:#fff;padding:11px}
+@media (max-width:1100px){.co-nav{display:none}.co-burger{display:inline-flex}.co-head .co-wrap{min-height:72px}.co-brand img{width:54px;height:54px}}
+@media (max-width:760px){.co-top-info .co-hide-sm{display:none}.co-top .co-wrap{flex-direction:column;align-items:stretch;padding-top:6px;padding-bottom:6px;gap:6px}.co-top-info{justify-content:center}.co-top-btns{justify-content:center}.co-brand b{font-size:16px}}
+`;
+
 export default function SiteHeader() {
   return (
-    <header id="siteHeader" data-cms-scope="header" className="fixed top-0 left-0 right-0 z-50">
-      <div className="navbar min-h-1 rounded-0xl px-3 flex items-center justify-between">
-        <a href="index.html" className="flex items-center gap-0 shrink-0">
-          <img src="/logo.png" alt="Career Optics Computer Centre" className="logo-img w-[80px] transition hover:scale-105" />
-        </a>
-        <nav className="hidden lg:flex items-center gap-1">
-          <a href="index.html" className="nav-link">
-            {" "}Home{" "}
-          </a>
-          {" "}
-          {" "}
-          <a href="about.html" className="nav-link">
-            {" "}About Us{" "}
-          </a>
-          <div className="desktop-dropdown">
-            <button type="button" className="nav-link desktop-dropdown-btn">
-              {" "}Academic Course{" "}
-              <i data-lucide="chevron-down" className="dropdown-chevron w-4 h-4">
-                {" "}
-              </i>
-              {" "}
-            </button>
-            <div className="desktop-dropdown-menu">
-              <a href="bihar_board.html">
-                {" "}
-                <span className="dropdown-icon">
-                  {" "}
-                  <i data-lucide="book"></i>
-                  {" "}
-                </span>
-                {" "}
-                <span>
-                  {" "}
-                  <b className="dropdown-title">
-                    {" "}BSEB IX - X{" "}
-                  </b>
-                  {" "}
-                  <small className="dropdown-description">
-                    {" "}
-                  </small>
-                  {" "}
-                </span>
-                {" "}
-              </a>
-              {" "}
-              <a href="bihar_arts.html">
-                {" "}
-                <span className="dropdown-icon">
-                  {" "}
-                  <i data-lucide="school"></i>
-                  {" "}
-                </span>
-                {" "}
-                <span>
-                  {" "}
-                  <b className="dropdown-title">
-                    {" "}BSEB XII Arts{" "}
-                  </b>
-                  {" "}
-                </span>
-                {" "}
-              </a>
-              {" "}
-              <a href="commerce.html">
-                {" "}
-                <span className="dropdown-icon">
-                  {" "}
-                  <i data-lucide="school"></i>
-                  {" "}
-                </span>
-                {" "}
-                <span>
-                  {" "}
-                  <b className="dropdown-title">
-                    {" "}BSEB Commerce{" "}
-                  </b>
-                  {" "}
-                </span>
-                {" "}
-              </a>
-              {" "}
-              <a href="pcs.html">
-                {" "}
-                <span className="dropdown-icon">
-                  {" "}
-                  <i data-lucide="book-open"></i>
-                  {" "}
-                </span>
-                {" "}
-                <span>
-                  {" "}
-                  <b className="dropdown-title">
-                    {" "}Competative Exam{" "}
-                  </b>
-                  {" "}
-                </span>
-                {" "}
-              </a>
-              {" "}
-              <a href="spoken-english.html">
-                {" "}
-                <span className="dropdown-icon">
-                  {" "}
-                  <i data-lucide="mic"></i>
-                  {" "}
-                </span>
-                {" "}
-                <span>
-                  {" "}
-                  <b className="dropdown-title">
-                    {" "}Spoken Englsih{" "}
-                  </b>
-                  {" "}
-                  <small className="dropdown-description">
-                    {" "}Pesronality Development{" "}
-                  </small>
-                  {" "}
-                </span>
-                {" "}
-              </a>
-            </div>
-          </div>
-          <div className="desktop-dropdown">
-            <button type="button" className="nav-link desktop-dropdown-btn">
-              {" "}Our Course{" "}
-              <i data-lucide="chevron-down" className="dropdown-chevron w-4 h-4">
-                {" "}
-              </i>
-              {" "}
-            </button>
-            <div className="desktop-dropdown-menu">
-              <a href="computer-course.html">
-                {" "}
-                <span className="dropdown-icon">
-                  {" "}
-                  <i data-lucide="computer"></i>
-                  {" "}
-                </span>
-                {" "}
-                <span>
-                  {" "}
-                  <b className="dropdown-title">
-                    {" "}Certified Computer Courses{" "}
-                  </b>
-                  {" "}
-                  <small className="dropdown-description">
-                    {" "}Computer fundamentals & office{" "}
-                  </small>
-                  {" "}
-                </span>
-                {" "}
-              </a>
-              {" "}
-              <a href="accounting.html">
-                {" "}
-                <span className="dropdown-icon">
-                  {" "}
-                  <i data-lucide="calculator"></i>
-                  {" "}
-                </span>
-                {" "}
-                <span>
-                  {" "}
-                  <b className="dropdown-title">
-                    {" "}Accounting & Taxation{" "}
-                  </b>
-                  {" "}
-                  <small className="dropdown-description">
-                    {" "}Tally, GST & accounting{" "}
-                  </small>
-                  {" "}
-                </span>
-                {" "}
-              </a>
-              {" "}
-              <a href="graphics.html">
-                {" "}
-                <span className="dropdown-icon">
-                  {" "}
-                  <i data-lucide="pen-tool"></i>
-                  {" "}
-                </span>
-                {" "}
-                <span>
-                  {" "}
-                  <b className="dropdown-title">
-                    {" "}Graphic & Architecture{" "}
-                  </b>
-                  {" "}
-                  <small className="dropdown-description">
-                    {" "}Tally, GST & accounting{" "}
-                  </small>
-                  {" "}
-                </span>
-                {" "}
-              </a>
-              {" "}
-              <a href="coding.html">
-                {" "}
-                <span className="dropdown-icon">
-                  {" "}
-                  <i data-lucide="code-2"></i>
-                  {" "}
-                </span>
-                {" "}
-                <span>
-                  {" "}
-                  <b className="dropdown-title">
-                    {" "}Programming{" "}
-                  </b>
-                  {" "}
-                  <small className="dropdown-description">
-                    {" "}Learn modern programming{" "}
-                  </small>
-                  {" "}
-                </span>
-                {" "}
-              </a>
-              {" "}
-              <a href="website-designer.html">
-                {" "}
-                <span className="dropdown-icon">
-                  {" "}
-                  <i data-lucide="laptop"></i>
-                  {" "}
-                </span>
-                {" "}
-                <span>
-                  {" "}
-                  <b className="dropdown-title">
-                    {" "}Web Development{" "}
-                  </b>
-                  {" "}
-                  <small className="dropdown-description">
-                    {" "}HTML, CSS, JS & responsive design{" "}
-                  </small>
-                  {" "}
-                </span>
-                {" "}
-              </a>
-              {" "}
-              {" "}
-              <a href="">
-                {" "}
-                <span className="dropdown-icon">
-                  {" "}
-                  <i data-lucide="megaphone"></i>
-                  {" "}
-                </span>
-                {" "}
-                <span>
-                  {" "}
-                  <b className="dropdown-title">
-                    {" "}Digital Marketing{" "}
-                  </b>
-                  {" "}
-                  <small className="dropdown-description">
-                    {" "}Soial media Marketing{" "}
-                  </small>
-                  {" "}
-                </span>
-                {" "}
-              </a>
-            </div>
-          </div>
-          <div className="desktop-dropdown">
-            <button type="button" className="nav-link desktop-dropdown-btn">
-              {" "}AI Program{" "}
-              <i data-lucide="chevron-down" className="dropdown-chevron w-4 h-4">
-                {" "}
-              </i>
-              {" "}
-            </button>
-            <div className="desktop-dropdown-menu">
-              <a href="ai_foundation.html">
-                {" "}
-                <span className="dropdown-icon">
-                  {" "}
-                  <i data-lucide="bot"></i>
-                  {" "}
-                </span>
-                {" "}
-                <span>
-                  {" "}
-                  <b className="dropdown-title">
-                    {" "}AI Foundation{" "}
-                  </b>
-                  {" "}
-                  <small className="dropdown-description">
-                    {" "}AI & Prompt Engineering{" "}
-                  </small>
-                  {" "}
-                </span>
-                {" "}
-              </a>
-              {" "}
-              <a href="ai_automation.html">
-                {" "}
-                <span className="dropdown-icon">
-                  {" "}
-                  <i data-lucide="award"></i>
-                  {" "}
-                </span>
-                {" "}
-                <span>
-                  {" "}
-                  <b className="dropdown-title">
-                    {" "}AI Tools & Automation{" "}
-                  </b>
-                  {" "}
-                  <small className="dropdown-description">
-                    {" "}Automation & Productivity{" "}
-                  </small>
-                  {" "}
-                </span>
-                {" "}
-              </a>
-              {" "}
-              <a href="ai_carrer.html">
-                {" "}
-                <span className="dropdown-icon">
-                  {" "}
-                  <i data-lucide="file-check"></i>
-                  {" "}
-                </span>
-                {" "}
-                <span>
-                  {" "}
-                  <b className="dropdown-title">
-                    {" "}AI Career Program{" "}
-                  </b>
-                  {" "}
-                  <small className="dropdown-description">
-                    {" "}Learn → Freelance → Earn{" "}
-                  </small>
-                  {" "}
-                </span>
-                {" "}
-              </a>
-            </div>
-          </div>
-          <div className="desktop-dropdown">
-            <button type="button" className="nav-link desktop-dropdown-btn">
-              {" "}Franchise Zone{" "}
-              <i data-lucide="chevron-down" className="dropdown-chevron w-4 h-4">
-                {" "}
-              </i>
-              {" "}
-            </button>
-            <div className="desktop-dropdown-menu">
-              <a href="franchise.html">
-                {" "}
-                <span className="dropdown-icon">
-                  {" "}
-                  <i data-lucide="building-2"></i>
-                  {" "}
-                </span>
-                {" "}
-                <span>
-                  {" "}
-                  <b className="dropdown-title">
-                    {" "}Franchise Opportunity{" "}
-                  </b>
-                  {" "}
-                  <small className="dropdown-description">
-                    {" "}Start your training center{" "}
-                  </small>
-                  {" "}
-                </span>
-                {" "}
-              </a>
-              {" "}
-              <a href="#franchise">
-                {" "}
-                <span className="dropdown-icon">
-                  {" "}
-                  <i data-lucide="send"></i>
-                  {" "}
-                </span>
-                {" "}
-                <span>
-                  {" "}
-                  <b className="dropdown-title">
-                    {" "}Apply Franchise{" "}
-                  </b>
-                  {" "}
-                  <small className="dropdown-description">
-                    {" "}Submit franchise application{" "}
-                  </small>
-                  {" "}
-                </span>
-                {" "}
-              </a>
-              {" "}
-              <a href="/computercentre/login?as=franchise">
-                {" "}
-                <span className="dropdown-icon">
-                  {" "}
-                  <i data-lucide="log-in"></i>
-                  {" "}
-                </span>
-                {" "}
-                <span>
-                  {" "}
-                  <b className="dropdown-title">
-                    {" "}Franchise Login{" "}
-                  </b>
-                  {" "}
-                  <small className="dropdown-description">
-                    {" "}Login to Franchise portal{" "}
-                  </small>
-                  {" "}
-                </span>
-                {" "}
-              </a>
-              {" "}
-              <a href="#franchise">
-                {" "}
-                <span className="dropdown-icon">
-                  {" "}
-                  <i data-lucide="badge-check"></i>
-                  {" "}
-                </span>
-                {" "}
-                <span>
-                  {" "}
-                  <b className="dropdown-title">
-                    {" "}Center Verification{" "}
-                  </b>
-                  {" "}
-                  <small className="dropdown-description">
-                    {" "}Verify your center{" "}
-                  </small>
-                  {" "}
-                </span>
-                {" "}
-              </a>
-            </div>
-          </div>
-          <div className="desktop-dropdown">
-            <button type="button" className="nav-link desktop-dropdown-btn">
-              {" "}Student Zone{" "}
-              <i data-lucide="chevron-down" className="dropdown-chevron w-4 h-4">
-                {" "}
-              </i>
-              {" "}
-            </button>
-            <div className="desktop-dropdown-menu">
-              <a href="/computercentre/login?as=student">
-                {" "}
-                <span className="dropdown-icon">
-                  {" "}
-                  <i data-lucide="log-in"></i>
-                  {" "}
-                </span>
-                {" "}
-                <span>
-                  {" "}
-                  <b className="dropdown-title">
-                    {" "}Student Login{" "}
-                  </b>
-                  {" "}
-                  <small className="dropdown-description">
-                    {" "}Login to student portal{" "}
-                  </small>
-                  {" "}
-                </span>
-                {" "}
-              </a>
-              {" "}
-              <a href="/verification.html#certificate">
-                {" "}
-                <span className="dropdown-icon">
-                  {" "}
-                  <i data-lucide="award"></i>
-                  {" "}
-                </span>
-                {" "}
-                <span>
-                  {" "}
-                  <b className="dropdown-title">
-                    {" "}Certificate{" "}
-                  </b>
-                  {" "}
-                  <small className="dropdown-description">
-                    {" "}Certificate verification{" "}
-                  </small>
-                  {" "}
-                </span>
-                {" "}
-              </a>
-              {" "}
-              <a href="/verification.html#result">
-                {" "}
-                <span className="dropdown-icon">
-                  {" "}
-                  <i data-lucide="file-check"></i>
-                  {" "}
-                </span>
-                {" "}
-                <span>
-                  {" "}
-                  <b className="dropdown-title">
-                    {" "}Result{" "}
-                  </b>
-                  {" "}
-                  <small className="dropdown-description">
-                    {" "}Check examination result{" "}
-                  </small>
-                  {" "}
-                </span>
-                {" "}
-              </a>
-              {" "}
-              <a href="/verification.html#admit">
-                {" "}
-                <span className="dropdown-icon">
-                  {" "}
-                  <i data-lucide="id-card"></i>
-                  {" "}
-                </span>
-                {" "}
-                <span>
-                  {" "}
-                  <b className="dropdown-title">
-                    {" "}Admit Card{" "}
-                  </b>
-                  {" "}
-                  <small className="dropdown-description">
-                    {" "}Download admit card{" "}
-                  </small>
-                  {" "}
-                </span>
-                {" "}
-              </a>
-            </div>
-          </div>
-          <div className="desktop-dropdown">
-            <button type="button" className="nav-link desktop-dropdown-btn">
-              {" "}Job Internship{" "}
-              <i data-lucide="chevron-down" className="dropdown-chevron w-4 h-4">
-                {" "}
-              </i>
-              {" "}
-            </button>
-            <div className="desktop-dropdown-menu">
-              <a href="internship_telecaller.html">
-                {" "}
-                <span className="dropdown-icon">
-                  {" "}
-                  <i data-lucide="headset"></i>
-                  {" "}
-                </span>
-                {" "}
-                <span>
-                  {" "}
-                  <b className="dropdown-title">
-                    {" "}Telecaller/Counseller{" "}
-                  </b>
-                  {" "}
-                  <small className="dropdown-description">
-                    {" "}Build practical experience{" "}
-                  </small>
-                  {" "}
-                </span>
-                {" "}
-              </a>
-              {" "}
-              <a href="internship_backoffice.html">
-                {" "}
-                <span className="dropdown-icon">
-                  {" "}
-                  <i data-lucide="database"></i>
-                  {" "}
-                </span>
-                {" "}
-                <span>
-                  {" "}
-                  <b className="dropdown-title">
-                    {" "}Data Entry Operator{" "}
-                  </b>
-                  {" "}
-                  <small className="dropdown-description">
-                    {" "}Entry level opportunities{" "}
-                  </small>
-                  {" "}
-                </span>
-                {" "}
-              </a>
-              {" "}
-              <a href="internship_accounting.html">
-                {" "}
-                <span className="dropdown-icon">
-                  {" "}
-                  <i data-lucide="file-spreadsheet"></i>
-                  {" "}
-                </span>
-                {" "}
-                <span>
-                  {" "}
-                  <b className="dropdown-title">
-                    {" "}Accounting Expert{" "}
-                  </b>
-                  {" "}
-                  <small className="dropdown-description">
-                    {" "}Accounting & Finance{" "}
-                  </small>
-                  {" "}
-                </span>
-                {" "}
-              </a>
-              {" "}
-              <a href="internship_graphic-designer.html">
-                {" "}
-                <span className="dropdown-icon">
-                  {" "}
-                  <i data-lucide="palette"></i>
-                  {" "}
-                </span>
-                {" "}
-                <span>
-                  {" "}
-                  <b className="dropdown-title">
-                    {" "}Graphic Designer{" "}
-                  </b>
-                  {" "}
-                  <small className="dropdown-description">
-                    {" "}Creative career opportunity{" "}
-                  </small>
-                  {" "}
-                </span>
-                {" "}
-              </a>
-              {" "}
-              <a href="internship_website-designer.html">
-                {" "}
-                <span className="dropdown-icon">
-                  {" "}
-                  <i data-lucide="code"></i>
-                  {" "}
-                </span>
-                {" "}
-                <span>
-                  {" "}
-                  <b className="dropdown-title">
-                    {" "}Frontend Developer{" "}
-                  </b>
-                  {" "}
-                  <small className="dropdown-description">
-                    {" "}Web designer opportunity{" "}
-                  </small>
-                  {" "}
-                </span>
-                {" "}
-              </a>
-              {" "}
-              <a href="intrenship_website-developer.html">
-                {" "}
-                <span className="dropdown-icon">
-                  {" "}
-                  <i data-lucide="server"></i>
-                  {" "}
-                </span>
-                {" "}
-                <span>
-                  {" "}
-                  <b className="dropdown-title">
-                    {" "}Backend Developer{" "}
-                  </b>
-                  {" "}
-                  <small className="dropdown-description">
-                    {" "}Web development opportunity{" "}
-                  </small>
-                  {" "}
-                </span>
-                {" "}
-              </a>
-              {" "}
-              <a href="internship_digital-marketing.html">
-                {" "}
-                <span className="dropdown-icon">
-                  {" "}
-                  <i data-lucide="megaphone"></i>
-                  {" "}
-                </span>
-                {" "}
-                <span>
-                  {" "}
-                  <b className="dropdown-title">
-                    {" "}Digital Maketing{" "}
-                  </b>
-                  {" "}
-                  <small className="dropdown-description">
-                    {" "}Online Earning Opportunity{" "}
-                  </small>
-                  {" "}
-                </span>
-                {" "}
-              </a>
-            </div>
-          </div>
-          <a href="carrer.html" className="nav-link">
-            {" "}Career{" "}
-          </a>
-          {" "}
-          {" "}
-          <a href="#contact" className="nav-link">
-            {" "}Contact{" "}
-          </a>
-        </nav>
-        <button id="menuBtn" type="button" aria-label="Open menu" aria-expanded="false" className="lg:hidden flex items-center justify-center w-11 h-11 rounded-xl bg-red-30 text-blue-600 hover:bg-blue-100 transition">
-          <i data-lucide="menu" className="w-5 h-5">
-            {" "}
-          </i>
-        </button>
-      </div>
-      <div id="mobileMenu" className="mobile-menu lg:hidden">
-        <div className="p-3">
-          <a href="index.html" className="mobile-link">
-            {" "}
-            <span className="mobile-link-left">
-              {" "}
-              <i data-lucide="home"></i>
-              {" "}Home{" "}
+    <>
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
+      <div className="co-top" data-cms-scope="topbar">
+        <div className="co-wrap">
+          <div className="co-top-info">
+            <span className="co-hide-sm">
+              <i data-lucide="map-pin"></i>
+              {BRAND.addressShort}
             </span>
-            {" "}
-          </a>
-          {" "}
-          {" "}
-          <a href="#about" className="mobile-link">
-            {" "}
-            <span className="mobile-link-left">
-              {" "}
-              <i data-lucide="info"></i>
-              {" "}About Us{" "}
-            </span>
-            {" "}
-          </a>
-          <div className="mobile-dropdown">
-            <button type="button" className="mobile-dropdown-btn">
-              {" "}
-              <span className="mobile-link-left">
-                {" "}
-                <i data-lucide="graduation-cap"></i>
-                {" "}Our Course{" "}
-              </span>
-              {" "}
-              <i data-lucide="chevron-down" className="arrow">
-                {" "}
-              </i>
-              {" "}
-            </button>
-            <div className="mobile-submenu">
-              <div className="mobile-submenu-inner">
-                <a href="#courses">
-                  {" "}
-                  <i data-lucide="computer"></i>
-                  {" "}Computer Courses{" "}
-                </a>
-                {" "}
-                <a href="#courses">
-                  {" "}
-                  <i data-lucide="calculator"></i>
-                  {" "}Accounting & Taxation{" "}
-                </a>
-                {" "}
-                <a href="#courses">
-                  {" "}
-                  <i data-lucide="code-2"></i>
-                  {" "}Programming Language{" "}
-                </a>
-                {" "}
-                <a href="#courses">
-                  {" "}
-                  <i data-lucide="laptop"></i>
-                  {" "}Web Designing With A.I{" "}
-                </a>
-                {" "}
-                <a href="#courses">
-                  {" "}
-                  <i data-lucide="megaphone"></i>
-                  {" "}Digital Marketing With A.I{" "}
-                </a>
-                {" "}
-                <a href="#courses">
-                  {" "}
-                  <i data-lucide="palette"></i>
-                  {" "}Graphic Designing{" "}
-                </a>
-                {" "}
-                <a href="#courses">
-                  {" "}
-                  <i data-lucide="ruler"></i>
-                  {" "}Architecture & Sketch{" "}
-                </a>
-                {" "}
-                <a href="#courses">
-                  {" "}
-                  <i data-lucide="video"></i>
-                  {" "}Video Mixing{" "}
-                </a>
-                {" "}
-                <a href="#courses">
-                  {" "}
-                  <i data-lucide="languages"></i>
-                  {" "}Spoken English{" "}
-                </a>
-              </div>
-            </div>
-          </div>
-          <div className="mobile-dropdown">
-            <button type="button" className="mobile-dropdown-btn">
-              {" "}
-              <span className="mobile-link-left">
-                {" "}
-                <i data-lucide="building-2"></i>
-                {" "}Franchise Zone{" "}
-              </span>
-              {" "}
-              <i data-lucide="chevron-down" className="arrow">
-                {" "}
-              </i>
-              {" "}
-            </button>
-            <div className="mobile-submenu">
-              <div className="mobile-submenu-inner">
-                <a href="#franchise">
-                  {" "}
-                  <i data-lucide="briefcase"></i>
-                  {" "}Franchise Opportunity{" "}
-                </a>
-                {" "}
-                <a href="#franchise">
-                  {" "}
-                  <i data-lucide="send"></i>
-                  {" "}Apply Franchise{" "}
-                </a>
-                {" "}
-                <a href="/computercentre/login?as=franchise">
-                  {" "}
-                  <i data-lucide="log-in"></i>
-                  {" "}Franchise Login{" "}
-                </a>
-                {" "}
-                <a href="#franchise">
-                  {" "}
-                  <i data-lucide="badge-check"></i>
-                  {" "}Center Verification{" "}
-                </a>
-              </div>
-            </div>
-          </div>
-          <div className="mobile-dropdown">
-            <button type="button" className="mobile-dropdown-btn">
-              {" "}
-              <span className="mobile-link-left">
-                {" "}
-                <i data-lucide="graduation-cap"></i>
-                {" "}Student Zone{" "}
-              </span>
-              {" "}
-              <i data-lucide="chevron-down" className="arrow">
-                {" "}
-              </i>
-              {" "}
-            </button>
-            <div className="mobile-submenu">
-              <div className="mobile-submenu-inner">
-                <a href="/computercentre/login?as=student">
-                  {" "}
-                  <i data-lucide="log-in"></i>
-                  {" "}Student Login{" "}
-                </a>
-                {" "}
-                <a href="/verification.html#certificate">
-                  {" "}
-                  <i data-lucide="award"></i>
-                  {" "}Certificate{" "}
-                </a>
-                {" "}
-                <a href="/verification.html#result">
-                  {" "}
-                  <i data-lucide="file-check"></i>
-                  {" "}Result{" "}
-                </a>
-                {" "}
-                <a href="/computercentre/login?as=student">
-                  {" "}
-                  <i data-lucide="id-card"></i>
-                  {" "}ID Card{" "}
-                </a>
-                {" "}
-                <a href="/computercentre/login?as=student">
-                  {" "}
-                  <i data-lucide="credit-card"></i>
-                  {" "}Online Payment{" "}
-                </a>
-                {" "}
-                <a href="/verification.html#admit">
-                  {" "}
-                  <i data-lucide="id-card"></i>
-                  {" "}Admit Card{" "}
-                </a>
-              </div>
-            </div>
-          </div>
-          <div className="mobile-dropdown">
-            <button type="button" className="mobile-dropdown-btn">
-              {" "}
-              <span className="mobile-link-left">
-                {" "}
-                <i data-lucide="briefcase"></i>
-                {" "}Job Internship{" "}
-              </span>
-              {" "}
-              <i data-lucide="chevron-down" className="arrow">
-                {" "}
-              </i>
-              {" "}
-            </button>
-            <div className="mobile-submenu">
-              <div className="mobile-submenu-inner">
-                <a href="#internship">
-                  {" "}
-                  <i data-lucide="clipboard-check"></i>
-                  {" "}Internship Program{" "}
-                </a>
-                {" "}
-                <a href="#internship">
-                  {" "}
-                  <i data-lucide="send"></i>
-                  {" "}Apply Internship{" "}
-                </a>
-                {" "}
-                <a href="#internship">
-                  {" "}
-                  <i data-lucide="database"></i>
-                  {" "}Data Entry Operator{" "}
-                </a>
-                {" "}
-                <a href="#internship">
-                  {" "}
-                  <i data-lucide="palette"></i>
-                  {" "}Graphic Designer{" "}
-                </a>
-                {" "}
-                <a href="#internship">
-                  {" "}
-                  <i data-lucide="code"></i>
-                  {" "}Frontend Developer{" "}
-                </a>
-                {" "}
-                <a href="#internship">
-                  {" "}
-                  <i data-lucide="server"></i>
-                  {" "}Backend Developer{" "}
-                </a>
-              </div>
-            </div>
-          </div>
-          <a href="#hire" className="mobile-link">
-            {" "}
-            <span className="mobile-link-left">
-              {" "}
-              <i data-lucide="handshake"></i>
-              {" "}Hire Us{" "}
-            </span>
-            {" "}
-          </a>
-          {" "}
-          {" "}
-          <a href="#contact" className="mobile-link">
-            {" "}
-            <span className="mobile-link-left">
-              {" "}
+            <a href={`mailto:${BRAND.email}`}>
+              <i data-lucide="mail"></i>
+              {BRAND.email}
+            </a>
+            <a href={`tel:+${BRAND.phoneIntl}`}>
               <i data-lucide="phone"></i>
-              {" "}Contact{" "}
-            </span>
-            {" "}
-          </a>
-          <div className="mobile-actions">
-            <a href="/computercentre/login" className="login-button">
-              {" "}Login{" "}
+              {BRAND.phone}
             </a>
-            {" "}
-            <a href="#admission" className="join-button">
-              {" "}Join Now{" "}
-              <i data-lucide="arrow-right" className="w-4 h-4">
-                {" "}
-              </i>
-              {" "}
-            </a>
+          </div>
+          <div className="co-top-btns">
+            <a className="co-stu" href={BRAND.studentLogin}>Student Login</a>
+            <a className="co-ctr" href={BRAND.centreLogin}>Centre Login</a>
           </div>
         </div>
       </div>
-    </header>
+      <header id="siteHeader" className="co-head" data-cms-scope="header">
+        <div className="co-wrap">
+          <a className="co-brand" href="index.html">
+            <img src="/logo.png" alt={BRAND.name} />
+            <span>
+              <b>
+                Career <span>Optics</span>
+              </b>
+              <small>Computer Centre · {BRAND.tagline}</small>
+            </span>
+          </a>
+          <nav className="co-nav" aria-label="Main">
+            {MENU.map((m) => (
+              <div key={m.label}>
+                {m.items ? (
+                  <>
+                    <button type="button">
+                      {m.label}
+                      <i data-lucide="chevron-down" className="co-caret"></i>
+                    </button>
+                    <div className="co-drop">
+                      {m.items.map((l) => (
+                        <a key={l.href + l.label} href={l.href}>
+                          {l.label}
+                          {l.note && <small>{l.note}</small>}
+                        </a>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <a href={m.href}>{m.label}</a>
+                )}
+              </div>
+            ))}
+          </nav>
+          <button id="coMenuBtn" className="co-burger" type="button" aria-label="Open menu" aria-expanded="false">
+            <i data-lucide="menu"></i>
+          </button>
+        </div>
+        <div id="coMobileMenu">
+          {MENU.map((m) =>
+            m.items ? (
+              <details key={m.label}>
+                <summary>{m.label}</summary>
+                {m.items.map((l) => (
+                  <a key={l.href + l.label} href={l.href}>{l.label}</a>
+                ))}
+              </details>
+            ) : (
+              <a key={m.label} href={m.href}>{m.label}</a>
+            ),
+          )}
+          <div className="co-m-btns">
+            <a href={BRAND.studentLogin} style={{ background: "#f97316" }}>Student Login</a>
+            <a href={BRAND.centreLogin} style={{ background: "#2563eb" }}>Centre Login</a>
+          </div>
+        </div>
+      </header>
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `(function(){var p=location.pathname.split("/").pop()||"index.html";document.querySelectorAll(".co-nav>div>a").forEach(function(a){if(a.getAttribute("href")===p)a.classList.add("co-active")});var b=document.getElementById("coMenuBtn"),m=document.getElementById("coMobileMenu");b.addEventListener("click",function(){var open=m.classList.toggle("show");b.setAttribute("aria-expanded",open?"true":"false");b.setAttribute("aria-label",open?"Close menu":"Open menu")});m.querySelectorAll("a").forEach(function(a){a.addEventListener("click",function(){m.classList.remove("show")})});})();`,
+        }}
+      />
+    </>
   );
 }

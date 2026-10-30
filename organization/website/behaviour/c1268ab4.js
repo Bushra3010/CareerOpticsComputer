@@ -126,7 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("mobileMenu");
 
 
-    mobileBtn.addEventListener("click", () => {
+    mobileBtn?.addEventListener("click", () => {
 
         mobileMenu.classList.toggle("hidden");
 
@@ -141,7 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             link.addEventListener("click", () => {
 
-                mobileMenu.classList.add("hidden");
+                mobileMenu?.classList.add("hidden");
 
             });
 
@@ -154,7 +154,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document
         .getElementById("contactForm")
-        .addEventListener("submit", function(e) {
+        ?.addEventListener("submit", function(e) {
 
             e.preventDefault();
 
@@ -196,12 +196,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
             },
             {
-                threshold: .12
+                // Any sliver on screen reveals it: a section taller than the
+                // screen can never be 12% visible, and would stay hidden.
+                threshold: 0
             }
         );
 
 
     revealElements.forEach(section => {
+
+        // What is already on screen at load is never hidden.
+        if (section.getBoundingClientRect().top < window.innerHeight) return;
 
         section.style.opacity = "0";
 
@@ -293,6 +298,9 @@ document.addEventListener("DOMContentLoaded", function () {
   const menuBtn = document.getElementById("menuBtn");
   const mobileMenu = document.getElementById("mobileMenu");
   const menuIcon = document.getElementById("menuIcon");
+
+  // The shared site header (components/SiteHeader.tsx) runs its own menu.
+  if (!menuBtn || !mobileMenu || !menuIcon) return;
 
   /* =====================================
      MOBILE MENU OPEN / CLOSE

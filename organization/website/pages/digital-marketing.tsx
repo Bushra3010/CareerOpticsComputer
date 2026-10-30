@@ -2285,7 +2285,7 @@ export default function DigitalMarketing() {
               <a href="#admission" className="px-8 py-4 rounded-xl bg-white text-indigo-700 font-black">
                 {" "}Apply Now{" "}
               </a>
-              <a href="https://wa.me/919999999999" target="_blank" className="px-8 py-4 rounded-xl border border-white/30 glass font-black">
+              <a href="https://wa.me/918252532179" target="_blank" className="px-8 py-4 rounded-xl border border-white/30 glass font-black">
                 {" "}WhatsApp Us{" "}
               </a>
             </div>
@@ -2338,10 +2338,10 @@ export default function DigitalMarketing() {
                     📍 Bihar, India
                   </p>
                   <p>
-                    📞 +91 99999 99999
+                    📞 +91 82525 32179
                   </p>
                   <p>
-                    ✉️ info@pnsacademy.com
+                    ✉️ careeropticsconsultancy@gmail.com
                   </p>
                 </div>
               </div>
@@ -2351,7 +2351,7 @@ export default function DigitalMarketing() {
             </div>
           </div>
         </footer>
-        <a href="https://wa.me/919999999999" target="_blank" className="fixed bottom-5 right-5 z-50 w-14 h-14 rounded-full bg-green-500 text-white flex items-center justify-center text-2xl shadow-xl hover:scale-110 transition">
+        <a href="https://wa.me/918252532179" target="_blank" className="fixed bottom-5 right-5 z-50 w-14 h-14 rounded-full bg-green-500 text-white flex items-center justify-center text-2xl shadow-xl hover:scale-110 transition">
           💬
         </a>
         <script dangerouslySetInnerHTML={{ __html: js_8485737c }} />

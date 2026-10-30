@@ -1979,11 +1979,11 @@ export default function Zoho() {
                 <div className="space-y-3 mt-5 text-sm text-slate-400">
                   <div>
                     <i className="fa-solid fa-phone mr-2"></i>
-                    {" "}+91 99999 99999
+                    {" "}+91 82525 32179
                   </div>
                   <div>
                     <i className="fa-solid fa-envelope mr-2"></i>
-                    {" "}info@pnsacademy.com
+                    {" "}careeropticsconsultancy@gmail.com
                   </div>
                   <a href="#admission" className="inline-flex mt-3 px-5 py-2.5 rounded-xl bg-blue-600 text-white hover:bg-blue-700">
                     Apply Now
@@ -2001,7 +2001,7 @@ export default function Zoho() {
             </div>
           </div>
         </footer>
-        <a href="https://wa.me/919999999999?text=Hello%20PNS%20Academy%2C%20I%20want%20to%20join%20Zoho%20Complete%20Package%20Course." target="_blank" className="whatsapp" aria-label="WhatsApp">
+        <a href="https://wa.me/918252532179?text=Hello%20PNS%20Academy%2C%20I%20want%20to%20join%20Zoho%20Complete%20Package%20Course." target="_blank" className="whatsapp" aria-label="WhatsApp">
           {" "}
           <i className="fa-brands fa-whatsapp"></i>
           {" "}

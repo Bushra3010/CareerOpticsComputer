@@ -29,7 +29,7 @@ export default function Html() {
                 📞 +91 XXXXX XXXXX
               </span>
               <span>
-                ✉ info@pnsacademy.com
+                ✉ careeropticsconsultancy@gmail.com
               </span>
             </div>
           </div>
@@ -2639,7 +2639,7 @@ export default function Html() {
                   <p className="text-xs text-slate-500 leading-6 mb-4">
                     Contact Career Optics Computer Centre admission team for course details.
                   </p>
-                  <a href="https://wa.me/919999999999" target="_blank" className="w-full flex items-center justify-center gap-2 bg-green-500 text-white py-3 rounded-lg font-bold text-sm">
+                  <a href="https://wa.me/918252532179" target="_blank" className="w-full flex items-center justify-center gap-2 bg-green-500 text-white py-3 rounded-lg font-bold text-sm">
                     💬 WhatsApp Enquiry
                   </a>
                 </div>
@@ -2659,7 +2659,7 @@ export default function Html() {
               <a href="#admission" className="bg-white text-purple-700 px-7 py-3 rounded-lg font-bold">
                 {" "}Enroll Now — ₹12,500{" "}
               </a>
-              <a href="https://wa.me/919999999999" target="_blank" className="bg-green-500 text-white px-7 py-3 rounded-lg font-bold">
+              <a href="https://wa.me/918252532179" target="_blank" className="bg-green-500 text-white px-7 py-3 rounded-lg font-bold">
                 {" "}WhatsApp Us{" "}
               </a>
             </div>
@@ -2725,7 +2725,7 @@ export default function Html() {
                     📞 +91 XXXXX XXXXX
                   </div>
                   <div>
-                    ✉ info@pnsacademy.com
+                    ✉ careeropticsconsultancy@gmail.com
                   </div>
                   <div>
                     📍 Career Optics Computer Centre
@@ -2738,7 +2738,7 @@ export default function Html() {
             </div>
           </div>
         </footer>
-        <a href="https://wa.me/919999999999" target="_blank" className="whatsapp" title="WhatsApp Enquiry">
+        <a href="https://wa.me/918252532179" target="_blank" className="whatsapp" title="WhatsApp Enquiry">
           {" "}💬{" "}
         </a>
         <script dangerouslySetInnerHTML={{ __html: js_b3cd3919 }} />

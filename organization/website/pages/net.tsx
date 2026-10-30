@@ -1788,10 +1788,10 @@ export default function Net() {
                 </h3>
                 <div className="space-y-2 text-sm text-slate-400">
                   <div>
-                    +91 99999 99999
+                    +91 82525 32179
                   </div>
                   <div>
-                    info@pnsacademy.com
+                    careeropticsconsultancy@gmail.com
                   </div>
                   <div>
                     Bihar, India
@@ -1804,7 +1804,7 @@ export default function Net() {
             </div>
           </div>
         </footer>
-        <a href="https://wa.me/919999999999" target="_blank" className="fixed bottom-5 right-5 z-50 w-14 h-14 rounded-full bg-green-500 text-white flex items-center justify-center shadow-2xl hover:scale-110 transition">
+        <a href="https://wa.me/918252532179" target="_blank" className="fixed bottom-5 right-5 z-50 w-14 h-14 rounded-full bg-green-500 text-white flex items-center justify-center shadow-2xl hover:scale-110 transition">
           <svg xmlns="http://www.w3.org/2000/svg" className="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
             <path d="M20.52 3.48A11.91 11.91 0 0012.04 0C5.47 0 .12 5.35.12 11.92c0 2.1.55 4.15 1.6 5.96L0 24l6.28-1.65a11.9 11.9 0 005.75 1.47h.01c6.57 0 11.92-5.35 11.92-11.92 0-3.18-1.24-6.17-3.44-8.42zM12.04 21.8h-.01a9.9 9.9 0 01-5.05-1.38l-.36-.21-3.73.98.99-3.64-.23-.37a9.9 9.9 0 01-1.52-5.26C2.13 6.44 6.57 2 12.04 2a9.85 9.85 0 017 2.91 9.85 9.85 0 012.91 7.01c0 5.47-4.45 9.88-9.91 9.88zm5.43-7.4c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.25-.46-2.38-1.47-.88-.79-1.47-1.76-1.64-2.06-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.49s1.07 2.89 1.22 3.09c.15.2 2.1 3.21 5.09 4.5.71.31 1.26.49 1.69.63.71.23 1.36.2 1.87.12.57-.08 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.42-.07-.12-.27-.2-.57-.35z"></path>
           </svg>

@@ -1691,7 +1691,7 @@ export default function Creator() {
                         Call / WhatsApp
                       </div>
                       <div className="text-sm text-slate-500">
-                        +91 99999 99999
+                        +91 82525 32179
                       </div>
                     </div>
                   </div>
@@ -1704,7 +1704,7 @@ export default function Creator() {
                         Email
                       </div>
                       <div className="text-sm text-slate-500">
-                        info@pnsacademy.com
+                        careeropticsconsultancy@gmail.com
                       </div>
                     </div>
                   </div>
@@ -1900,7 +1900,7 @@ export default function Creator() {
               <a href="#admission" className="px-8 py-4 rounded-xl bg-white text-violet-700 font-black">
                 {" "}🚀 Apply Now{" "}
               </a>
-              <a href="https://wa.me/919999999999" target="_blank" className="px-8 py-4 rounded-xl bg-green-500 text-white font-black">
+              <a href="https://wa.me/918252532179" target="_blank" className="px-8 py-4 rounded-xl bg-green-500 text-white font-black">
                 {" "}💬 WhatsApp Us{" "}
               </a>
             </div>
@@ -1969,10 +1969,10 @@ export default function Creator() {
                 </h3>
                 <div className="text-sm text-white/50 space-y-2 mt-4">
                   <div>
-                    📞 +91 99999 99999
+                    📞 +91 82525 32179
                   </div>
                   <div>
-                    ✉️ info@pnsacademy.com
+                    ✉️ careeropticsconsultancy@gmail.com
                   </div>
                   <div>
                     📍 Bihar, India
@@ -1985,7 +1985,7 @@ export default function Creator() {
             </div>
           </div>
         </footer>
-        <a href="https://wa.me/919999999999" target="_blank" className="fixed bottom-5 right-5 z-50 w-14 h-14 rounded-full bg-green-500 text-white flex items-center justify-center text-2xl shadow-xl hover:scale-110 transition">
+        <a href="https://wa.me/918252532179" target="_blank" className="fixed bottom-5 right-5 z-50 w-14 h-14 rounded-full bg-green-500 text-white flex items-center justify-center text-2xl shadow-xl hover:scale-110 transition">
           💬
         </a>
         <script dangerouslySetInnerHTML={{ __html: js_a1c26f0b }} />

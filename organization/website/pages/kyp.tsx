@@ -2138,13 +2138,13 @@ export default function Kyp() {
                   <div className="flex gap-3">
                     <i className="fa-solid fa-phone text-blue-400 mt-1"></i>
                     <span>
-                      +91 99999 99999
+                      +91 82525 32179
                     </span>
                   </div>
                   <div className="flex gap-3">
                     <i className="fa-solid fa-envelope text-blue-400 mt-1"></i>
                     <span>
-                      info@pnsacademy.com
+                      careeropticsconsultancy@gmail.com
                     </span>
                   </div>
                   <div className="flex gap-3">
@@ -2166,7 +2166,7 @@ export default function Kyp() {
             </div>
           </div>
         </footer>
-        <a href="https://wa.me/919999999999" target="_blank" className="whatsapp" aria-label="WhatsApp">
+        <a href="https://wa.me/918252532179" target="_blank" className="whatsapp" aria-label="WhatsApp">
           {" "}
           <i className="fa-brands fa-whatsapp"></i>
           {" "}

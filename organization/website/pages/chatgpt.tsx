@@ -2211,16 +2211,16 @@ export default function Chatgpt() {
                       <i data-lucide="phone" className="w-5 h-5 text-blue-400 shrink-0">
                         {" "}
                       </i>
-                      <a href="tel:+919876543210" className="hover:text-white">
-                        {" "}+91 98765 43210{" "}
+                      <a href="tel:+918252532179" className="hover:text-white">
+                        {" "}+91 82525 32179{" "}
                       </a>
                     </div>
                     <div className="flex gap-3">
                       <i data-lucide="mail" className="w-5 h-5 text-blue-400 shrink-0">
                         {" "}
                       </i>
-                      <a href="mailto:info@pnsacademy.in" className="hover:text-white">
-                        {" "}info@pnsacademy.in{" "}
+                      <a href="mailto:careeropticsconsultancy@gmail.com" className="hover:text-white">
+                        {" "}careeropticsconsultancy@gmail.com{" "}
                       </a>
                     </div>
                     <div className="flex gap-3">
@@ -2275,7 +2275,7 @@ export default function Chatgpt() {
                   Choose a department
                 </p>
                 <div className="space-y-2">
-                  <button className="wa-department flex w-full items-center gap-3 rounded-xl bg-white p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" data-number="919876543210" data-message="Hello, I want information about admission and courses.">
+                  <button className="wa-department flex w-full items-center gap-3 rounded-xl bg-white p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" data-number="918252532179" data-message="Hello, I want information about admission and courses.">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-600">
                       A
                     </div>
@@ -2293,7 +2293,7 @@ export default function Chatgpt() {
                   </button>
                   {" "}
                   {" "}
-                  <button className="wa-department flex w-full items-center gap-3 rounded-xl bg-white p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" data-number="919876543211" data-message="Hello, I want information about fees and payment.">
+                  <button className="wa-department flex w-full items-center gap-3 rounded-xl bg-white p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" data-number="918252532179" data-message="Hello, I want information about fees and payment.">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-100 text-sm font-bold text-orange-600">
                       ₹
                     </div>
@@ -2311,7 +2311,7 @@ export default function Chatgpt() {
                   </button>
                   {" "}
                   {" "}
-                  <button className="wa-department flex w-full items-center gap-3 rounded-xl bg-white p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" data-number="919876543212" data-message="Hello, I need technical support.">
+                  <button className="wa-department flex w-full items-center gap-3 rounded-xl bg-white p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" data-number="918252532179" data-message="Hello, I need technical support.">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100 text-sm font-bold text-green-600">
                       S
                     </div>
@@ -2329,7 +2329,7 @@ export default function Chatgpt() {
                   </button>
                   {" "}
                   {" "}
-                  <button className="wa-department flex w-full items-center gap-3 rounded-xl bg-white p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" data-number="919876543212" data-message="Hello, I need technical support.">
+                  <button className="wa-department flex w-full items-center gap-3 rounded-xl bg-white p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" data-number="918252532179" data-message="Hello, I need technical support.">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100 text-sm font-bold text-green-600">
                       S
                     </div>
@@ -2347,7 +2347,7 @@ export default function Chatgpt() {
                   </button>
                   {" "}
                   {" "}
-                  <button className="wa-department flex w-full items-center gap-3 rounded-xl bg-white p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" data-number="919876543213" data-message="Hello, I am interested in franchise.">
+                  <button className="wa-department flex w-full items-center gap-3 rounded-xl bg-white p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" data-number="918252532179" data-message="Hello, I am interested in franchise.">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-purple-100 text-sm font-bold text-purple-600">
                       F
                     </div>
@@ -2407,7 +2407,7 @@ export default function Chatgpt() {
               <div className="call-number">
                 📞 7519884465
               </div>
-              <a href="tel:+918084510393" className="call-now">
+              <a href="tel:+918252532179" className="call-now">
                 <svg viewBox="0 0 24 24">
                   <path fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67 A2 2 0 0 1 4.11 2h3 a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91 a16 16 0 0 0 6 6l1.27-1.27 a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 A2 2 0 0 1 22 16.92z"></path>
                 </svg>

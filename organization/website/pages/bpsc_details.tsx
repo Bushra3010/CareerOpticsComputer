@@ -762,11 +762,11 @@ export default function BpscDetails() {
               Complete BPSC Program में admission लेकर structured preparation के साथ अपने लक्ष्य की ओर पहला कदम बढ़ाएं।
             </p>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-              <a href="tel:+910000000000" className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-7 py-4 text-sm font-black text-blue-700">
+              <a href="tel:+918252532179" className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-7 py-4 text-sm font-black text-blue-700">
                 <i data-lucide="phone" className="h-4 w-4"></i>
                 Call for Admission
               </a>
-              <a href="https://wa.me/910000000000" className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-800 px-7 py-4 text-sm font-black text-white">
+              <a href="https://wa.me/918252532179" className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-800 px-7 py-4 text-sm font-black text-white">
                 <i data-lucide="message-circle" className="h-4 w-4"></i>
                 WhatsApp Enquiry
               </a>

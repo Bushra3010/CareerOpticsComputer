@@ -1374,7 +1374,7 @@ export default function AiSpecial() {
                         Call Us
                       </div>
                       <div className="font-bold">
-                        +91 99999 99999
+                        +91 82525 32179
                       </div>
                     </div>
                   </div>

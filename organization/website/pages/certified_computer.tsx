@@ -34,11 +34,11 @@ export default function CertifiedComputer() {
             <div className="flex items-center gap-6">
               <span className="flex items-center gap-2">
                 <i data-lucide="phone" className="h-3.5 w-3.5"></i>
-                +91 98765 43210
+                +91 82525 32179
               </span>
               <span className="flex items-center gap-2">
                 <i data-lucide="mail" className="h-3.5 w-3.5"></i>
-                info@pnsacademy.com
+                careeropticsconsultancy@gmail.com
               </span>
             </div>
             <div className="flex items-center gap-5">
@@ -3726,7 +3726,7 @@ export default function CertifiedComputer() {
                   </p>
                   <p className="flex gap-2">
                     <i data-lucide="mail" className="w-4 h-4"></i>
-                    info@pnsacademy.com
+                    careeropticsconsultancy@gmail.com
                   </p>
                   <p className="flex gap-2">
                     <i data-lucide="map-pin" className="w-4 h-4"></i>
@@ -6193,7 +6193,7 @@ export default function CertifiedComputer() {
                   </p>
                   <p className="flex gap-2">
                     <i data-lucide="mail" className="w-4 h-4"></i>
-                    info@pnsacademy.com
+                    careeropticsconsultancy@gmail.com
                   </p>
                   <p className="flex gap-2">
                     <i data-lucide="map-pin" className="w-4 h-4"></i>
@@ -8268,11 +8268,11 @@ export default function CertifiedComputer() {
             <div className="flex items-center gap-6">
               <span className="flex items-center gap-2">
                 <i data-lucide="phone" className="h-3.5 w-3.5"></i>
-                +91 98765 43210
+                +91 82525 32179
               </span>
               <span className="flex items-center gap-2">
                 <i data-lucide="mail" className="h-3.5 w-3.5"></i>
-                info@pnsacademy.com
+                careeropticsconsultancy@gmail.com
               </span>
             </div>
             <div className="flex items-center gap-5">
@@ -10413,11 +10413,11 @@ export default function CertifiedComputer() {
             <div className="flex items-center gap-5">
               <span className="flex items-center gap-2">
                 <i data-lucide="phone" className="h-3.5 w-3.5"></i>
-                +91 98765 43210
+                +91 82525 32179
               </span>
               <span className="flex items-center gap-2">
                 <i data-lucide="mail" className="h-3.5 w-3.5"></i>
-                info@pnsacademy.com
+                careeropticsconsultancy@gmail.com
               </span>
             </div>
             <div className="flex items-center gap-4">

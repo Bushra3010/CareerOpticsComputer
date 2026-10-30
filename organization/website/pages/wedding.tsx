@@ -1812,10 +1812,10 @@ export default function Wedding() {
                 </h3>
                 <div className="space-y-3 mt-4 text-sm">
                   <div>
-                    📞 +91 99999 99999
+                    📞 +91 82525 32179
                   </div>
                   <div>
-                    ✉️ info@pnsacademy.com
+                    ✉️ careeropticsconsultancy@gmail.com
                   </div>
                   <div>
                     📍 Bihar, India
@@ -1828,7 +1828,7 @@ export default function Wedding() {
             </div>
           </div>
         </footer>
-        <a href="https://wa.me/919999999999" target="_blank" className="fixed bottom-5 right-5 z-50 w-14 h-14 rounded-full bg-green-500 text-white flex items-center justify-center text-2xl shadow-xl hover:scale-110 transition" aria-label="WhatsApp">
+        <a href="https://wa.me/918252532179" target="_blank" className="fixed bottom-5 right-5 z-50 w-14 h-14 rounded-full bg-green-500 text-white flex items-center justify-center text-2xl shadow-xl hover:scale-110 transition" aria-label="WhatsApp">
           ☎
         </a>
         <script dangerouslySetInnerHTML={{ __html: js_f57ba3ea }} />

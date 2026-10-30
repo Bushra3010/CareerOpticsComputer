@@ -49,4 +49,26 @@ const { error } = existing
   ? await admin.auth.admin.updateUserById(existing.id, { password, email_confirm: true })
   : await admin.auth.admin.createUser({ email, password, email_confirm: true, user_metadata });
 if (error) throw error;
+
+// The All Users page and the role lookup read public.users, and the
+// organisation names its admin through organizations.userId.
+const { data: fresh } = await admin.auth.admin.listUsers();
+const account = fresh?.users.find((u) => u.email === email);
+const organizationId = account?.user_metadata?.organizationId ?? null;
+const { error: mirrorError } = await admin.from("users").upsert(
+  {
+    id: account.id,
+    userType: "ORGANIZATION",
+    name: account.user_metadata?.name || "Career Optics Admin",
+    email,
+    username: email.split("@")[0],
+    password: "managed-by-supabase-auth",
+    role: "SUPER_ADMIN",
+    isActive: true,
+    organizationId,
+  },
+  { onConflict: "id" },
+);
+if (mirrorError) console.warn("users row:", mirrorError.message);
+if (organizationId) await admin.from("organizations").update({ userId: account.id }).eq("id", organizationId);
 console.log(`\n${existing ? "Password reset for" : "Created"} ${email}. Organization link follows automatically.`);

@@ -1702,7 +1702,7 @@ export default function GTool() {
                   </div>
                   <div>
                     <i className="fa-solid fa-envelope mr-2"></i>
-                    {" "}info@pnsacademy.com
+                    {" "}careeropticsconsultancy@gmail.com
                   </div>
                   <div>
                     <i className="fa-solid fa-location-dot mr-2"></i>
@@ -1716,7 +1716,7 @@ export default function GTool() {
             </div>
           </div>
         </footer>
-        <a href="https://wa.me/919999999999?text=Hello%20PNS%20Academy,%20I%20want%20to%20enquire%20about%20Google%20Workspace%20Professional%20Course." target="_blank" className="whatsapp" aria-label="WhatsApp">
+        <a href="https://wa.me/918252532179?text=Hello%20PNS%20Academy,%20I%20want%20to%20enquire%20about%20Google%20Workspace%20Professional%20Course." target="_blank" className="whatsapp" aria-label="WhatsApp">
           {" "}
           <i className="fa-brands fa-whatsapp"></i>
           {" "}

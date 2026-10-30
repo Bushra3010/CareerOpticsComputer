@@ -2397,7 +2397,7 @@ export default function Animation() {
                   <p className="text-xs text-slate-500 leading-6 mb-4">
                     Contact Career Optics Computer Centre admission team for course details.
                   </p>
-                  <a href="https://wa.me/919999999999" target="_blank" className="w-full flex items-center justify-center gap-2 bg-green-500 text-white py-3 rounded-lg font-bold text-sm">
+                  <a href="https://wa.me/918252532179" target="_blank" className="w-full flex items-center justify-center gap-2 bg-green-500 text-white py-3 rounded-lg font-bold text-sm">
                     💬 WhatsApp Enquiry
                   </a>
                 </div>

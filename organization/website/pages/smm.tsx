@@ -1691,10 +1691,10 @@ export default function Smm() {
                 </h3>
                 <div className="mt-5 space-y-3 text-sm text-white/50">
                   <p>
-                    📞 +91 99999 99999
+                    📞 +91 82525 32179
                   </p>
                   <p>
-                    ✉️ info@pnsacademy.com
+                    ✉️ careeropticsconsultancy@gmail.com
                   </p>
                   <p>
                     📍 Bihar, India
@@ -1718,7 +1718,7 @@ export default function Smm() {
             </div>
           </div>
         </footer>
-        <a href="https://wa.me/919999999999?text=Hello%20PNS%20Academy%2C%20I%20want%20to%20join%20the%20Social%20Media%20Marketing%20Course." target="_blank" className="fixed bottom-5 right-5 z-50 w-14 h-14 rounded-full bg-green-500 text-white flex items-center justify-center text-2xl shadow-2xl hover:scale-110 transition" aria-label="WhatsApp">
+        <a href="https://wa.me/918252532179?text=Hello%20PNS%20Academy%2C%20I%20want%20to%20join%20the%20Social%20Media%20Marketing%20Course." target="_blank" className="fixed bottom-5 right-5 z-50 w-14 h-14 rounded-full bg-green-500 text-white flex items-center justify-center text-2xl shadow-2xl hover:scale-110 transition" aria-label="WhatsApp">
           ☎
         </a>
         <script dangerouslySetInnerHTML={{ __html: js_97748b36 }} />

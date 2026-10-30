@@ -1,164 +1,90 @@
+import { BRAND, REGISTRATIONS } from "./brand";
+
+const CSS = `
+.co-foot{background:#0b2350;color:#c7d2ec;font:400 14px/1.7 Poppins,system-ui,sans-serif}
+.co-foot .co-wrap{max-width:1240px;margin:0 auto;padding:0 16px}
+.co-foot-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1.3fr;gap:36px;padding:56px 0 40px}
+.co-foot h3{color:#fff;font-size:17px;font-weight:700;margin:0 0 16px;position:relative;padding-bottom:10px}
+.co-foot h3::after{content:"";position:absolute;left:0;bottom:0;width:42px;height:3px;border-radius:2px;background:#f97316}
+.co-foot a{color:#c7d2ec;text-decoration:none}.co-foot a:hover{color:#fb923c}
+.co-foot ul{list-style:none;margin:0;padding:0}.co-foot li{margin:0 0 8px}
+.co-foot-brand{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.co-foot-brand img{width:62px;height:62px;border-radius:12px;background:#fff;padding:3px;object-fit:contain}
+.co-foot-brand b{color:#fff;font-size:17px;line-height:1.2;display:block}
+.co-foot-brand small{color:#fb923c;font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+.co-foot-reg{font-size:13px;color:#a8b6d8}
+.co-foot-reg strong{color:#fff;font-weight:600}
+.co-foot-contact li{display:flex;gap:10px;align-items:flex-start}
+.co-foot-contact i,.co-foot-contact svg{width:17px;height:17px;flex-shrink:0;margin-top:4px;color:#fb923c}
+.co-foot-bottom{border-top:1px solid rgba(255,255,255,.1);padding:18px 0;display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;font-size:13px;color:#93a3c8}
+@media (max-width:980px){.co-foot-grid{grid-template-columns:1fr 1fr}}
+@media (max-width:600px){.co-foot-grid{grid-template-columns:1fr;padding-top:40px}}
+`;
+
 /** Shared by every page that carries it; written once here. */
 export default function SiteFooter() {
+  const year = new Date().getFullYear();
   return (
-    <footer className="bg-slate-950 text-slate-300" data-cms-scope="footer">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="py-16 grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+    <footer className="co-foot" data-cms-scope="footer">
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
+      <div className="co-wrap">
+        <div className="co-foot-grid">
           <div>
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-600 to-violet-600 flex items-center justify-center text-white font-black text-xl">
-                P
-              </div>
-              <div>
-                <div className="font-black text-white text-lg">
-                  Career Optics Computer Centre
-                </div>
-                <div className="text-xs text-slate-500">
-                  Learn • Grow • Succeed
-                </div>
-              </div>
+            <div className="co-foot-brand">
+              <img src="/logo.png" alt={BRAND.name} />
+              <span>
+                <b>{BRAND.name}</b>
+                <small>{BRAND.motto}</small>
+              </span>
             </div>
-            <p className="mt-5 text-slate-400 leading-7">
-              Computer education aur professional digital skills ke through students ko career-ready banana.
+            <p className="co-foot-reg">
+              {BRAND.name} is run by <strong>{BRAND.company}</strong>, incorporated under the Companies Act, 2013
+              with the Ministry of Corporate Affairs, Govt. of India.
             </p>
-            <div className="flex gap-3 mt-6">
-              <a href="#" className="w-10 h-10 rounded-xl bg-white/5 hover:bg-blue-600 flex items-center justify-center transition">
-                <i data-lucide="facebook" className="w-5 h-5"></i>
-              </a>
-              <a href="#" className="w-10 h-10 rounded-xl bg-white/5 hover:bg-pink-600 flex items-center justify-center transition">
-                <i data-lucide="instagram" className="w-5 h-5"></i>
-              </a>
-              <a href="#" className="w-10 h-10 rounded-xl bg-white/5 hover:bg-red-600 flex items-center justify-center transition">
-                <i data-lucide="youtube" className="w-5 h-5"></i>
-              </a>
-              <a href="#" className="w-10 h-10 rounded-xl bg-white/5 hover:bg-green-600 flex items-center justify-center transition">
-                <i data-lucide="message-circle" className="w-5 h-5"></i>
-              </a>
-            </div>
+            <p className="co-foot-reg">
+              {REGISTRATIONS.map((r, i) => (
+                <span key={r.file}>
+                  {i > 0 && " · "}
+                  {r.label}: <strong>{r.value}</strong>
+                </span>
+              ))}
+            </p>
           </div>
           <div>
-            <h3 className="text-white font-bold text-lg">
-              Quick Links
-            </h3>
-            <ul className="mt-5 space-y-3">
-              <li>
-                <a href="index.html" className="hover:text-white transition">
-                  {" "}Home{" "}
-                </a>
-              </li>
-              <li>
-                <a href="about.html" className="hover:text-white transition">
-                  {" "}About Us{" "}
-                </a>
-              </li>
-              <li>
-                <a href="courses.html" className="hover:text-white transition">
-                  {" "}Our Courses{" "}
-                </a>
-              </li>
-              <li>
-                <a href="franchise.html" className="hover:text-white transition">
-                  {" "}Franchise{" "}
-                </a>
-              </li>
-              <li>
-                <a href="career.html" className="hover:text-white transition">
-                  {" "}Career{" "}
-                </a>
-              </li>
-              <li>
-                <a href="contact.html" className="hover:text-white transition">
-                  {" "}Contact{" "}
-                </a>
-              </li>
+            <h3>Quick Links</h3>
+            <ul>
+              <li><a href="index.html">Home</a></li>
+              <li><a href="about.html">About Us</a></li>
+              <li><a href="computer-course.html">Courses</a></li>
+              <li><a href="certification.html">Certification</a></li>
+              <li><a href="franchise.html">Franchise</a></li>
+              <li><a href="index.html#contact">Contact Us</a></li>
             </ul>
           </div>
           <div>
-            <h3 className="text-white font-bold text-lg">
-              Popular Courses
-            </h3>
-            <ul className="mt-5 space-y-3">
-              <li>
-                <a href="courses.html" className="hover:text-white transition">
-                  {" "}ADCA{" "}
-                </a>
-              </li>
-              <li>
-                <a href="courses.html" className="hover:text-white transition">
-                  {" "}Graphic Designing{" "}
-                </a>
-              </li>
-              <li>
-                <a href="courses.html" className="hover:text-white transition">
-                  {" "}Tally Prime With GST{" "}
-                </a>
-              </li>
-              <li>
-                <a href="courses.html" className="hover:text-white transition">
-                  {" "}Digital Marketing{" "}
-                </a>
-              </li>
-              <li>
-                <a href="courses.html" className="hover:text-white transition">
-                  {" "}Website Design{" "}
-                </a>
-              </li>
-              <li>
-                <a href="courses.html" className="hover:text-white transition">
-                  {" "}Python Programming{" "}
-                </a>
-              </li>
+            <h3>Student Zone</h3>
+            <ul>
+              <li><a href={BRAND.studentLogin}>Student Login</a></li>
+              <li><a href="/computercentre/apply">Online Admission</a></li>
+              <li><a href="/verification.html#certificate">Certificate Verification</a></li>
+              <li><a href="/verification.html#result">Result</a></li>
+              <li><a href="/verification.html#admit">Admit Card</a></li>
+              <li><a href={BRAND.centreLogin}>Centre Login</a></li>
             </ul>
           </div>
           <div>
-            <h3 className="text-white font-bold text-lg">
-              Contact Information
-            </h3>
-            <div className="mt-5 space-y-5">
-              <div className="flex gap-3">
-                <i data-lucide="map-pin" className="w-5 h-5 text-blue-400 shrink-0">
-                  {" "}
-                </i>
-                <span>
-                  {" "}Career Optics Computer Centre,
-                  <br />
-                  Bihar, India{" "}
-                </span>
-              </div>
-              <div className="flex gap-3">
-                <i data-lucide="phone" className="w-5 h-5 text-blue-400 shrink-0">
-                  {" "}
-                </i>
-                <a href="tel:+919876543210" className="hover:text-white">
-                  {" "}+91 98765 43210{" "}
-                </a>
-              </div>
-              <div className="flex gap-3">
-                <i data-lucide="mail" className="w-5 h-5 text-blue-400 shrink-0">
-                  {" "}
-                </i>
-                <a href="mailto:info@pnsacademy.in" className="hover:text-white">
-                  {" "}info@pnsacademy.in{" "}
-                </a>
-              </div>
-              <div className="flex gap-3">
-                <i data-lucide="clock" className="w-5 h-5 text-blue-400 shrink-0">
-                  {" "}
-                </i>
-                <span>
-                  {" "}Mon – Sat
-                  <br />
-                  09:00 AM – 06:00 PM{" "}
-                </span>
-              </div>
-            </div>
+            <h3>Contact Us</h3>
+            <ul className="co-foot-contact">
+              <li><i data-lucide="map-pin"></i><span>{BRAND.address}</span></li>
+              <li><i data-lucide="phone"></i><a href={`tel:+${BRAND.phoneIntl}`}>+91 {BRAND.phone}</a></li>
+              <li><i data-lucide="mail"></i><a href={`mailto:${BRAND.email}`}>{BRAND.email}</a></li>
+              <li><i data-lucide="message-circle"></i><a href={`https://wa.me/${BRAND.phoneIntl}`}>Chat on WhatsApp</a></li>
+            </ul>
           </div>
         </div>
-        <div className="border-t border-white/10 py-6 flex flex-col md:flex-row justify-between items-center gap-3 text-sm">
-          <p>
-            <span id="year"></span>
-            {" "}© 2026 Career Optics Computer Centre
-          </p>
+        <div className="co-foot-bottom">
+          <span>© {year} {BRAND.company}. All rights reserved.</span>
+          <span>{BRAND.name} · ISO 9001:2015 Certified</span>
         </div>
       </div>
     </footer>

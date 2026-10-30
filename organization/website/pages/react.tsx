@@ -1757,7 +1757,7 @@ export default function React() {
                 <a href="#admission" className="bg-white text-blue-700 px-7 py-3.5 rounded-xl font-bold">
                   {" "}Apply Now{" "}
                 </a>
-                <a href="https://wa.me/919999999999" target="_blank" className="border border-white/30 px-7 py-3.5 rounded-xl font-bold">
+                <a href="https://wa.me/918252532179" target="_blank" className="border border-white/30 px-7 py-3.5 rounded-xl font-bold">
                   {" "}WhatsApp Us{" "}
                 </a>
               </div>
@@ -1817,10 +1817,10 @@ export default function React() {
                 </h4>
                 <div className="space-y-3 mt-4 text-sm">
                   <p>
-                    📞 +91 99999 99999
+                    📞 +91 82525 32179
                   </p>
                   <p>
-                    ✉️ info@pnsacademy.com
+                    ✉️ careeropticsconsultancy@gmail.com
                   </p>
                   <p>
                     📍 Bihar, India
@@ -1833,7 +1833,7 @@ export default function React() {
             </div>
           </div>
         </footer>
-        <a href="https://wa.me/919999999999" target="_blank" className="fixed bottom-5 right-5 z-50 w-14 h-14 rounded-full bg-green-500 text-white flex items-center justify-center text-2xl shadow-xl hover:scale-110 transition">
+        <a href="https://wa.me/918252532179" target="_blank" className="fixed bottom-5 right-5 z-50 w-14 h-14 rounded-full bg-green-500 text-white flex items-center justify-center text-2xl shadow-xl hover:scale-110 transition">
           ☎
         </a>
         <script dangerouslySetInnerHTML={{ __html: js_8fa16bb4 }} />

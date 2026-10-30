@@ -2209,7 +2209,7 @@ export default function Aitool() {
               <a href="#admission" className="bg-white text-blue-700 font-bold px-7 py-3.5 rounded-xl">
                 {" "}Apply for Admission{" "}
               </a>
-              <a href="https://wa.me/919999999999" target="_blank" className="glass font-bold px-7 py-3.5 rounded-xl">
+              <a href="https://wa.me/918252532179" target="_blank" className="glass font-bold px-7 py-3.5 rounded-xl">
                 {" "}
                 <i className="fa-brands fa-whatsapp mr-2"></i>
                 {" "}WhatsApp Us{" "}
@@ -2309,7 +2309,7 @@ export default function Aitool() {
             </div>
           </div>
         </footer>
-        <a href="https://wa.me/919999999999" target="_blank" className="whatsapp" aria-label="WhatsApp">
+        <a href="https://wa.me/918252532179" target="_blank" className="whatsapp" aria-label="WhatsApp">
           {" "}
           <i className="fa-brands fa-whatsapp"></i>
           {" "}

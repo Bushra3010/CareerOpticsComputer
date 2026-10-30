@@ -1023,14 +1023,14 @@ export default function Node() {
                     <strong>
                       Phone:
                     </strong>
-                    {" "}+91 99999 99999
+                    {" "}+91 82525 32179
                   </div>
                   <div className="bg-white rounded-2xl p-5 border">
                     ✉️{" "}
                     <strong>
                       Email:
                     </strong>
-                    {" "}info@pnsacademy.com
+                    {" "}careeropticsconsultancy@gmail.com
                   </div>
                   <div className="bg-white rounded-2xl p-5 border">
                     📍{" "}
@@ -1272,10 +1272,10 @@ export default function Node() {
                 </h3>
                 <div className="mt-5 space-y-3 text-sm">
                   <p>
-                    📞 +91 99999 99999
+                    📞 +91 82525 32179
                   </p>
                   <p>
-                    ✉️ info@pnsacademy.com
+                    ✉️ careeropticsconsultancy@gmail.com
                   </p>
                   <p>
                     📍 Bihar, India
@@ -1288,7 +1288,7 @@ export default function Node() {
             </div>
           </div>
         </footer>
-        <a href="https://wa.me/919999999999" target="_blank" className="fixed bottom-5 right-5 z-50 w-14 h-14 rounded-full bg-green-500 text-white flex items-center justify-center text-2xl shadow-2xl hover:scale-110 transition">
+        <a href="https://wa.me/918252532179" target="_blank" className="fixed bottom-5 right-5 z-50 w-14 h-14 rounded-full bg-green-500 text-white flex items-center justify-center text-2xl shadow-2xl hover:scale-110 transition">
           ☎
         </a>
         <script dangerouslySetInnerHTML={{ __html: js_1c9099d9 }} />

@@ -32,7 +32,7 @@ export default function WhatsappWidget() {
             Choose a department
           </p>
           <div className="space-y-2">
-            <button className="wa-department flex w-full items-center gap-3 rounded-xl bg-white p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" data-number="919876543210" data-message="Hello, I want information about admission and courses.">
+            <button className="wa-department flex w-full items-center gap-3 rounded-xl bg-white p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" data-number="918252532179" data-message="Hello, I want information about admission and courses.">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-600">
                 A
               </div>
@@ -50,7 +50,7 @@ export default function WhatsappWidget() {
             </button>
             {" "}
             {" "}
-            <button className="wa-department flex w-full items-center gap-3 rounded-xl bg-white p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" data-number="919876543211" data-message="Hello, I want information about fees and payment.">
+            <button className="wa-department flex w-full items-center gap-3 rounded-xl bg-white p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" data-number="918252532179" data-message="Hello, I want information about fees and payment.">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-100 text-sm font-bold text-orange-600">
                 ₹
               </div>
@@ -68,7 +68,7 @@ export default function WhatsappWidget() {
             </button>
             {" "}
             {" "}
-            <button className="wa-department flex w-full items-center gap-3 rounded-xl bg-white p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" data-number="919876543212" data-message="Hello, I need technical support.">
+            <button className="wa-department flex w-full items-center gap-3 rounded-xl bg-white p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" data-number="918252532179" data-message="Hello, I need technical support.">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100 text-sm font-bold text-green-600">
                 S
               </div>
@@ -86,7 +86,7 @@ export default function WhatsappWidget() {
             </button>
             {" "}
             {" "}
-            <button className="wa-department flex w-full items-center gap-3 rounded-xl bg-white p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" data-number="919876543212" data-message="Hello, I need technical support.">
+            <button className="wa-department flex w-full items-center gap-3 rounded-xl bg-white p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" data-number="918252532179" data-message="Hello, I need technical support.">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100 text-sm font-bold text-green-600">
                 S
               </div>
@@ -104,7 +104,7 @@ export default function WhatsappWidget() {
             </button>
             {" "}
             {" "}
-            <button className="wa-department flex w-full items-center gap-3 rounded-xl bg-white p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" data-number="919876543213" data-message="Hello, I am interested in franchise.">
+            <button className="wa-department flex w-full items-center gap-3 rounded-xl bg-white p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" data-number="918252532179" data-message="Hello, I am interested in franchise.">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-purple-100 text-sm font-bold text-purple-600">
                 F
               </div>

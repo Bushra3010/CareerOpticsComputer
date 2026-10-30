@@ -1808,10 +1808,10 @@ export default function Java() {
                 </h3>
                 <div className="space-y-3 text-sm text-slate-400">
                   <p>
-                    📞 +91 99999 99999
+                    📞 +91 82525 32179
                   </p>
                   <p>
-                    ✉️ info@pnsacademy.com
+                    ✉️ careeropticsconsultancy@gmail.com
                   </p>
                   <p>
                     📍 Bihar, India
@@ -1824,7 +1824,7 @@ export default function Java() {
             </div>
           </div>
         </footer>
-        <a href="https://wa.me/919999999999" target="_blank" className="fixed right-5 bottom-5 z-50 w-14 h-14 rounded-full bg-green-500 hover:bg-green-600 text-white flex items-center justify-center text-2xl shadow-xl transition">
+        <a href="https://wa.me/918252532179" target="_blank" className="fixed right-5 bottom-5 z-50 w-14 h-14 rounded-full bg-green-500 hover:bg-green-600 text-white flex items-center justify-center text-2xl shadow-xl transition">
           💬
         </a>
         <script dangerouslySetInnerHTML={{ __html: js_7a335205 }} />
