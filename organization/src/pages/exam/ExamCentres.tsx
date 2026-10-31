@@ -21,6 +21,14 @@ export default function ExamCentres() {
   const [saving, setSaving] = useState(false);
 
   const save = async () => {
+    // A schedule and an admit card name the centre by its code; two alike
+    // cannot be told apart.
+    const same = (x?: string | null, y?: string | null) => !!x && !!y && x.trim().toLowerCase() === y.trim().toLowerCase();
+    const clash = examCentres.find((c) => c.id !== draft.id && (same(c.code, draft.code) || same(c.name, draft.name)));
+    if (clash) {
+      toast({ title: "That exam centre already exists", description: `${clash.name}${clash.code ? ` (${clash.code})` : ""} has the same name or code.`, variant: "destructive" });
+      return;
+    }
     setSaving(true);
     try {
       await saveExamCentre(draft, user?.organizationId);

@@ -86,7 +86,7 @@ const blankForm = (): StudentForm => ({
  * Every problem on the form at once, keyed by field, so each box can say what
  * is wrong with it rather than one toast naming the first failure.
  */
-function validateStudentForm(form: StudentForm, opts: { needsBranch: boolean; hasPhoto: boolean }) {
+function validateStudentForm(form: StudentForm, opts: { needsBranch: boolean; hasPhoto: boolean; courseFee?: number }) {
   const errors: Partial<Record<keyof StudentForm | "photo", string>> = {};
   const required: Array<[keyof StudentForm, string]> = [
     ["name", "Applicant name"],
@@ -123,6 +123,10 @@ function validateStudentForm(form: StudentForm, opts: { needsBranch: boolean; ha
   // A fee of 0 used to register the student with no invoice while the lists still
   // showed the course fee as due; every admission is billed.
   if (form.fees && !(Number(form.fees) > 0)) errors.fees = "Enter the fee in rupees";
+  // Every fee screen reads the course fee unless more was billed, so a lower
+  // figure here was silently overridden. Say so instead.
+  else if (opts.courseFee && Number(form.fees) < opts.courseFee)
+    errors.fees = `The fee cannot be less than the course fee (₹${opts.courseFee.toLocaleString("en-IN")})`;
   if (form.dateOfBirth && form.dateOfBirth >= today()) errors.dateOfBirth = "Date of birth must be in the past";
   return errors;
 }
@@ -255,7 +259,8 @@ export default function CentreAddStudent() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const found = validateStudentForm(form, { needsBranch, hasPhoto: Boolean(photo) });
+    const chosenCourse = courses.find((c) => String(c.id) === form.courseId);
+    const found = validateStudentForm(form, { needsBranch, hasPhoto: Boolean(photo), courseFee: Number(chosenCourse?.baseFee) || 0 });
     setErrors(found);
     const problems = Object.values(found).filter(Boolean);
     if (problems.length) {

@@ -115,6 +115,11 @@ export default function CentreAttendance() {
 
   const takeRegister = async () => {
     if (!marking || !date) return;
+    // The picker's max does not stop a typed date.
+    if (date > day) {
+      toast({ title: "Attendance cannot be marked for a future date", variant: "destructive" });
+      return;
+    }
     try {
       const students = await listStudents(marking.branchId || branchId, marking.id);
       const already = new Map(marks.filter((m) => m.date === date).map((m) => [m.studentId, m.status]));

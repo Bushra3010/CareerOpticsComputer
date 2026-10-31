@@ -168,10 +168,18 @@ export function timingProblem(draft: {
   days: string[];
   startTime: string;
   endTime: string;
+  breakStart?: string | null;
+  breakEnd?: string | null;
 }): string | null {
   if (!draft.batchId) return "Pick the batch this class belongs to.";
   if (!draft.days.length) return "Choose at least one day for the class to run on.";
   if (!draft.startTime || !draft.endTime) return "A class needs a start and an end time.";
   if (draft.endTime <= draft.startTime) return "The class has to end after it starts.";
+  const { breakStart, breakEnd } = draft;
+  if (breakStart || breakEnd) {
+    if (!breakStart || !breakEnd) return "Give the break both a start and an end, or leave both empty.";
+    if (breakEnd <= breakStart) return "The break has to end after it starts.";
+    if (breakStart < draft.startTime || breakEnd > draft.endTime) return "The break has to fall inside the class time.";
+  }
   return null;
 }

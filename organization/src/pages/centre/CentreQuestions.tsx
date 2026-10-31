@@ -133,7 +133,9 @@ export default function CentreQuestions() {
       );
       toast({
         title: `${added} question${added === 1 ? "" : "s"} added`,
-        description: errors.length ? `${errors.length} row(s) skipped. ${errors.slice(0, 2).join(" ")}` : undefined,
+        description: errors.length
+          ? `${errors.length} row(s) skipped. ${errors.slice(0, 5).join(" ")}${errors.length > 5 ? ` …and ${errors.length - 5} more.` : ""}`
+          : undefined,
         variant: errors.length ? "destructive" : "default",
       });
       setFile(null);

@@ -51,7 +51,16 @@ function drawCard(
     doc.rect(x + 3, bodyTop, 16, 20);
     doc.setFontSize(5);
     doc.setTextColor(150);
-    doc.text(student.photo ? "PHOTO" : "NO PHOTO", x + 11, bodyTop + 10.5, { align: "center" });
+    let drawn = false;
+    if (student.photoUrl?.startsWith("data:image")) {
+      try {
+        doc.addImage(student.photoUrl, x + 3, bodyTop, 16, 20);
+        drawn = true;
+      } catch {
+        // An image jsPDF cannot read falls back to the labelled frame.
+      }
+    }
+    if (!drawn) doc.text(student.photo ? "PHOTO" : "NO PHOTO", x + 11, bodyTop + 10.5, { align: "center" });
     textX = x + 22;
   }
 

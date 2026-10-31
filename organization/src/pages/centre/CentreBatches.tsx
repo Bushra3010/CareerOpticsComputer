@@ -93,6 +93,13 @@ export default function CentreBatches() {
     if (!form.courseId) return toast({ title: "Select the batch course", variant: "destructive" });
     const target = branchId || form.branchId;
     if (!form.id && !target) return toast({ title: "Select the centre", variant: "destructive" });
+    // Two batches of one course at one centre with the same name cannot be told
+    // apart anywhere a batch is picked.
+    const centre = form.id ? batches.find((b) => b.id === form.id)?.branchId : target;
+    const clash = batches.some(
+      (b) => b.id !== form.id && b.branchId === centre && b.courseId === form.courseId && b.name.trim().toLowerCase() === form.name.trim().toLowerCase(),
+    );
+    if (clash) return toast({ title: "That batch already exists", description: "Give it a different name for this course.", variant: "destructive" });
     setSaving(true);
     try {
       const payload: Record<string, unknown> = { name: form.name.trim(), courseId: form.courseId, isActive: form.isActive === "yes" };

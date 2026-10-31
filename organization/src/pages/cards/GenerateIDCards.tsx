@@ -44,6 +44,8 @@ interface IdCardStudent {
   section: string;
   rollNo: string;
   photo: boolean;
+  code?: string;
+  photoUrl?: string;
   dob: string;
   bloodGroup: string;
   parentContact: string;
@@ -138,8 +140,10 @@ export default function GenerateIDCards() {
           class: "",
           section: (s.batchId && batchName.get(String(s.batchId))) || "—",
           rollNo: s.enrollmentNo || s.applicationNo || "—",
+          code: s.enrollmentNo || s.applicationNo || "",
           // The admission's passport photograph, where there is one.
           photo: Boolean(photoOf(s as StudentRecord)),
+          photoUrl: photoOf(s as StudentRecord) || undefined,
           dob: s.dateOfBirth ? new Date(s.dateOfBirth).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—",
           bloodGroup: s.bloodGroup ?? "—",
           parentContact: s.phone ?? "—",

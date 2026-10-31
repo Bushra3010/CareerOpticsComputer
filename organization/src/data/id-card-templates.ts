@@ -27,6 +27,10 @@ export interface IdCardStudent {
   section: string;
   rollNo: string;
   photo: boolean;
+  /** The number printed as "Student ID" -- enrolment, else application. */
+  code?: string;
+  /** The passport photograph itself, as a data or http URL. */
+  photoUrl?: string;
   dob: string;
   bloodGroup: string;
   parentContact: string;
@@ -88,7 +92,8 @@ export function fieldValue(
 ): string {
   switch (label) {
     case "Student Name": return student.name;
-    case "Student ID": return student.id;
+    // The record's internal id is a UUID, which means nothing on a card.
+    case "Student ID": return student.code || student.rollNo;
     case "Class & Section": return `${student.class} - ${student.section}`;
     case "Roll Number": return student.rollNo;
     case "Date of Birth": return student.dob;
@@ -126,7 +131,7 @@ export function idCardHtml(template: IdCardTemplate, student: IdCardStudent) {
         <p style="margin:0;font-size:8px;opacity:.85">${escapeHtml(template.instituteAddress)}</p>
       </div>
       <div style="padding:8px 10px;display:flex;gap:8px">
-        ${template.showPhoto ? `<div style="width:52px;height:62px;border:1px solid #d4d4d8;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:8px;color:#9ca3af;flex:none">${student.photo ? "PHOTO" : "NO PHOTO"}</div>` : ""}
+        ${template.showPhoto ? `<div style="width:52px;height:62px;border:1px solid #d4d4d8;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:8px;color:#9ca3af;flex:none;overflow:hidden">${student.photoUrl ? `<img src="${student.photoUrl}" alt="" style="width:100%;height:100%;object-fit:cover" />` : student.photo ? "PHOTO" : "NO PHOTO"}</div>` : ""}
         <div style="flex:1;min-width:0">
           ${template.fields.includes("Student Name") ? `<p style="margin:0 0 4px;font-size:12px;font-weight:700">${escapeHtml(student.name)}</p>` : ""}
           <table style="border-collapse:collapse;width:100%">${rows}</table>
