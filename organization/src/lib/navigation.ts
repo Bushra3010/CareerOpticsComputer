@@ -45,6 +45,7 @@ import {
   CalendarCheck,
   IndianRupee,
   User,
+  Images,
 } from "lucide-react";
 import { VIEWS, type View } from "@/lib/roles";
 import type { Permissions } from "@/lib/permissions";
@@ -237,7 +238,10 @@ export const menuItems: MenuItem[] = [
     // mini-site (that is "Website Settings" under Branch Management).
     title: "Main Website",
     icon: Globe,
-    items: [{ title: "Website Content", url: "/website/content", icon: LayoutTemplate }],
+    items: [
+      { title: "Website Content", url: "/website/content", icon: LayoutTemplate },
+      { title: "Gallery", url: "/website/gallery", icon: Images },
+    ],
   },
   {
     // The centre panel, laid out like the classic franchise panel (see

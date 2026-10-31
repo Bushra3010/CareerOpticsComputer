@@ -41,6 +41,7 @@ const MENU: Menu[] = [
     ],
   },
   { label: "Certification", href: "certification.html" },
+  { label: "Gallery", href: "gallery.html" },
   {
     label: "Franchise",
     items: [
@@ -70,14 +71,16 @@ const CSS = `
 .co-brand b{display:block;color:#0b2350;font-size:19px;font-weight:800;line-height:1.1;letter-spacing:-.01em}
 .co-brand b span{color:#f97316}
 .co-brand small{display:block;color:#64748b;font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;margin-top:3px}
-.co-nav{display:flex;align-items:center;gap:2px}
+.co-nav{display:flex;align-items:center;gap:2px;flex-shrink:0}
 .co-nav>div{position:relative}
-.co-nav>div>a,.co-nav>div>button{display:inline-flex;align-items:center;gap:4px;padding:10px 12px;border:0;background:none;cursor:pointer;color:#0b2350;font:600 13.5px Poppins,system-ui,sans-serif;text-transform:uppercase;letter-spacing:.02em;text-decoration:none;border-radius:6px}
+.co-nav>div>a,.co-nav>div>button{display:inline-flex;align-items:center;gap:4px;padding:10px 9px;border:0;background:none;cursor:pointer;color:#0b2350;font:600 13px Poppins,system-ui,sans-serif;text-transform:uppercase;letter-spacing:.02em;text-decoration:none;border-radius:6px;white-space:nowrap}
 .co-nav>div>a:hover,.co-nav>div>button:hover,.co-nav>div:focus-within>button{color:#f97316}
 .co-nav>div>a.co-active{color:#f97316}
 .co-nav .co-caret{width:14px;height:14px;transition:transform .2s}
 .co-nav>div:hover .co-caret{transform:rotate(180deg)}
 .co-drop{position:absolute;left:0;top:100%;min-width:270px;background:#fff;border-top:3px solid #f97316;border-radius:0 0 10px 10px;box-shadow:0 18px 40px rgba(11,35,80,.18);padding:8px;opacity:0;visibility:hidden;transform:translateY(8px);transition:.18s}
+/* The menus near the right edge open leftwards, or they push the page wider. */
+.co-nav>div:nth-last-child(-n+2) .co-drop{left:auto;right:0}
 .co-nav>div:hover .co-drop,.co-nav>div:focus-within .co-drop{opacity:1;visibility:visible;transform:none}
 .co-drop a{display:block;padding:9px 12px;border-radius:7px;color:#0b2350;text-decoration:none;font-size:14px;font-weight:600}
 .co-drop a small{display:block;color:#64748b;font-weight:500;font-size:12px}
@@ -93,7 +96,7 @@ const CSS = `
 #coMobileMenu details a{padding-left:32px;font-weight:500;font-size:14px;background:#f8fafc}
 #coMobileMenu .co-m-btns{display:flex;gap:10px;padding:14px 18px}
 #coMobileMenu .co-m-btns a{flex:1;text-align:center;border:0;border-radius:8px;color:#fff;padding:11px}
-@media (max-width:1100px){.co-nav{display:none}.co-burger{display:inline-flex}.co-head .co-wrap{min-height:72px}.co-brand img{width:54px;height:54px}}
+@media (max-width:1180px){.co-nav{display:none}.co-burger{display:inline-flex}.co-head .co-wrap{min-height:72px}.co-brand img{width:54px;height:54px}}
 @media (max-width:760px){.co-top-info .co-hide-sm{display:none}.co-top .co-wrap{flex-direction:column;align-items:stretch;padding-top:6px;padding-bottom:6px;gap:6px}.co-top-info{justify-content:center}.co-top-btns{justify-content:center}.co-brand b{font-size:16px}}
 `;
 

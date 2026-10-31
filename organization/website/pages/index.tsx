@@ -3,6 +3,8 @@ import SiteHeader from "../components/SiteHeader";
 import WhatsappWidget from "../components/WhatsappWidget";
 import { BRAND, REGISTRATIONS } from "../components/brand";
 import js_c1268ab4 from "../behaviour/c1268ab4.js?raw";
+import js_gallery from "../behaviour/gallery.js?raw";
+import css_gallery from "../styles/gallery.css?raw";
 
 /**
  * index.html — the home page.
@@ -10,7 +12,8 @@ import js_c1268ab4 from "../behaviour/c1268ab4.js?raw";
  * Laid out like a franchise computer-education portal: a banner slider with
  * the registration badges under it, quick links, a demo-class enquiry beside
  * the facilities, the institute's story, its features, certificate lookup,
- * the authorisation certificates, featured courses and contact.
+ * the authorisation certificates, photos from the gallery, featured courses
+ * and contact.
  *
  * The enquiry form needs no script of its own: public/apply.js (loaded by
  * cms.js on every page) takes over any form that asks for a mobile number and
@@ -314,7 +317,7 @@ export default function Index() {
         <link href={"https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"} rel="stylesheet" />
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://unpkg.com/lucide@latest"></script>
-        <style dangerouslySetInnerHTML={{ __html: CSS }} />
+        <style dangerouslySetInnerHTML={{ __html: CSS + css_gallery }} />
       </head>
       <body>
         <SiteHeader />
@@ -550,6 +553,31 @@ export default function Index() {
           </div>
         </section>
 
+        {/* Filled by behaviour/gallery.js from the ERP's gallery, and left
+            hidden when it has no photos. data-cms-ui keeps it out of the
+            Website Content editor's element keys, so adding it did not move
+            the edits saved on the sections after it. */}
+        <div className="cg-home" data-gallery="home" data-limit="8" data-cms-ui="" hidden>
+          <section className="co-sec" id="gallery">
+            <div className="co-wrap">
+              <div className="co-center">
+                <span className="co-kicker">Life at {BRAND.short}</span>
+                <h2 className="co-h2">
+                  Our <span>Gallery</span>
+                </h2>
+                <p className="co-lead">Classrooms, the computer lab, events and our students — click a photo to view it.</p>
+              </div>
+              <div data-gallery-grid="" className="cg-grid"></div>
+              <div className="co-center" style={{ marginTop: 30 }}>
+                <a className="co-btn" href="gallery.html">
+                  View full gallery
+                  <i data-lucide="arrow-right"></i>
+                </a>
+              </div>
+            </div>
+          </section>
+        </div>
+
         <section className="co-sec co-feat-bg" id="courses">
           <div className="co-wrap">
             <div className="co-center">
@@ -642,6 +670,7 @@ export default function Index() {
         <SiteFooter />
         <WhatsappWidget />
         <script dangerouslySetInnerHTML={{ __html: js_c1268ab4 }} />
+        <script dangerouslySetInnerHTML={{ __html: js_gallery }} />
         <script dangerouslySetInnerHTML={{ __html: JS }} />
       </body>
     </html>
