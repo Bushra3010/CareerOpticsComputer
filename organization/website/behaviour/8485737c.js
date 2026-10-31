@@ -113,7 +113,7 @@ document.getElementById("admissionForm")
 
 
     const message =
-`Hello Career Optics Computer Centre,
+`Hello Career Optics Computer Academy,
 
 I want to apply for the Digital Marketing Professional Course.
 

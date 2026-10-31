@@ -1,4 +1,4 @@
-# Career Optics Computer Centre ERP
+# Career Optics Computer Academy ERP
 
 Education ERP monorepo with a React/Vite frontend, Express API, Prisma and PostgreSQL.
 

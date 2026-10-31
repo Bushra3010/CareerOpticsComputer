@@ -91,18 +91,18 @@ beforeEach(() => {
 
 describe("getUsers", () => {
   it("names the organisation's own admin", async () => {
-    rows.organizations = [{ id: "o1", name: "Career Optics Computer Centre", userId: "u1" }];
+    rows.organizations = [{ id: "o1", name: "Career Optics Computer Academy", userId: "u1" }];
     rows.branches = [];
     rows.users = [{ id: "u1", name: "Amar", email: "amar@x.com", role: "ORGANIZATION_ADMIN", userType: "ORGANIZATION" }];
 
     const { data } = await getUsers("o1", null);
     expect(data).toHaveLength(1);
-    expect(data[0].organization).toBe("Career Optics Computer Centre");
+    expect(data[0].organization).toBe("Career Optics Computer Academy");
     expect(data[0].branch).toBe("");
   });
 
   it("labels a branch login with the branch it runs", async () => {
-    rows.organizations = [{ id: "o1", name: "Career Optics Computer Centre", userId: "u1" }];
+    rows.organizations = [{ id: "o1", name: "Career Optics Computer Academy", userId: "u1" }];
     rows.branches = [{ id: "b1", name: "Patna Centre", userId: "u2" }];
     rows.users = [
       { id: "u2", name: "Sarah", email: "sarah@x.com", role: "BRANCH_ADMIN", userType: "BRANCH" },

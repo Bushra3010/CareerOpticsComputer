@@ -22,7 +22,7 @@ export default function AiTutor() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Career Optics Computer Centre | Education • Software • Skill Development
+          Career Optics Computer Academy | Education • Software • Skill Development
         </title>
         <link rel="stylesheet" href="style.css" />
         <script src="https://cdn.tailwindcss.com"></script>
@@ -859,7 +859,7 @@ export default function AiTutor() {
                   </div>
                   <div className="mt-7 p-4 rounded-2xl bg-indigo-50 border border-indigo-100">
                     <div className="text-sm text-indigo-700 font-semibold">
-                      Career Optics Computer Centre
+                      Career Optics Computer Academy
                     </div>
                     <div className="font-black text-slate-900 mt-1">
                       Learn AI. Teach Smarter.
@@ -1462,7 +1462,7 @@ export default function AiTutor() {
               Learn AI. Study Smarter. Teach Better.
             </h2>
             <p className="mt-5 text-indigo-100 text-lg max-w-2xl mx-auto">
-              Build practical AI skills for the future of education with Career Optics Computer Centre.
+              Build practical AI skills for the future of education with Career Optics Computer Academy.
             </p>
             <div className="flex flex-wrap justify-center gap-3 mt-8">
               <a href="#admission" className="px-7 py-3.5 rounded-xl bg-white text-indigo-700 font-black hover:bg-slate-100 transition">

@@ -23,7 +23,7 @@ export default function Typing() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Career Optics Computer Centre | Education • Software • Skill Development
+          Career Optics Computer Academy | Education • Software • Skill Development
         </title>
         <link rel="stylesheet" href="style.css" />
         <script src="https://cdn.tailwindcss.com"></script>
@@ -1947,7 +1947,7 @@ export default function Typing() {
                     </div>
                     <div>
                       <div className="font-black text-white text-lg">
-                        Career Optics Computer Centre
+                        Career Optics Computer Academy
                       </div>
                       <div className="text-xs text-slate-500">
                         Learn • Grow • Succeed
@@ -2056,7 +2056,7 @@ export default function Typing() {
                         {" "}
                       </i>
                       <span>
-                        {" "}Career Optics Computer Centre,
+                        {" "}Career Optics Computer Academy,
                         <br />
                         Bihar, India{" "}
                       </span>
@@ -2093,7 +2093,7 @@ export default function Typing() {
               <div className="border-t border-white/10 py-6 flex flex-col md:flex-row justify-between items-center gap-3 text-sm">
                 <p>
                   <span id="year"></span>
-                  {" "}© 2026 Career Optics Computer Centre
+                  {" "}© 2026 Career Optics Computer Academy
                 </p>
               </div>
             </div>

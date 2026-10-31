@@ -152,7 +152,7 @@ describe("feeInvoicePdf", () => {
   it("still prints when there is no mark to print", () => {
     invoice();
     expect(images).toEqual([]);
-    expect(drawn).toContain("CAREER OPTICS COMPUTER CENTRE");
+    expect(drawn).toContain("CAREER OPTICS COMPUTER ACADEMY");
   });
 
   it("ignores a stored value that is not an image", () => {

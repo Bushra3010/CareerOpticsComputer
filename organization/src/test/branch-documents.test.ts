@@ -53,7 +53,7 @@ describe("branchTokens", () => {
         director: { name: "R. Singh" },
         license: { expiryDate: "2027-03-31T00:00:00.000Z" },
       },
-      "Career Optics Computer Centre",
+      "Career Optics Computer Academy",
     );
     expect(data).toMatchObject({
       branch_name: "Digiskills Infotech",
@@ -62,14 +62,14 @@ describe("branchTokens", () => {
       academic_year: "2026-27",
       address: "Main Road, Patna, Bihar, 800001",
       centre_head: "R. Singh",
-      institute: "Career Optics Computer Centre",
+      institute: "Career Optics Computer Academy",
       photo: "",
     });
     expect(data.valid_until).toMatch(/2027/);
   });
 
   it("keeps the sample value for what the record cannot answer", () => {
-    const data = branchTokens({ name: "Digiskills Infotech" }, "Career Optics Computer Centre");
+    const data = branchTokens({ name: "Digiskills Infotech" }, "Career Optics Computer Academy");
     expect(data.branch_name).toBe("Digiskills Infotech");
     expect(data.centre_code).toBeTruthy();
   });

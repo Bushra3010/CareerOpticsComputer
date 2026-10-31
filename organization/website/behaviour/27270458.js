@@ -135,7 +135,7 @@ document.getElementById("message").value;
 
 const whatsappMessage =
 
-`*Career Optics Computer Centre Admission Enquiry*
+`*Career Optics Computer Academy Admission Enquiry*
 
 *Course:* ${course}
 

@@ -22,7 +22,7 @@ export default function AiProductivity() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Career Optics Computer Centre | Education • Software • Skill Development
+          Career Optics Computer Academy | Education • Software • Skill Development
         </title>
         <link rel="stylesheet" href="style.css" />
         <script src="https://cdn.tailwindcss.com"></script>
@@ -1829,7 +1829,7 @@ export default function AiProductivity() {
               {" "}Grow Better.
             </h2>
             <p className="text-slate-300 mt-5 max-w-2xl mx-auto leading-7">
-              Learn practical AI productivity, workflow design and no-code automation skills with Career Optics Computer Centre.
+              Learn practical AI productivity, workflow design and no-code automation skills with Career Optics Computer Academy.
             </p>
             <div className="flex flex-wrap justify-center gap-4 mt-8">
               <a href="#admission" className="px-7 py-3.5 rounded-xl bg-white text-slate-900 font-bold hover:bg-slate-100 transition">

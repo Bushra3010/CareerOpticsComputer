@@ -4,7 +4,7 @@
  * one edit. Every registration below is copied from the certificate it names.
  */
 export const BRAND = {
-  name: "Career Optics Computer Centre",
+  name: "Career Optics Computer Academy",
   short: "Career Optics",
   company: "Career Optics Education Service Private Limited",
   tagline: "Learn • Grow • Succeed",

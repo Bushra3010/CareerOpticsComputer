@@ -151,7 +151,7 @@ export default function DocumentDesigner() {
   const [courses, setCourses] = useState<Array<{ id: string; name: string }>>([]);
   const [studentId, setStudentId] = useState("");
   // The name behind `{{institute}}` - and so behind the watermark, which was
-  // stuck reading "Career Optics Computer Centre" on every certificate this app produced.
+  // stuck reading "Career Optics Computer Academy" on every certificate this app produced.
   // Saved on the branch so the PDF builders in documents.ts print it too.
   const [institute, setInstitute] = useState(readInstituteName);
   const [savingInstitute, setSavingInstitute] = useState(false);

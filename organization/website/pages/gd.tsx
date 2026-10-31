@@ -20,7 +20,7 @@ export default function Gd() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Career Optics Computer Centre | Education • Software • Skill Development
+          Career Optics Computer Academy | Education • Software • Skill Development
         </title>
         <link rel="stylesheet" href="style.css" />
         <script src="https://cdn.tailwindcss.com"></script>
@@ -185,7 +185,7 @@ export default function Gd() {
                   </span>
                 </h2>
                 <p className="mt-5 text-slate-600 leading-8">
-                  SSC GD Constable recruitment में written examination के साथ physical stages महत्वपूर्ण होते हैं। Career Optics Computer Centre का यह course written subjects, previous year questions, mock tests और physical preparation guidance को एक structured learning path में organize करता है।
+                  SSC GD Constable recruitment में written examination के साथ physical stages महत्वपूर्ण होते हैं। Career Optics Computer Academy का यह course written subjects, previous year questions, mock tests और physical preparation guidance को एक structured learning path में organize करता है।
                 </p>
                 <div className="mt-8 space-y-5">
                   <div className="flex gap-4">
@@ -1127,7 +1127,7 @@ export default function Gd() {
               </div>
             </div>
             <p className="text-center text-xs text-slate-500 mt-8">
-              *ऊपर दी गई fees demo pricing हैं। Career Optics Computer Centre अपनी actual fee, offer और batch duration के अनुसार amount बदल सकती है।
+              *ऊपर दी गई fees demo pricing हैं। Career Optics Computer Academy अपनी actual fee, offer और batch duration के अनुसार amount बदल सकती है।
             </p>
           </div>
         </section>

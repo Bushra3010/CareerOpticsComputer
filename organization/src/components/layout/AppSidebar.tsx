@@ -60,7 +60,7 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r-0 text-sidebar-foreground">
       <div className="flex items-center gap-2.5 px-5 pb-2 pt-5 group-data-[collapsible=icon]:px-2">
-        <img src={`${import.meta.env.BASE_URL}career-optics-logo.webp`} alt="Career Optics Computer Centre" className="h-9 w-9 shrink-0 rounded-xl bg-white object-contain p-0.5" />
+        <img src={`${import.meta.env.BASE_URL}career-optics-logo.webp`} alt="Career Optics Computer Academy" className="h-9 w-9 shrink-0 rounded-xl bg-white object-contain p-0.5" />
         {!collapsed && <div className="leading-[1.05]"><p className="text-[17px] font-extrabold tracking-[-0.01em] text-white">Career <span className="bg-[linear-gradient(90deg,#60a5fa_0%,#fb923c_100%)] bg-clip-text text-transparent">Optics</span></p><p className="mt-0.5 text-[8.5px] font-semibold uppercase tracking-[.14em] text-white/60">{VIEWS[view].short} panel</p></div>}
       </div>
       <SidebarContent className="px-2 py-3">

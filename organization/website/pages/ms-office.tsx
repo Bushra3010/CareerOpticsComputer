@@ -21,7 +21,7 @@ export default function MsOffice() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Career Optics Computer Centre | Education • Software • Skill Development
+          Career Optics Computer Academy | Education • Software • Skill Development
         </title>
         <link rel="stylesheet" href="style.css" />
         <script src="https://cdn.tailwindcss.com"></script>
@@ -1492,10 +1492,10 @@ export default function MsOffice() {
                   🏆
                 </div>
                 <h2 className="text-3xl font-black mt-4">
-                  Career Optics Computer Centre Course Certificate
+                  Career Optics Computer Academy Course Certificate
                 </h2>
                 <p className="text-gray-600 leading-7 max-w-2xl mx-auto mt-4">
-                  After successful completion of the required training, practical assignments and assessment, students can receive a Career Optics Computer Centre course completion certificate.
+                  After successful completion of the required training, practical assignments and assessment, students can receive a Career Optics Computer Academy course completion certificate.
                 </p>
                 <div className="flex flex-wrap justify-center gap-3 mt-6">
                   <span className="bg-white border px-4 py-2 rounded-full text-sm">
@@ -1525,7 +1525,7 @@ export default function MsOffice() {
                     </div>
                     <div>
                       <div className="font-black text-white text-lg">
-                        Career Optics Computer Centre
+                        Career Optics Computer Academy
                       </div>
                       <div className="text-xs text-slate-500">
                         Learn • Grow • Succeed
@@ -1634,7 +1634,7 @@ export default function MsOffice() {
                         {" "}
                       </i>
                       <span>
-                        {" "}Career Optics Computer Centre,
+                        {" "}Career Optics Computer Academy,
                         <br />
                         Bihar, India{" "}
                       </span>
@@ -1671,7 +1671,7 @@ export default function MsOffice() {
               <div className="border-t border-white/10 py-6 flex flex-col md:flex-row justify-between items-center gap-3 text-sm">
                 <p>
                   <span id="year"></span>
-                  {" "}© 2026 Career Optics Computer Centre
+                  {" "}© 2026 Career Optics Computer Academy
                 </p>
               </div>
             </div>

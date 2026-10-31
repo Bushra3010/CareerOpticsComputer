@@ -22,7 +22,7 @@ export default function Drawing() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Career Optics Computer Centre | Education • Software • Skill Development
+          Career Optics Computer Academy | Education • Software • Skill Development
         </title>
         <link rel="stylesheet" href="style.css" />
         <script src="https://cdn.tailwindcss.com"></script>
@@ -196,7 +196,7 @@ export default function Drawing() {
                   Diploma in Drawing & Painting Overview
                 </h2>
                 <p className="section-subtitle mb-5">
-                  Career Optics Computer Centre's Diploma in Drawing & Painting is designed for students, beginners, hobby artists and aspiring professional artists who want to develop strong traditional art skills.
+                  Career Optics Computer Academy's Diploma in Drawing & Painting is designed for students, beginners, hobby artists and aspiring professional artists who want to develop strong traditional art skills.
                 </p>
                 <p className="section-subtitle mb-6">
                   The course starts with basic lines, shapes, observation and proportion, then progresses to perspective, shading, still life, portrait drawing, human anatomy, color theory, watercolor, acrylic, oil painting, composition and professional portfolio development.
@@ -2366,7 +2366,7 @@ export default function Drawing() {
                     {" "}
                   </button>
                   <div className="faq-answer">
-                    A course completion certificate can be provided according to Career Optics Computer Centre's certification policy.
+                    A course completion certificate can be provided according to Career Optics Computer Academy's certification policy.
                   </div>
                 </div>
               </section>
@@ -2439,7 +2439,7 @@ export default function Drawing() {
                     Need Help?
                   </h4>
                   <p className="text-xs text-slate-500 leading-6 mb-4">
-                    Contact Career Optics Computer Centre admission team for course details.
+                    Contact Career Optics Computer Academy admission team for course details.
                   </p>
                   <a href="https://wa.me/918252532179" target="_blank" className="w-full flex items-center justify-center gap-2 bg-green-500 text-white py-3 rounded-lg font-bold text-sm">
                     💬 WhatsApp Enquiry

@@ -14,7 +14,7 @@ export default function Laravel() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Laravel Web Development Course | Career Optics Computer Centre
+          Laravel Web Development Course | Career Optics Computer Academy
         </title>
         <script src="https://cdn.tailwindcss.com"></script>
         <script dangerouslySetInnerHTML={{ __html: js_75830f0c }} />
@@ -28,7 +28,7 @@ export default function Laravel() {
                 </div>
                 <div>
                   <div className="font-black text-lg text-slate-900">
-                    Career Optics Computer Centre
+                    Career Optics Computer Academy
                   </div>
                   <div className="text-[10px] uppercase tracking-widest text-slate-500">
                     Professional Training Institute
@@ -1743,7 +1743,7 @@ export default function Laravel() {
             <div className="grid md:grid-cols-3 gap-10">
               <div>
                 <div className="font-black text-2xl">
-                  Career Optics Computer Centre
+                  Career Optics Computer Academy
                 </div>
                 <p className="text-slate-400 text-sm leading-7 mt-4 max-w-md">
                   Professional computer, web development and career-oriented training institute.
@@ -1789,7 +1789,7 @@ export default function Laravel() {
               </div>
             </div>
             <div className="border-t border-white/10 mt-10 pt-6 text-center text-sm text-slate-500">
-              © 2026 Career Optics Computer Centre. All Rights Reserved.
+              © 2026 Career Optics Computer Academy. All Rights Reserved.
             </div>
           </div>
         </footer>

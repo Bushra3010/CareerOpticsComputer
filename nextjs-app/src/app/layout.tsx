@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: "Career Optics Computer Centre ERP",
+  title: "Career Optics Computer Academy ERP",
   description: "Education management ERP",
 };
 

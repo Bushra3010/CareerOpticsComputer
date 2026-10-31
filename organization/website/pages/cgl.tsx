@@ -20,7 +20,7 @@ export default function Cgl() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Career Optics Computer Centre | Education • Software • Skill Development
+          Career Optics Computer Academy | Education • Software • Skill Development
         </title>
         <link rel="stylesheet" href="style.css" />
         <script src="https://cdn.tailwindcss.com"></script>
@@ -1193,7 +1193,7 @@ export default function Cgl() {
               </div>
             </div>
             <p className="text-center text-xs text-slate-500 mt-8">
-              *ऊपर दी गई fees sample pricing हैं। अपनी actual Career Optics Computer Centre fee के अनुसार amount बदलें।
+              *ऊपर दी गई fees sample pricing हैं। अपनी actual Career Optics Computer Academy fee के अनुसार amount बदलें।
             </p>
           </div>
         </section>

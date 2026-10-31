@@ -99,7 +99,7 @@ const columns: Column<Transaction>[] = [
 
 const receiptHtml = (txn: Transaction) => `
   <div style="font-family:system-ui,sans-serif;max-width:520px;margin:0 auto">
-    <h1 style="margin:0;font-size:20px">Career Optics Computer Centre</h1>
+    <h1 style="margin:0;font-size:20px">Career Optics Computer Academy</h1>
     <p style="margin:4px 0 20px;color:#6b7280;font-size:13px">Transaction receipt · ${txn.reference}</p>
     <table style="width:100%;border-collapse:collapse;font-size:13px">
       ${[

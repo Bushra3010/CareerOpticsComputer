@@ -106,7 +106,7 @@ Qualification: ${qualification}
 
 Preferred Batch: ${batch}
 
-I want to join the Back Office & Computer Operator Course at Career Optics Computer Centre.`;
+I want to join the Back Office & Computer Operator Course at Career Optics Computer Academy.`;
 
 
     /* CHANGE YOUR WHATSAPP NUMBER HERE */

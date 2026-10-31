@@ -14,7 +14,7 @@ export default function Smm() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Social Media Marketing Course | Career Optics Computer Centre
+          Social Media Marketing Course | Career Optics Computer Academy
         </title>
         <script src="https://cdn.tailwindcss.com"></script>
         <script dangerouslySetInnerHTML={{ __html: js_3d284604 }} />
@@ -28,7 +28,7 @@ export default function Smm() {
                 </div>
                 <div>
                   <h1 className="font-black text-xl leading-none">
-                    Career Optics Computer Centre
+                    Career Optics Computer Academy
                   </h1>
                   <p className="text-[11px] text-slate-500 mt-1">
                     Skills • Career • Future
@@ -1263,7 +1263,7 @@ export default function Smm() {
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div>
                 <span className="text-indigo-600 font-bold uppercase tracking-widest text-sm">
-                  {" "}Why Career Optics Computer Centre{" "}
+                  {" "}Why Career Optics Computer Academy{" "}
                 </span>
                 <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black mt-3">
                   Learn Skills That You Can{" "}
@@ -1552,7 +1552,7 @@ export default function Smm() {
                 Get Your Course Certificate
               </h2>
               <p className="max-w-2xl mx-auto text-white/75 mt-5">
-                Successfully complete the Social Media Marketing program and receive a course completion certificate from Career Optics Computer Centre.
+                Successfully complete the Social Media Marketing program and receive a course completion certificate from Career Optics Computer Academy.
               </p>
               <a href="#admission" className="inline-block mt-8 bg-white text-indigo-700 px-7 py-4 rounded-2xl font-black">
                 {" "}Join the Program{" "}
@@ -1652,7 +1652,7 @@ export default function Smm() {
                   </div>
                   <div>
                     <h3 className="font-black text-xl">
-                      Career Optics Computer Centre
+                      Career Optics Computer Academy
                     </h3>
                     <p className="text-xs text-white/40">
                       Skills • Career • Future
@@ -1714,7 +1714,7 @@ export default function Smm() {
               </div>
             </div>
             <div className="border-t border-white/10 mt-12 pt-7 text-center text-sm text-white/40">
-              © 2026 Career Optics Computer Centre. All Rights Reserved.
+              © 2026 Career Optics Computer Academy. All Rights Reserved.
             </div>
           </div>
         </footer>

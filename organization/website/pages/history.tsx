@@ -23,7 +23,7 @@ export default function History() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Career Optics Computer Centre | Education • Software • Skill Development
+          Career Optics Computer Academy | Education • Software • Skill Development
         </title>
         <link rel="stylesheet" href="style.css" />
         <script src="https://cdn.tailwindcss.com"></script>
@@ -42,7 +42,7 @@ export default function History() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Class 11th & 12th History Syllabus | Career Optics Computer Centre
+          Class 11th & 12th History Syllabus | Career Optics Computer Academy
         </title>
         <script src="https://cdn.tailwindcss.com"></script>
         <style dangerouslySetInnerHTML={{ __html: css_8482a071 }} />
@@ -50,7 +50,7 @@ export default function History() {
           <div className="max-w-7xl mx-auto px-4 py-12 md:py-16">
             <div className="max-w-4xl">
               <span className="inline-block bg-white/15 border border-white/20 px-4 py-2 rounded-full text-sm mb-5">
-                {" "}📚 Career Optics Computer Centre • Bihar Board Arts{" "}
+                {" "}📚 Career Optics Computer Academy • Bihar Board Arts{" "}
               </span>
               <h1 className="text-3xl md:text-5xl font-extrabold leading-tight">
                 Class 11th & 12th{" "}

@@ -99,7 +99,7 @@
 
 
       const message =
-`Hello Career Optics Computer Centre,
+`Hello Career Optics Computer Academy,
 
 I want to take admission in the Wedding Album & Video Editing course.
 

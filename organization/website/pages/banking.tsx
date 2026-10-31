@@ -20,7 +20,7 @@ export default function Banking() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Career Optics Computer Centre | Education • Software • Skill Development
+          Career Optics Computer Academy | Education • Software • Skill Development
         </title>
         <link rel="stylesheet" href="style.css" />
         <script src="https://cdn.tailwindcss.com"></script>
@@ -159,7 +159,7 @@ export default function Banking() {
                       Join Banking Batch
                     </a>
                     <p className="text-center text-[10px] text-slate-400 mt-4">
-                      Sample/demo fee — update with actual Career Optics Computer Centre fee.
+                      Sample/demo fee — update with actual Career Optics Computer Academy fee.
                     </p>
                   </div>
                 </div>
@@ -878,7 +878,7 @@ export default function Banking() {
               </div>
             </div>
             <p className="text-center text-xs text-slate-500 mt-8">
-              *Fees shown are sample/demo prices. Update them according to your actual Career Optics Computer Centre fee structure.
+              *Fees shown are sample/demo prices. Update them according to your actual Career Optics Computer Academy fee structure.
             </p>
           </div>
         </section>
@@ -894,7 +894,7 @@ export default function Banking() {
                     Start Your Banking Preparation Today
                   </h2>
                   <p className="mt-5 text-blue-100 leading-7">
-                    Career Optics Computer Centre के Banking Preparation Program के साथ अपने competitive exam preparation को structured बनाएं।
+                    Career Optics Computer Academy के Banking Preparation Program के साथ अपने competitive exam preparation को structured बनाएं।
                   </p>
                   <div className="mt-7 space-y-3 text-sm">
                     <div>

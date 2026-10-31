@@ -80,7 +80,7 @@ const ORG_BANK_DETAILS = {
   bankName: "ICICI Bank",
   accountNo: "109283746512",
   ifsc: "ICIC0001092",
-  beneficiary: "Career Optics Computer Centre",
+  beneficiary: "Career Optics Computer Academy",
   upiVpa: "careeroptics@icici",
   upiName: "Career Optics ERP",
 };

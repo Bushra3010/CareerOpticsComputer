@@ -183,7 +183,7 @@ export const asStudentDocument = (
       name: profile.branch,
       phone: "+91 20 4004 1100",
       email: "kothrud@careeroptics.in",
-      organization: { name: "Career Optics Computer Centre" },
+      organization: { name: "Career Optics Computer Academy" },
     },
     feeInvoices: invoices.map((invoice) => ({
       invoiceNo: invoice.invoiceNo,

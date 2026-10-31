@@ -609,7 +609,7 @@ document.addEventListener("DOMContentLoaded", () => {
   ===================================================== */
 
   console.log(
-    "%c Career Optics Computer Centre UI Loaded Successfully ",
+    "%c Career Optics Computer Academy UI Loaded Successfully ",
     "background:#2563eb;color:#fff;padding:8px 12px;border-radius:8px;font-weight:bold;"
   );
 

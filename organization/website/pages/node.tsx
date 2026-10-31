@@ -14,7 +14,7 @@ export default function Node() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Node.js & Next.js Development Course | Career Optics Computer Centre
+          Node.js & Next.js Development Course | Career Optics Computer Academy
         </title>
         <script src="https://cdn.tailwindcss.com"></script>
         <script dangerouslySetInnerHTML={{ __html: js_5a66417a }} />
@@ -28,7 +28,7 @@ export default function Node() {
                 </div>
                 <div>
                   <div className="font-black text-lg leading-none">
-                    Career Optics Computer Centre
+                    Career Optics Computer Academy
                   </div>
                   <div className="text-[10px] uppercase tracking-widest text-slate-500">
                     Skill • Career • Success
@@ -1136,7 +1136,7 @@ export default function Node() {
                 Course Completion Certificate
               </h2>
               <p className="max-w-2xl mx-auto mt-4 text-indigo-100 leading-7">
-                Successfully complete the training and projects to receive a professional course completion certificate from Career Optics Computer Centre.
+                Successfully complete the training and projects to receive a professional course completion certificate from Career Optics Computer Academy.
               </p>
             </div>
           </div>
@@ -1204,7 +1204,7 @@ export default function Node() {
                   </span>
                 </button>
                 <div className="faq-content hidden px-6 pb-6 text-sm text-slate-600 leading-7">
-                  Yes. Eligible students receive a Career Optics Computer Centre course completion certificate.
+                  Yes. Eligible students receive a Career Optics Computer Academy course completion certificate.
                 </div>
               </div>
             </div>
@@ -1237,7 +1237,7 @@ export default function Node() {
                     P
                   </div>
                   <div className="font-black text-xl">
-                    Career Optics Computer Centre
+                    Career Optics Computer Academy
                   </div>
                 </div>
                 <p className="mt-5 text-sm leading-7">
@@ -1284,7 +1284,7 @@ export default function Node() {
               </div>
             </div>
             <div className="border-t border-white/10 mt-10 pt-6 text-center text-xs">
-              © 2026 Career Optics Computer Centre. All Rights Reserved.
+              © 2026 Career Optics Computer Academy. All Rights Reserved.
             </div>
           </div>
         </footer>

@@ -22,7 +22,7 @@ export default function AiSpecial() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Career Optics Computer Centre | Education • Software • Skill Development
+          Career Optics Computer Academy | Education • Software • Skill Development
         </title>
         <link rel="stylesheet" href="style.css" />
         <script src="https://cdn.tailwindcss.com"></script>
@@ -874,7 +874,7 @@ export default function AiSpecial() {
                   </div>
                   <div className="mt-7 p-4 rounded-2xl bg-violet-50 border border-violet-100">
                     <div className="text-sm text-violet-700 font-semibold">
-                      Career Optics Computer Centre
+                      Career Optics Computer Academy
                     </div>
                     <div className="font-black text-slate-900 mt-1">
                       Automate Work. Scale Faster.

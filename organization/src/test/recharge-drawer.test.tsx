@@ -5,7 +5,7 @@ const submitRechargeRequest = vi.fn();
 const uploadRechargeProof = vi.fn();
 /** The organisation's own UPI account, which the drawer reads when it opens. */
 const getRechargeUpi = vi.fn(() =>
-  Promise.resolve({ success: true, data: { upiId: "careeroptics@icici", merchantName: "Career Optics Computer Centre" } }),
+  Promise.resolve({ success: true, data: { upiId: "careeroptics@icici", merchantName: "Career Optics Computer Academy" } }),
 );
 
 vi.mock("@/lib/supabase/data", () => ({

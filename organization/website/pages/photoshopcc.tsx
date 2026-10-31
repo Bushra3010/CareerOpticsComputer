@@ -22,7 +22,7 @@ export default function Photoshopcc() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Career Optics Computer Centre | Education • Software • Skill Development
+          Career Optics Computer Academy | Education • Software • Skill Development
         </title>
         <link rel="stylesheet" href="style.css" />
         <script src="https://cdn.tailwindcss.com"></script>
@@ -43,7 +43,7 @@ export default function Photoshopcc() {
             <div className="min-h-[42px] flex items-center justify-between gap-4 text-xs">
               <div className="flex items-center gap-4">
                 <span className="font-semibold">
-                  {" "}🎓 Career Optics Computer Centre{" "}
+                  {" "}🎓 Career Optics Computer Academy{" "}
                 </span>
                 <span className="hidden md:block text-slate-400">
                   {" "}Professional Computer & Digital Skills Training{" "}

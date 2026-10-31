@@ -20,7 +20,7 @@ export default function Ssc() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Career Optics Computer Centre | Education • Software • Skill Development
+          Career Optics Computer Academy | Education • Software • Skill Development
         </title>
         <link rel="stylesheet" href="style.css" />
         <script src="https://cdn.tailwindcss.com"></script>
@@ -203,7 +203,7 @@ export default function Ssc() {
                   </span>
                 </h2>
                 <p className="mt-5 text-slate-600 leading-8">
-                  Career Optics Computer Centre का SSC Preparation Course उन students के लिए बनाया गया है जो SSC के विभिन्न examinations में बेहतर तैयारी करना चाहते हैं।
+                  Career Optics Computer Academy का SSC Preparation Course उन students के लिए बनाया गया है जो SSC के विभिन्न examinations में बेहतर तैयारी करना चाहते हैं।
                 </p>
                 <div className="mt-8 space-y-5">
                   <div className="flex gap-4">
@@ -811,7 +811,7 @@ export default function Ssc() {
               <h2 className="text-3xl sm:text-4xl font-black mt-3">
                 Why Join{" "}
                 <span className="gradient-text">
-                  {" "}Career Optics Computer Centre?{" "}
+                  {" "}Career Optics Computer Academy?{" "}
                 </span>
               </h2>
             </div>
@@ -1065,7 +1065,7 @@ export default function Ssc() {
               </div>
             </div>
             <p className="text-center text-xs text-slate-500 mt-8">
-              *ये Career Optics Computer Centre के sample course prices हैं। Actual fee और course inclusions academy अपनी policy के अनुसार update कर सकती है।
+              *ये Career Optics Computer Academy के sample course prices हैं। Actual fee और course inclusions academy अपनी policy के अनुसार update कर सकती है।
             </p>
           </div>
         </section>

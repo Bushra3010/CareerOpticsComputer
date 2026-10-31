@@ -14,7 +14,7 @@ export default function Java() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Java Web & Software Development | Career Optics Computer Centre
+          Java Web & Software Development | Career Optics Computer Academy
         </title>
         <script src="https://cdn.tailwindcss.com"></script>
         <script dangerouslySetInnerHTML={{ __html: js_90a066f6 }} />
@@ -28,7 +28,7 @@ export default function Java() {
                 </div>
                 <div>
                   <div className="font-black text-xl text-slate-900 leading-none">
-                    Career Optics Computer Centre
+                    Career Optics Computer Academy
                   </div>
                   <div className="text-[11px] font-semibold text-slate-500 mt-1">
                     Learn • Build • Grow
@@ -1611,7 +1611,7 @@ export default function Java() {
                 Course Completion Certificate
               </h2>
               <p className="text-slate-500 max-w-2xl mx-auto mt-4 leading-7">
-                Students successfully completing the Java Development program will receive a course completion certificate from Career Optics Computer Centre.
+                Students successfully completing the Java Development program will receive a course completion certificate from Career Optics Computer Academy.
               </p>
               <div className="grid md:grid-cols-3 gap-5 mt-10">
                 <div className="p-5 rounded-2xl bg-slate-50">
@@ -1727,7 +1727,7 @@ export default function Java() {
                   </span>
                 </summary>
                 <div className="px-5 pb-5 text-slate-600 leading-7">
-                  Yes. Students completing the program receive a course completion certificate from Career Optics Computer Centre.
+                  Yes. Students completing the program receive a course completion certificate from Career Optics Computer Academy.
                 </div>
               </details>
             </div>
@@ -1737,7 +1737,7 @@ export default function Java() {
           <div className="max-w-[1200px] mx-auto px-4">
             <div className="rounded-[2rem] hero-bg text-white text-center px-6 py-16">
               <p className="text-blue-200 font-bold uppercase text-sm">
-                Career Optics Computer Centre
+                Career Optics Computer Academy
               </p>
               <h2 className="text-4xl md:text-5xl font-black mt-3">
                 Ready to Become a Java Developer?
@@ -1756,7 +1756,7 @@ export default function Java() {
             <div className="grid md:grid-cols-4 gap-10">
               <div>
                 <div className="text-white font-black text-2xl">
-                  Career Optics Computer Centre
+                  Career Optics Computer Academy
                 </div>
                 <p className="text-sm leading-7 mt-4 text-slate-400">
                   Professional computer, software and career training institute.
@@ -1820,7 +1820,7 @@ export default function Java() {
               </div>
             </div>
             <div className="border-t border-slate-800 mt-12 pt-6 text-center text-sm text-slate-500">
-              © 2026 Career Optics Computer Centre. All Rights Reserved.
+              © 2026 Career Optics Computer Academy. All Rights Reserved.
             </div>
           </div>
         </footer>

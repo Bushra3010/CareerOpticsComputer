@@ -20,7 +20,7 @@ export default function Mts() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Career Optics Computer Centre | Education • Software • Skill Development
+          Career Optics Computer Academy | Education • Software • Skill Development
         </title>
         <link rel="stylesheet" href="style.css" />
         <script src="https://cdn.tailwindcss.com"></script>
@@ -185,7 +185,7 @@ export default function Mts() {
                   </span>
                 </h2>
                 <p className="mt-5 text-slate-600 leading-8">
-                  SSC MTS एक important 10th-level competitive examination है। Career Optics Computer Centre का यह course students को concepts, practice questions, previous year questions और mock tests के माध्यम से systematic preparation प्रदान करने के लिए designed है।
+                  SSC MTS एक important 10th-level competitive examination है। Career Optics Computer Academy का यह course students को concepts, practice questions, previous year questions और mock tests के माध्यम से systematic preparation प्रदान करने के लिए designed है।
                 </p>
                 <div className="mt-8 space-y-5">
                   <div className="flex gap-4">
@@ -1148,7 +1148,7 @@ export default function Mts() {
               </div>
             </div>
             <p className="text-center text-xs text-slate-500 mt-8">
-              *Fees इस demo page के लिए हैं। आप अपनी Career Optics Computer Centre की actual fee के अनुसार amount बदल सकते हैं।
+              *Fees इस demo page के लिए हैं। आप अपनी Career Optics Computer Academy की actual fee के अनुसार amount बदल सकते हैं।
             </p>
           </div>
         </section>

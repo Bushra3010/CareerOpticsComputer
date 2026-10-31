@@ -109,7 +109,7 @@
 
 *Course:* Node.js & Next.js Development
 
-*Career Optics Computer Centre*`;
+*Career Optics Computer Academy*`;
 
 
             const whatsappNumber = (window.siteWhatsapp && window.siteWhatsapp() || "919999999999");

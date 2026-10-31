@@ -21,7 +21,7 @@ export default function Chatgpt() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Career Optics Computer Centre | Education • Software • Skill Development
+          Career Optics Computer Academy | Education • Software • Skill Development
         </title>
         <link rel="stylesheet" href="style.css" />
         <script src="https://cdn.tailwindcss.com"></script>
@@ -40,7 +40,7 @@ export default function Chatgpt() {
         <header className="fixed top-0 left-0 right-0 z-50">
           <div className="navbar min-h-[70px] px-3 md:px-6 flex items-center justify-between">
             <a href="index.html" className="flex items-center shrink-0">
-              <img src="/logo.png" alt="Career Optics Computer Centre" className="w-[78px] md:w-[88px] transition hover:scale-105" />
+              <img src="/logo.png" alt="Career Optics Computer Academy" className="w-[78px] md:w-[88px] transition hover:scale-105" />
             </a>
             <nav className="hidden lg:flex items-center gap-1">
               <a href="index.html" className="nav-link">
@@ -2093,7 +2093,7 @@ export default function Chatgpt() {
                     </div>
                     <div>
                       <div className="font-black text-white text-lg">
-                        Career Optics Computer Centre
+                        Career Optics Computer Academy
                       </div>
                       <div className="text-xs text-slate-500">
                         Learn • Grow • Succeed
@@ -2202,7 +2202,7 @@ export default function Chatgpt() {
                         {" "}
                       </i>
                       <span>
-                        {" "}Career Optics Computer Centre,
+                        {" "}Career Optics Computer Academy,
                         <br />
                         Bihar, India{" "}
                       </span>
@@ -2239,7 +2239,7 @@ export default function Chatgpt() {
               <div className="border-t border-white/10 py-6 flex flex-col md:flex-row justify-between items-center gap-3 text-sm">
                 <p>
                   <span id="year"></span>
-                  {" "}© 2026 Career Optics Computer Centre
+                  {" "}© 2026 Career Optics Computer Academy
                 </p>
               </div>
             </div>

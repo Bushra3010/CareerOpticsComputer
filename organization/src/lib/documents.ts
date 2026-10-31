@@ -106,7 +106,7 @@ const header = (doc: jsPDF, title: string, subtitle: string, logo?: string | nul
   doc.setTextColor(199, 255, 47);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(22);
-  doc.text("CAREER OPTICS COMPUTER CENTRE", x, 17);
+  doc.text("CAREER OPTICS COMPUTER ACADEMY", x, 17);
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(9);
   doc.text("EDUCATION  |  SOFTWARE  |  SKILL DEVELOPMENT", x, 25);

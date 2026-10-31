@@ -17,7 +17,7 @@ export default function Express() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Adobe Express Professional Course | Career Optics Computer Centre
+          Adobe Express Professional Course | Career Optics Computer Academy
         </title>
         <script src="https://cdn.tailwindcss.com"></script>
         <script dangerouslySetInnerHTML={{ __html: js_8a8d781a }} />
@@ -27,7 +27,7 @@ export default function Express() {
             <div className="min-h-[42px] flex items-center justify-between gap-4 text-xs">
               <div className="flex items-center gap-4">
                 <span className="font-bold">
-                  🎓 Career Optics Computer Centre
+                  🎓 Career Optics Computer Academy
                 </span>
                 <span className="hidden md:block text-slate-400">
                   {" "}Professional Computer & Digital Skills Training{" "}
@@ -1558,7 +1558,7 @@ export default function Express() {
                         </div>
                         <div>
                           <div className="font-black text-white text-lg">
-                            Career Optics Computer Centre
+                            Career Optics Computer Academy
                           </div>
                           <div className="text-xs text-slate-500">
                             Learn • Grow • Succeed
@@ -1667,7 +1667,7 @@ export default function Express() {
                             {" "}
                           </i>
                           <span>
-                            {" "}Career Optics Computer Centre,
+                            {" "}Career Optics Computer Academy,
                             <br />
                             Bihar, India{" "}
                           </span>
@@ -1704,7 +1704,7 @@ export default function Express() {
                   <div className="border-t border-white/10 py-6 flex flex-col md:flex-row justify-between items-center gap-3 text-sm">
                     <p>
                       <span id="year"></span>
-                      {" "}© 2026 Career Optics Computer Centre
+                      {" "}© 2026 Career Optics Computer Academy
                     </p>
                   </div>
                 </div>

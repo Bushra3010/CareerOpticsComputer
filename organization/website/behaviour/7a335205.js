@@ -118,7 +118,7 @@ document.getElementById("admissionForm")
 
 *Message:* ${message || "No message"}
 
-I want to take admission in the Java Development Course at Career Optics Computer Centre.`;
+I want to take admission in the Java Development Course at Career Optics Computer Academy.`;
 
 
     const whatsappNumber = (window.siteWhatsapp && window.siteWhatsapp() || "919999999999");

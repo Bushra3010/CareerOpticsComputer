@@ -278,7 +278,7 @@ export function ClassicShell({ children, banner }: { children: React.ReactNode; 
           <main className="classic-ui min-w-0 flex-1 overflow-x-hidden px-3 pb-24 pt-4 sm:px-6 sm:pt-5 md:pb-10">
             <div className="mx-auto w-full max-w-[1600px]">{children}</div>
           </main>
-          <footer className="border-t bg-white px-6 py-3 text-[12.5px] text-slate-500">CAREER OPTICS COMPUTER CENTRE © {new Date().getFullYear()}</footer>
+          <footer className="border-t bg-white px-6 py-3 text-[12.5px] text-slate-500">CAREER OPTICS COMPUTER ACADEMY © {new Date().getFullYear()}</footer>
         </div>
       </div>
     </div>

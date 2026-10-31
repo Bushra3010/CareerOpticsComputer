@@ -14,7 +14,7 @@ export default function Python() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Python Programming Course | Career Optics Computer Centre
+          Python Programming Course | Career Optics Computer Academy
         </title>
         <script src="https://cdn.tailwindcss.com"></script>
         <script dangerouslySetInnerHTML={{ __html: js_3d284604 }} />
@@ -1738,7 +1738,7 @@ export default function Python() {
                 Get Your Course Certificate
               </h2>
               <p className="text-slate-200 max-w-2xl mx-auto mt-4 leading-7">
-                Complete the required training and practical projects to receive your Python Programming course certificate from Career Optics Computer Centre.
+                Complete the required training and practical projects to receive your Python Programming course certificate from Career Optics Computer Academy.
               </p>
               <a href="#admission" className="inline-block mt-7 bg-white text-blue-700 px-7 py-3.5 rounded-xl font-black">
                 {" "}Enroll Now{" "}
@@ -1819,7 +1819,7 @@ export default function Python() {
                   </span>
                 </button>
                 <div className="accordion-content px-5 pb-5 text-slate-600 text-sm leading-7">
-                  Yes. Eligible students receive a course completion certificate from Career Optics Computer Centre.
+                  Yes. Eligible students receive a course completion certificate from Career Optics Computer Academy.
                 </div>
               </div>
             </div>
@@ -1850,7 +1850,7 @@ export default function Python() {
             <div className="grid md:grid-cols-3 gap-10">
               <div>
                 <div className="text-white text-2xl font-black">
-                  Career Optics Computer Centre
+                  Career Optics Computer Academy
                 </div>
                 <p className="mt-4 text-sm leading-7">
                   Professional computer education, programming and career development.
@@ -1896,7 +1896,7 @@ export default function Python() {
               </div>
             </div>
             <div className="border-t border-slate-800 mt-10 pt-6 text-sm text-center">
-              © 2026 Career Optics Computer Centre. All Rights Reserved.
+              © 2026 Career Optics Computer Academy. All Rights Reserved.
             </div>
           </div>
         </footer>

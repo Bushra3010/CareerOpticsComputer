@@ -15,7 +15,7 @@ export default function Railway() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Career Optics Computer Centre | Education • Software • Skill Development
+          Career Optics Computer Academy | Education • Software • Skill Development
         </title>
         <link rel="stylesheet" href="style.css" />
         <script src="https://cdn.tailwindcss.com"></script>
@@ -154,7 +154,7 @@ export default function Railway() {
                       Join Railway Batch
                     </a>
                     <p className="text-center text-[10px] text-slate-400 mt-4">
-                      Demo pricing — update according to Career Optics Computer Centre fee structure.
+                      Demo pricing — update according to Career Optics Computer Academy fee structure.
                     </p>
                   </div>
                 </div>
@@ -958,7 +958,7 @@ export default function Railway() {
               </div>
             </div>
             <p className="text-center text-xs text-slate-500 mt-8">
-              *Fees shown are sample/demo pricing. Update according to Career Optics Computer Centre actual fee structure.
+              *Fees shown are sample/demo pricing. Update according to Career Optics Computer Academy actual fee structure.
             </p>
           </div>
         </section>
@@ -1113,7 +1113,7 @@ export default function Railway() {
                 </button>
                 <div className="faq-answer px-5 pb-5">
                   <p className="text-sm text-slate-500 leading-7">
-                    Demo pricing के अनुसार Basic ₹1,299, Complete ₹2,499 और Pro ₹3,499 है। इन्हें Career Optics Computer Centre की actual course fee के अनुसार बदलें।
+                    Demo pricing के अनुसार Basic ₹1,299, Complete ₹2,499 और Pro ₹3,499 है। इन्हें Career Optics Computer Academy की actual course fee के अनुसार बदलें।
                   </p>
                 </div>
               </div>
@@ -1141,7 +1141,7 @@ export default function Railway() {
                   </div>
                   <div>
                     <h3 className="font-black">
-                      Career Optics Computer Centre
+                      Career Optics Computer Academy
                     </h3>
                     <p className="text-[9px] text-slate-500 uppercase tracking-widest">
                       Education & Career
@@ -1192,7 +1192,7 @@ export default function Railway() {
               </div>
             </div>
             <div className="border-t border-white/10 mt-10 pt-6 text-center text-xs text-slate-500">
-              © 2026 Career Optics Computer Centre. All Rights Reserved.
+              © 2026 Career Optics Computer Academy. All Rights Reserved.
             </div>
           </div>
         </footer>

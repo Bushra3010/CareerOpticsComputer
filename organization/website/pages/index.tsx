@@ -625,7 +625,7 @@ export default function Index() {
               </div>
               <div className="co-map">
                 <iframe
-                  title="Career Optics Computer Centre on the map"
+                  title="Career Optics Computer Academy on the map"
                   loading="lazy"
                   src={"https://maps.google.com/maps?q=" + encodeURIComponent("Bandhan Tola, Nawada, Ara, Bhojpur, Bihar 802301") + "&output=embed"}
                 ></iframe>

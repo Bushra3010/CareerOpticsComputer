@@ -21,7 +21,7 @@ export default function BackOffice() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Career Optics Computer Centre | Education • Software • Skill Development
+          Career Optics Computer Academy | Education • Software • Skill Development
         </title>
         <link rel="stylesheet" href="style.css" />
         <script src="https://cdn.tailwindcss.com"></script>
@@ -130,7 +130,7 @@ export default function BackOffice() {
                       </strong>
                       {" "}
                       <span className="text-xs text-gray-500">
-                        {" "}Career Optics Computer Centre{" "}
+                        {" "}Career Optics Computer Academy{" "}
                       </span>
                     </div>
                   </div>
@@ -184,7 +184,7 @@ export default function BackOffice() {
                             Certificate
                           </span>
                           <strong>
-                            Career Optics Computer Centre
+                            Career Optics Computer Academy
                           </strong>
                         </div>
                       </div>
@@ -991,7 +991,7 @@ export default function BackOffice() {
                             Certificate
                           </strong>
                           <p className="text-gray-500 text-xs mt-1">
-                            Career Optics Computer Centre certificate
+                            Career Optics Computer Academy certificate
                           </p>
                         </div>
                       </div>
@@ -1117,7 +1117,7 @@ export default function BackOffice() {
                     </span>
                   </button>
                   <div className="hidden px-5 pb-5 text-sm text-gray-600 leading-6">
-                    Students who successfully complete the required training and assessment can receive a Career Optics Computer Centre course completion certificate.
+                    Students who successfully complete the required training and assessment can receive a Career Optics Computer Academy course completion certificate.
                   </div>
                 </div>
               </div>
@@ -1134,7 +1134,7 @@ export default function BackOffice() {
                     </div>
                     <div>
                       <div className="font-black text-white text-lg">
-                        Career Optics Computer Centre
+                        Career Optics Computer Academy
                       </div>
                       <div className="text-xs text-slate-500">
                         Learn • Grow • Succeed
@@ -1243,7 +1243,7 @@ export default function BackOffice() {
                         {" "}
                       </i>
                       <span>
-                        {" "}Career Optics Computer Centre,
+                        {" "}Career Optics Computer Academy,
                         <br />
                         Bihar, India{" "}
                       </span>
@@ -1280,7 +1280,7 @@ export default function BackOffice() {
               <div className="border-t border-white/10 py-6 flex flex-col md:flex-row justify-between items-center gap-3 text-sm">
                 <p>
                   <span id="year"></span>
-                  {" "}© 2026 Career Optics Computer Centre
+                  {" "}© 2026 Career Optics Computer Academy
                 </p>
               </div>
             </div>

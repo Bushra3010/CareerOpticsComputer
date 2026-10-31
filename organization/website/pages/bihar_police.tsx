@@ -20,7 +20,7 @@ export default function BiharPolice() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Career Optics Computer Centre | Education • Software • Skill Development
+          Career Optics Computer Academy | Education • Software • Skill Development
         </title>
         <link rel="stylesheet" href="style.css" />
         <script src="https://cdn.tailwindcss.com"></script>
@@ -99,7 +99,7 @@ export default function BiharPolice() {
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="text-xs font-black text-blue-600 uppercase">
-                        {" "}Career Optics Computer Centre{" "}
+                        {" "}Career Optics Computer Academy{" "}
                       </span>
                       <h3 className="text-2xl font-black text-slate-900 mt-1">
                         Police Preparation
@@ -260,7 +260,7 @@ export default function BiharPolice() {
                   {" "}Program
                 </h2>
                 <p className="mt-6 text-slate-600 leading-8">
-                  Career Optics Computer Centre का Bihar Police Preparation Program students और job aspirants को written examination से लेकर physical preparation तक structured तरीके से तैयार करने के लिए designed है.
+                  Career Optics Computer Academy का Bihar Police Preparation Program students और job aspirants को written examination से लेकर physical preparation तक structured तरीके से तैयार करने के लिए designed है.
                 </p>
                 <p className="mt-4 text-slate-600 leading-8">
                   हमारा focus केवल syllabus complete करना नहीं, बल्कि regular practice, revision, test analysis, current affairs और exam strategy के माध्यम से candidate की overall preparation मजबूत करना है.

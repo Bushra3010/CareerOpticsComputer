@@ -23,7 +23,7 @@ export default function BscIt() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Career Optics Computer Centre | Education • Software • Skill Development
+          Career Optics Computer Academy | Education • Software • Skill Development
         </title>
         <link rel="stylesheet" href="style.css" />
         <script src="https://cdn.tailwindcss.com"></script>
@@ -41,7 +41,7 @@ export default function BscIt() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          B.Sc IT Syllabus | Career Optics Computer Centre
+          B.Sc IT Syllabus | Career Optics Computer Academy
         </title>
         <script src="https://cdn.tailwindcss.com"></script>
         <style dangerouslySetInnerHTML={{ __html: css_0b031b88 }} />
@@ -51,7 +51,7 @@ export default function BscIt() {
               🎓 B.Sc. Information Technology • 3 Years • 6 Semesters
             </div>
             <div>
-              Career Optics Computer Centre
+              Career Optics Computer Academy
             </div>
           </div>
         </div>

@@ -28,7 +28,7 @@ const STARTERS: Record<LabLanguage, Partial<Config>> = {
     activeEditor: "markup",
     markup: {
       language: "html",
-      content: `<h1>Hello, Career Optics Computer Centre!</h1>
+      content: `<h1>Hello, Career Optics Computer Academy!</h1>
 <p>Edit the HTML, CSS and JavaScript tabs, then press Run.</p>
 <button id="greet">Click me</button>`,
     },

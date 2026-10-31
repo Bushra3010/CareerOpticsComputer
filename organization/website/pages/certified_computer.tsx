@@ -24,7 +24,7 @@ export default function CertifiedComputer() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Complete Digital Marketing Course | Career Optics Computer Centre
+          Complete Digital Marketing Course | Career Optics Computer Academy
         </title>
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://unpkg.com/lucide@latest"></script>
@@ -1266,7 +1266,7 @@ export default function CertifiedComputer() {
         <footer className="border-t border-slate-800 bg-slate-950 py-8">
           <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 sm:flex-row sm:px-6 lg:px-8">
             <div className="text-sm font-bold text-slate-400">
-              © 2026 Career Optics Computer Centre. All Rights Reserved.
+              © 2026 Career Optics Computer Academy. All Rights Reserved.
             </div>
             <div className="flex items-center gap-5 text-sm text-slate-500">
               <a href="#" className="hover:text-white">
@@ -1286,7 +1286,7 @@ export default function CertifiedComputer() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Complete Website Developer Course | Career Optics Computer Centre
+          Complete Website Developer Course | Career Optics Computer Academy
         </title>
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://unpkg.com/lucide@latest"></script>
@@ -1319,7 +1319,7 @@ export default function CertifiedComputer() {
                 </div>
                 <div>
                   <h1 className="font-black text-lg">
-                    Career Optics Computer Centre
+                    Career Optics Computer Academy
                   </h1>
                   <p className="text-[9px] uppercase tracking-widest text-slate-500 font-bold">
                     Website Development Institute
@@ -3299,7 +3299,7 @@ export default function CertifiedComputer() {
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div>
                 <span className="text-blue-600 text-xs font-black uppercase tracking-widest">
-                  {" "}Why Join Career Optics Computer Centre{" "}
+                  {" "}Why Join Career Optics Computer Academy{" "}
                 </span>
                 <h2 className="mt-3 text-3xl sm:text-4xl font-black">
                   Learn More Than Just{" "}
@@ -3515,7 +3515,7 @@ export default function CertifiedComputer() {
               </div>
             </div>
             <p className="mt-7 text-center text-xs text-slate-400">
-              * Course fee ऊपर sample/demo pricing के रूप में दी गई है। Career Optics Computer Centre अपने actual fee structure के अनुसार इसे बदल सकता है।
+              * Course fee ऊपर sample/demo pricing के रूप में दी गई है। Career Optics Computer Academy अपने actual fee structure के अनुसार इसे बदल सकता है।
             </p>
           </div>
         </section>
@@ -3682,7 +3682,7 @@ export default function CertifiedComputer() {
                   </div>
                   <div>
                     <h3 className="font-black text-lg">
-                      Career Optics Computer Centre
+                      Career Optics Computer Academy
                     </h3>
                     <p className="text-xs text-slate-500">
                       Website Development Institute
@@ -3737,7 +3737,7 @@ export default function CertifiedComputer() {
             </div>
             <div className="mt-10 pt-6 border-t border-white/10 flex flex-col sm:flex-row justify-between gap-3">
               <p className="text-xs text-slate-500">
-                © 2026 Career Optics Computer Centre. All Rights Reserved.
+                © 2026 Career Optics Computer Academy. All Rights Reserved.
               </p>
               <p className="text-xs text-slate-500">
                 Complete Website Developer Course
@@ -3753,7 +3753,7 @@ export default function CertifiedComputer() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Complete Website Developer Course | Career Optics Computer Centre
+          Complete Website Developer Course | Career Optics Computer Academy
         </title>
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://unpkg.com/lucide@latest"></script>
@@ -3786,7 +3786,7 @@ export default function CertifiedComputer() {
                 </div>
                 <div>
                   <h1 className="font-black text-lg">
-                    Career Optics Computer Centre
+                    Career Optics Computer Academy
                   </h1>
                   <p className="text-[9px] uppercase tracking-widest text-slate-500 font-bold">
                     Website Development Institute
@@ -5766,7 +5766,7 @@ export default function CertifiedComputer() {
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div>
                 <span className="text-blue-600 text-xs font-black uppercase tracking-widest">
-                  {" "}Why Join Career Optics Computer Centre{" "}
+                  {" "}Why Join Career Optics Computer Academy{" "}
                 </span>
                 <h2 className="mt-3 text-3xl sm:text-4xl font-black">
                   Learn More Than Just{" "}
@@ -5982,7 +5982,7 @@ export default function CertifiedComputer() {
               </div>
             </div>
             <p className="mt-7 text-center text-xs text-slate-400">
-              * Course fee ऊपर sample/demo pricing के रूप में दी गई है। Career Optics Computer Centre अपने actual fee structure के अनुसार इसे बदल सकता है।
+              * Course fee ऊपर sample/demo pricing के रूप में दी गई है। Career Optics Computer Academy अपने actual fee structure के अनुसार इसे बदल सकता है।
             </p>
           </div>
         </section>
@@ -6149,7 +6149,7 @@ export default function CertifiedComputer() {
                   </div>
                   <div>
                     <h3 className="font-black text-lg">
-                      Career Optics Computer Centre
+                      Career Optics Computer Academy
                     </h3>
                     <p className="text-xs text-slate-500">
                       Website Development Institute
@@ -6204,7 +6204,7 @@ export default function CertifiedComputer() {
             </div>
             <div className="mt-10 pt-6 border-t border-white/10 flex flex-col sm:flex-row justify-between gap-3">
               <p className="text-xs text-slate-500">
-                © 2026 Career Optics Computer Centre. All Rights Reserved.
+                © 2026 Career Optics Computer Academy. All Rights Reserved.
               </p>
               <p className="text-xs text-slate-500">
                 Complete Website Developer Course
@@ -6220,7 +6220,7 @@ export default function CertifiedComputer() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Complete Programming Course | Career Optics Computer Centre
+          Complete Programming Course | Career Optics Computer Academy
         </title>
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://unpkg.com/lucide@latest"></script>
@@ -6252,7 +6252,7 @@ export default function CertifiedComputer() {
                 </div>
                 <div>
                   <h1 className="font-black text-lg">
-                    Career Optics Computer Centre
+                    Career Optics Computer Academy
                   </h1>
                   <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">
                     Programming & Career Institute
@@ -8135,7 +8135,7 @@ export default function CertifiedComputer() {
               </div>
             </div>
             <p className="text-center text-xs text-slate-400 mt-7">
-              * Fee is sample/demo pricing. Update according to your Career Optics Computer Centre admission plans.
+              * Fee is sample/demo pricing. Update according to your Career Optics Computer Academy admission plans.
             </p>
           </div>
         </section>
@@ -8237,7 +8237,7 @@ export default function CertifiedComputer() {
                 </div>
                 <div>
                   <h3 className="font-black">
-                    Career Optics Computer Centre
+                    Career Optics Computer Academy
                   </h3>
                   <p className="text-xs text-slate-500">
                     Programming & Career Institute
@@ -8245,7 +8245,7 @@ export default function CertifiedComputer() {
                 </div>
               </div>
               <p className="text-xs text-slate-500">
-                © 2026 Career Optics Computer Centre. All Rights Reserved.
+                © 2026 Career Optics Computer Academy. All Rights Reserved.
               </p>
             </div>
           </div>
@@ -8258,7 +8258,7 @@ export default function CertifiedComputer() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Graphic Design & Architecture Course | Career Optics Computer Centre
+          Graphic Design & Architecture Course | Career Optics Computer Academy
         </title>
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://unpkg.com/lucide@latest"></script>
@@ -9306,7 +9306,7 @@ export default function CertifiedComputer() {
         <footer className="border-t border-slate-800 bg-slate-950 py-8">
           <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 sm:flex-row sm:px-6 lg:px-8">
             <div className="text-sm font-bold text-slate-400">
-              © 2026 Career Optics Computer Centre. All Rights Reserved.
+              © 2026 Career Optics Computer Academy. All Rights Reserved.
             </div>
             <div className="flex items-center gap-5 text-sm text-slate-500">
               <a href="#" className="hover:text-white">
@@ -9325,7 +9325,7 @@ export default function CertifiedComputer() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Accounting & Taxation Course | Career Optics Computer Centre
+          Accounting & Taxation Course | Career Optics Computer Academy
         </title>
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://unpkg.com/lucide@latest"></script>
@@ -9357,7 +9357,7 @@ export default function CertifiedComputer() {
                 </div>
                 <div>
                   <h1 className="text-lg font-black">
-                    Career Optics Computer Centre
+                    Career Optics Computer Academy
                   </h1>
                   <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
                     Learn • Skill • Grow
@@ -10298,7 +10298,7 @@ export default function CertifiedComputer() {
               </div>
             </div>
             <p className="text-center text-xs text-slate-400 mt-7">
-              * Fees shown above are sample/demo pricing. Please confirm the current fee with Career Optics Computer Centre before admission.
+              * Fees shown above are sample/demo pricing. Please confirm the current fee with Career Optics Computer Academy before admission.
             </p>
           </div>
         </section>
@@ -10386,14 +10386,14 @@ export default function CertifiedComputer() {
             <div className="flex flex-col md:flex-row justify-between gap-5 items-center">
               <div>
                 <h3 className="font-black text-lg">
-                  Career Optics Computer Centre
+                  Career Optics Computer Academy
                 </h3>
                 <p className="text-xs text-slate-500 mt-1">
                   Learn • Skill • Grow
                 </p>
               </div>
               <div className="text-xs text-slate-500">
-                © 2026 Career Optics Computer Centre. All Rights Reserved.
+                © 2026 Career Optics Computer Academy. All Rights Reserved.
               </div>
             </div>
           </div>
@@ -10403,7 +10403,7 @@ export default function CertifiedComputer() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          All in One Computer Course | Career Optics Computer Centre
+          All in One Computer Course | Career Optics Computer Academy
         </title>
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://unpkg.com/lucide@latest"></script>
@@ -11413,7 +11413,7 @@ export default function CertifiedComputer() {
         <footer className="border-t border-slate-800 bg-slate-950 py-8">
           <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 sm:flex-row sm:px-6 lg:px-8">
             <div className="text-sm font-bold text-slate-400">
-              © 2026 Career Optics Computer Centre. All Rights Reserved.
+              © 2026 Career Optics Computer Academy. All Rights Reserved.
             </div>
             <div className="flex items-center gap-5 text-sm text-slate-500">
               <a href="#" className="hover:text-white">

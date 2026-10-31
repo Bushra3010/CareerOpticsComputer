@@ -31,7 +31,7 @@ ALTER TABLE public.branches ALTER COLUMN "userId" DROP NOT NULL;
 DO $$
 DECLARE
   admin_email text := 'admin@careeroptics.in';   -- the login email
-  org_name    text := 'Career Optics Computer Centre';     -- the institute name
+  org_name    text := 'Career Optics Computer Academy';     -- the institute name
   admin_id    uuid;
   org_id      text;
 BEGIN

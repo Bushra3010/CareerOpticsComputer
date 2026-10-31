@@ -14,7 +14,7 @@ export default function Fullstack() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Full Stack Development Internship | Career Optics Computer Centre
+          Full Stack Development Internship | Career Optics Computer Academy
         </title>
         <script src="https://cdn.tailwindcss.com"></script>
         <script dangerouslySetInnerHTML={{ __html: js_90a066f6 }} />
@@ -28,7 +28,7 @@ export default function Fullstack() {
                 </div>
                 <div>
                   <div className="font-black text-lg leading-none">
-                    Career Optics Computer Centre
+                    Career Optics Computer Academy
                   </div>
                   <div className="text-[10px] uppercase tracking-widest text-slate-500">
                     Skill • Career • Success
@@ -1347,7 +1347,7 @@ export default function Fullstack() {
                 Full Stack Internship Certificate
               </h2>
               <p className="max-w-2xl mx-auto mt-4 text-indigo-100 leading-7">
-                Students who successfully complete the required internship training, practical work and project requirements can receive a Career Optics Computer Centre internship completion certificate.
+                Students who successfully complete the required internship training, practical work and project requirements can receive a Career Optics Computer Academy internship completion certificate.
               </p>
             </div>
           </div>
@@ -1448,7 +1448,7 @@ export default function Fullstack() {
                     P
                   </div>
                   <div className="font-black text-xl">
-                    Career Optics Computer Centre
+                    Career Optics Computer Academy
                   </div>
                 </div>
                 <p className="mt-5 text-sm leading-7">
@@ -1499,7 +1499,7 @@ export default function Fullstack() {
               </div>
             </div>
             <div className="border-t border-white/10 mt-10 pt-6 text-center text-xs">
-              © 2026 Career Optics Computer Centre. All Rights Reserved.
+              © 2026 Career Optics Computer Academy. All Rights Reserved.
             </div>
           </div>
         </footer>

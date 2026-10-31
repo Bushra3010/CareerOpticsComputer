@@ -14,7 +14,7 @@ export default function React() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Website Designing with React | Career Optics Computer Centre
+          Website Designing with React | Career Optics Computer Academy
         </title>
         <script src="https://cdn.tailwindcss.com"></script>
         <script dangerouslySetInnerHTML={{ __html: js_320e71b7 }} />
@@ -28,7 +28,7 @@ export default function React() {
                 </div>
                 <div>
                   <h1 className="font-extrabold text-slate-900 leading-none">
-                    Career Optics Computer Centre
+                    Career Optics Computer Academy
                   </h1>
                   <p className="text-[10px] text-slate-500 mt-1">
                     Learn • Build • Grow
@@ -1751,7 +1751,7 @@ export default function React() {
                 Become a Professional React Developer
               </h2>
               <p className="mt-5 text-blue-100 max-w-2xl mx-auto">
-                Learn modern website designing, React development, responsive UI and real-world project development with Career Optics Computer Centre.
+                Learn modern website designing, React development, responsive UI and real-world project development with Career Optics Computer Academy.
               </p>
               <div className="flex flex-wrap justify-center gap-4 mt-8">
                 <a href="#admission" className="bg-white text-blue-700 px-7 py-3.5 rounded-xl font-bold">
@@ -1769,7 +1769,7 @@ export default function React() {
             <div className="grid md:grid-cols-4 gap-10">
               <div>
                 <h3 className="text-white text-xl font-black">
-                  Career Optics Computer Centre
+                  Career Optics Computer Academy
                 </h3>
                 <p className="text-sm text-slate-400 mt-4 leading-7">
                   Professional computer education and career-focused skill development.
@@ -1829,7 +1829,7 @@ export default function React() {
               </div>
             </div>
             <div className="border-t border-white/10 mt-10 pt-6 text-center text-sm text-slate-500">
-              © 2026 Career Optics Computer Centre. All Rights Reserved.
+              © 2026 Career Optics Computer Academy. All Rights Reserved.
             </div>
           </div>
         </footer>

@@ -13,7 +13,7 @@ export default function GTool() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Google Workspace Professional Course | Career Optics Computer Centre
+          Google Workspace Professional Course | Career Optics Computer Academy
         </title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -1497,7 +1497,7 @@ export default function GTool() {
                   </span>
                 </h2>
                 <p className="text-slate-500 mt-5 leading-7">
-                  Join Career Optics Computer Centre and learn professional Google Workspace skills through practical training and project-based learning.
+                  Join Career Optics Computer Academy and learn professional Google Workspace skills through practical training and project-based learning.
                 </p>
                 <div className="bg-blue-50 rounded-2xl p-6 mt-7">
                   <div className="flex justify-between items-center">
@@ -1624,7 +1624,7 @@ export default function GTool() {
               Get Your Course Completion Certificate
             </h2>
             <p className="text-slate-500 max-w-2xl mx-auto mt-4 leading-7">
-              Complete the training and practical assessment to receive a Career Optics Computer Centre course completion certificate.
+              Complete the training and practical assessment to receive a Career Optics Computer Academy course completion certificate.
             </p>
             <a href="#admission" className="inline-block mt-7 bg-blue-600 text-white font-bold px-7 py-3.5 rounded-xl">
               {" "}Enroll for Certificate{" "}
@@ -1640,7 +1640,7 @@ export default function GTool() {
                     <i className="fa-solid fa-graduation-cap"></i>
                   </div>
                   <div className="font-black text-xl text-white">
-                    Career Optics Computer Centre
+                    Career Optics Computer Academy
                   </div>
                 </div>
                 <p className="text-sm text-slate-400 leading-6 mt-5">
@@ -1706,13 +1706,13 @@ export default function GTool() {
                   </div>
                   <div>
                     <i className="fa-solid fa-location-dot mr-2"></i>
-                    {" "}Career Optics Computer Centre
+                    {" "}Career Optics Computer Academy
                   </div>
                 </div>
               </div>
             </div>
             <div className="border-t border-white/10 mt-10 pt-7 text-center text-sm text-slate-500">
-              © 2026 Career Optics Computer Centre. All Rights Reserved.
+              © 2026 Career Optics Computer Academy. All Rights Reserved.
             </div>
           </div>
         </footer>

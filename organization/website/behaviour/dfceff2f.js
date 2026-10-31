@@ -71,7 +71,7 @@ function submitAdmission(event){
 
     const whatsappMessage =
 
-`Hello Career Optics Computer Centre,
+`Hello Career Optics Computer Academy,
 
 I want to take admission in the Laravel Web Development Course.
 

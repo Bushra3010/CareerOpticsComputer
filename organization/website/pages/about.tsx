@@ -21,7 +21,7 @@ export default function About() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Career Optics Computer Centre | Education • Software • Skill Development
+          Career Optics Computer Academy | Education • Software • Skill Development
         </title>
         <link rel="stylesheet" href="style.css" />
         <script src="https://cdn.tailwindcss.com"></script>
@@ -43,7 +43,7 @@ export default function About() {
             <div className="mx-auto mb-14 max-w-3xl text-center">
               <span className="mb-3 inline-flex items-center gap-2 rounded-full bg-blue-50 px-4 py-2 text-xs font-bold uppercase tracking-wider text-blue-600">
                 <i data-lucide="sparkles" className="h-4 w-4"></i>
-                Why Choose Career Optics Computer Centre
+                Why Choose Career Optics Computer Academy
               </span>
               <h2 className="text-3xl font-black leading-tight text-slate-900 sm:text-4xl lg:text-5xl">
                 Why{" "}
@@ -52,7 +52,7 @@ export default function About() {
                 </span>
               </h2>
               <p className="mt-5 text-sm leading-7 text-slate-600 sm:text-base">
-                Career Optics Computer Centre is committed to providing practical, career-focused education that helps students develop digital skills, build confidence and prepare for real-world opportunities.
+                Career Optics Computer Academy is committed to providing practical, career-focused education that helps students develop digital skills, build confidence and prepare for real-world opportunities.
               </p>
             </div>
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -189,7 +189,7 @@ export default function About() {
                     </span>
                   </h2>
                   <p className="mt-4 text-sm leading-7 text-slate-600 sm:text-base">
-                    A message from the leadership team of Career Optics Computer Centre for every learner who dreams of building a successful future.
+                    A message from the leadership team of Career Optics Computer Academy for every learner who dreams of building a successful future.
                   </p>
                 </div>
                 <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-slate-50 shadow-xl">
@@ -206,7 +206,7 @@ export default function About() {
                             Founder & Director
                           </h3>
                           <p className="mt-1 text-xs font-semibold text-blue-600">
-                            Career Optics Computer Centre
+                            Career Optics Computer Academy
                           </p>
                         </div>
                       </div>
@@ -219,7 +219,7 @@ export default function About() {
                         “Education is not just about getting a certificate; it is about gaining the right skills, confidence and mindset to create a better future.”
                       </blockquote>
                       <p className="mt-6 text-sm leading-7 text-slate-600 sm:text-base">
-                        At Career Optics Computer Centre, our goal is to make quality digital education accessible to every learner. We believe that practical knowledge, continuous learning and the right guidance can transform careers and lives.
+                        At Career Optics Computer Academy, our goal is to make quality digital education accessible to every learner. We believe that practical knowledge, continuous learning and the right guidance can transform careers and lives.
                       </p>
                       <p className="mt-4 text-sm leading-7 text-slate-600 sm:text-base">
                         We are committed to helping our students become job-ready, digitally skilled and confident enough to explore opportunities in employment, freelancing, entrepreneurship and the growing digital economy.
@@ -231,7 +231,7 @@ export default function About() {
                             Founder & Director
                           </h4>
                           <p className="text-xs font-medium text-slate-500">
-                            Career Optics Computer Centre
+                            Career Optics Computer Academy
                           </p>
                         </div>
                       </div>
@@ -278,7 +278,7 @@ export default function About() {
                         <p>
                           At{" "}
                           <strong className="font-bold text-slate-900">
-                            {" "}Career Optics Computer Centre{" "}
+                            {" "}Career Optics Computer Academy{" "}
                           </strong>
                           , our vision is to provide practical and career-oriented education that prepares learners for the opportunities of the digital world.
                         </p>
@@ -326,7 +326,7 @@ export default function About() {
                           <div className="absolute -inset-5 rounded-[2rem] border border-white/20"></div>
                           <div className="absolute -inset-10 rounded-[2.5rem] border border-white/10"></div>
                           <div className="relative h-[330px] w-[270px] overflow-hidden rounded-[2rem] border-8 border-white/20 bg-slate-900 shadow-2xl sm:h-[400px] sm:w-[320px] lg:h-[440px] lg:w-[350px]">
-                            <img src={"https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=800&q=90"} alt="Founder and Director Career Optics Computer Centre" className="h-full w-full object-cover transition duration-700 hover:scale-105" />
+                            <img src={"https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=800&q=90"} alt="Founder and Director Career Optics Computer Academy" className="h-full w-full object-cover transition duration-700 hover:scale-105" />
                           </div>
                           <div className="absolute -right-5 top-10 flex h-16 w-16 items-center justify-center rounded-2xl border-4 border-white bg-white text-blue-600 shadow-2xl">
                             <i data-lucide="quote" className="h-7 w-7"></i>
@@ -339,7 +339,7 @@ export default function About() {
                               Founder & Director
                             </p>
                             <p className="mt-1 text-[11px] text-slate-400">
-                              Career Optics Computer Centre
+                              Career Optics Computer Academy
                             </p>
                           </div>
                         </div>

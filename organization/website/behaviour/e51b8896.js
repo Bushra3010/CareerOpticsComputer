@@ -141,7 +141,7 @@ function submitAdmission(event){
 
     const text =
 
-        "Hello Career Optics Computer Centre,%0A%0A" +
+        "Hello Career Optics Computer Academy,%0A%0A" +
 
         "I want to enroll in Diploma in Album Designing.%0A%0A" +
 

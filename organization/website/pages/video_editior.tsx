@@ -14,7 +14,7 @@ export default function VideoEditior() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Video Editor Professional Course | Career Optics Computer Centre
+          Video Editor Professional Course | Career Optics Computer Academy
         </title>
         <script src="https://cdn.tailwindcss.com"></script>
         <script dangerouslySetInnerHTML={{ __html: js_268f76ca }} />
@@ -28,7 +28,7 @@ export default function VideoEditior() {
                 </div>
                 <div>
                   <div className="font-extrabold text-lg leading-none">
-                    Career Optics Computer Centre
+                    Career Optics Computer Academy
                   </div>
                   <div className="text-[10px] text-slate-500 font-semibold">
                     Skill • Career • Success
@@ -1788,7 +1788,7 @@ export default function VideoEditior() {
                 Video Editor Course Certificate
               </h2>
               <p className="text-white/80 max-w-2xl mx-auto mt-4">
-                Successfully complete the training and practical projects to receive a course completion certificate from Career Optics Computer Centre.
+                Successfully complete the training and practical projects to receive a course completion certificate from Career Optics Computer Academy.
               </p>
               <div className="grid sm:grid-cols-3 gap-4 mt-8 max-w-3xl mx-auto">
                 <div className="bg-white/10 rounded-2xl p-4">
@@ -1922,7 +1922,7 @@ export default function VideoEditior() {
             <div className="grid md:grid-cols-4 gap-8">
               <div>
                 <div className="text-2xl font-black">
-                  Career Optics Computer Centre
+                  Career Optics Computer Academy
                 </div>
                 <p className="text-sm text-white/50 mt-3">
                   Professional computer, digital and career skill training.
@@ -1992,7 +1992,7 @@ export default function VideoEditior() {
               </div>
             </div>
             <div className="border-t border-white/10 mt-10 pt-6 text-center text-xs text-white/40">
-              © 2026 Career Optics Computer Centre. All Rights Reserved.
+              © 2026 Career Optics Computer Academy. All Rights Reserved.
             </div>
           </div>
         </footer>

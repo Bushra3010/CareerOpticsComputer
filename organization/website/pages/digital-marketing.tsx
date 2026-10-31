@@ -14,7 +14,7 @@ export default function DigitalMarketing() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Digital Marketing Professional Course | Career Optics Computer Centre
+          Digital Marketing Professional Course | Career Optics Computer Academy
         </title>
         <script src="https://cdn.tailwindcss.com"></script>
         <script dangerouslySetInnerHTML={{ __html: js_b59eb817 }} />
@@ -28,7 +28,7 @@ export default function DigitalMarketing() {
                 </div>
                 <div>
                   <h1 className="font-black text-lg leading-none">
-                    Career Optics Computer Centre
+                    Career Optics Computer Academy
                   </h1>
                   <p className="text-[10px] uppercase tracking-widest text-slate-500">
                     Skill • Career • Future
@@ -1884,7 +1884,7 @@ export default function DigitalMarketing() {
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div>
                 <span className="text-indigo-600 font-bold text-sm">
-                  {" "}WHY JOIN CAREER OPTICS COMPUTER CENTRE{" "}
+                  {" "}WHY JOIN CAREER OPTICS COMPUTER ACADEMY{" "}
                 </span>
                 <h2 className="text-3xl md:text-5xl font-black mt-3">
                   Learn Skills That Can{" "}
@@ -2196,7 +2196,7 @@ export default function DigitalMarketing() {
                 Digital Marketing Course Certificate
               </h2>
               <p className="text-white/80 max-w-2xl mx-auto mt-4">
-                Successfully complete the course and practical projects to receive a course completion certificate from Career Optics Computer Centre.
+                Successfully complete the course and practical projects to receive a course completion certificate from Career Optics Computer Academy.
               </p>
               <div className="flex flex-wrap justify-center gap-3 mt-7">
                 <span className="glass rounded-full px-5 py-2">
@@ -2300,7 +2300,7 @@ export default function DigitalMarketing() {
                     PN
                   </div>
                   <h3 className="text-xl font-black">
-                    Career Optics Computer Centre
+                    Career Optics Computer Academy
                   </h3>
                 </div>
                 <p className="text-slate-400 text-sm mt-4 leading-relaxed">
@@ -2347,7 +2347,7 @@ export default function DigitalMarketing() {
               </div>
             </div>
             <div className="border-t border-white/10 mt-10 pt-6 text-center text-sm text-slate-500">
-              © 2026 Career Optics Computer Centre. All Rights Reserved.
+              © 2026 Career Optics Computer Academy. All Rights Reserved.
             </div>
           </div>
         </footer>

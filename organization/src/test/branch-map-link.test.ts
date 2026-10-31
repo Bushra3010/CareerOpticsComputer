@@ -85,7 +85,7 @@ beforeEach(() => {
 describe("a branch's map link", () => {
   it("is saved with the rest of the address", async () => {
     await createBranchWithDetails("org1", {
-      branch: { name: "Career Optics Computer Centre", code: "BRCH09" },
+      branch: { name: "Career Optics Computer Academy", code: "BRCH09" },
       address: ADDRESS,
       director: { name: "A Director" },
     });
@@ -98,7 +98,7 @@ describe("a branch's map link", () => {
 
     await expect(
       createBranchWithDetails("org1", {
-        branch: { name: "Career Optics Computer Centre", code: "BRCH09" },
+        branch: { name: "Career Optics Computer Academy", code: "BRCH09" },
         address: ADDRESS,
         director: { name: "A Director" },
       }),

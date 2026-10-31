@@ -146,7 +146,7 @@ Preferred Batch: ${batch}
 
 Course: Google Suite
 
-I want to join the Google Suite course at Career Optics Computer Centre.`;
+I want to join the Google Suite course at Career Optics Computer Academy.`;
 
 
     /* CHANGE WHATSAPP NUMBER */

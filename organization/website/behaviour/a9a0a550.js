@@ -139,7 +139,7 @@ function submitAdmission(event){
 
     const whatsappText =
 
-`Hello Career Optics Computer Centre,
+`Hello Career Optics Computer Academy,
 
 I want to enroll in PHP Web Development Course.
 

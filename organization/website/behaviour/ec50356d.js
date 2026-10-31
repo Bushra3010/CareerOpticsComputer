@@ -150,7 +150,7 @@ function submitAdmission(event){
 
 
     const message =
-        "Hello Career Optics Computer Centre,%0A%0A" +
+        "Hello Career Optics Computer Academy,%0A%0A" +
 
         "I want to enroll in AutoCAD 2D + 3D Course.%0A%0A" +
 

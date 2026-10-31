@@ -1,8 +1,8 @@
 /**
  * The institute name printed on certificates, marksheets and ID cards.
  *
- * It used to be the literal "Career Optics Computer Centre" in `documentDesigner.ts` and
- * "CAREER OPTICS COMPUTER CENTRE" in `documents.ts`, so every certificate any institute
+ * It used to be the literal "Career Optics Computer Academy" in `documentDesigner.ts` and
+ * "CAREER OPTICS COMPUTER ACADEMY" in `documents.ts`, so every certificate any institute
  * generated carried our name - including the `{{institute}}` watermark, which
  * could be moved and restyled but never actually renamed.
  *
@@ -12,7 +12,7 @@
  */
 import { getBranchSettings, updateBranchSettings } from "@/lib/supabase/data";
 
-export const DEFAULT_INSTITUTE_NAME = "Career Optics Computer Centre";
+export const DEFAULT_INSTITUTE_NAME = "Career Optics Computer Academy";
 
 const STORAGE_KEY = "institute-name";
 

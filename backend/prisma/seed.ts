@@ -59,7 +59,7 @@ async function main() {
     update: {},
     create: {
       userId: owner.id,
-      name: "Career Optics Computer Centre",
+      name: "Career Optics Computer Academy",
       code: "PEI-001",
       email: "info@careeroptics.in",
       phone: "+91 20 4004 1100",

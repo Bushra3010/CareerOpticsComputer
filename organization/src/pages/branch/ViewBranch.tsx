@@ -389,7 +389,7 @@ export default function ViewBranch() {
   // Generate a single branch's certificate HTML content
   const getCertificateHtml = (branch: Branch) => `
     <div style="page-break-after:always;border:6px double #1f2937;padding:48px;text-align:center;font-family:Georgia,serif">
-      <p style="letter-spacing:.3em;font-size:12px;text-transform:uppercase;color:#6b7280">Career Optics Computer Centre</p>
+      <p style="letter-spacing:.3em;font-size:12px;text-transform:uppercase;color:#6b7280">Career Optics Computer Academy</p>
       <h1 style="margin:16px 0 4px;font-size:30px">Center Certificate</h1>
       <p style="color:#6b7280;font-size:13px">This is to certify that the centre named below is authorised to operate</p>
       <h2 style="margin:28px 0 4px;font-size:24px">${branch.name}</h2>
@@ -471,7 +471,7 @@ export default function ViewBranch() {
         // Header
         pdf.setFontSize(10);
         pdf.setTextColor(107, 114, 128);
-        pdf.text("Career Optics Computer Centre", pageWidth / 2, margin, { align: "center" });
+        pdf.text("Career Optics Computer Academy", pageWidth / 2, margin, { align: "center" });
 
         pdf.setFontSize(26);
         pdf.setTextColor(31, 41, 55);

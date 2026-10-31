@@ -42,7 +42,7 @@ export default function LoginPage() {
         <div className="mb-8 flex items-center gap-3.5">
           <img src="/career-optics-logo.png" alt="" className="h-14 w-14 rounded-2xl bg-white object-contain" />
           <div>
-            <p className="text-lg font-semibold tracking-[-.02em]">Career Optics Computer Centre ERP</p>
+            <p className="text-lg font-semibold tracking-[-.02em]">Career Optics Computer Academy ERP</p>
             <p className="text-[11px] font-semibold uppercase tracking-[.13em] text-white/40">Secure institutional workspace</p>
           </div>
         </div>

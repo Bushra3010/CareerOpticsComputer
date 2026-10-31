@@ -154,7 +154,7 @@ export function RechargeUpiDialog({
             <Label htmlFor="recharge-upi-name">Account name</Label>
             <Input
               id="recharge-upi-name"
-              placeholder="Career Optics Computer Centre"
+              placeholder="Career Optics Computer Academy"
               value={merchantName}
               disabled={loading}
               onChange={(e) => setMerchantName(e.target.value)}

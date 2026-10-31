@@ -20,7 +20,7 @@ export default function ConstableDriver() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Career Optics Computer Centre | Education • Software • Skill Development
+          Career Optics Computer Academy | Education • Software • Skill Development
         </title>
         <link rel="stylesheet" href="style.css" />
         <script src="https://cdn.tailwindcss.com"></script>
@@ -599,7 +599,7 @@ export default function ConstableDriver() {
               <h2 className="text-3xl sm:text-4xl font-black mt-3">
                 Why Join{" "}
                 <span className="gradient-text">
-                  {" "}Career Optics Computer Centre?{" "}
+                  {" "}Career Optics Computer Academy?{" "}
                 </span>
               </h2>
             </div>
@@ -847,7 +847,7 @@ export default function ConstableDriver() {
               </div>
             </div>
             <p className="text-center text-xs text-slate-500 mt-8">
-              *ऊपर दी गई fees Career Optics Computer Centre के sample course pricing के लिए हैं। Actual fee, batch duration और inclusions academy अपनी जरूरत के अनुसार बदल सकती है।
+              *ऊपर दी गई fees Career Optics Computer Academy के sample course pricing के लिए हैं। Actual fee, batch duration और inclusions academy अपनी जरूरत के अनुसार बदल सकती है।
             </p>
           </div>
         </section>
@@ -935,7 +935,7 @@ export default function ConstableDriver() {
                     Driver Constable की तैयारी शुरू करें।
                   </h2>
                   <p className="text-blue-100 leading-7 mt-4">
-                    Written Exam + PET + DET की focused preparation के लिए Career Optics Computer Centre में admission लें।
+                    Written Exam + PET + DET की focused preparation के लिए Career Optics Computer Academy में admission लें।
                   </p>
                   <div className="flex flex-wrap gap-3 mt-7">
                     <span className="px-4 py-2 rounded-full bg-white/10 text-xs font-bold">

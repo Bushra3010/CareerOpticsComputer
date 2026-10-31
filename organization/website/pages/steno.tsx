@@ -20,7 +20,7 @@ export default function Steno() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Career Optics Computer Centre | Education • Software • Skill Development
+          Career Optics Computer Academy | Education • Software • Skill Development
         </title>
         <link rel="stylesheet" href="style.css" />
         <script src="https://cdn.tailwindcss.com"></script>
@@ -163,7 +163,7 @@ export default function Steno() {
                       Join Stenographer Batch
                     </a>
                     <p className="text-center text-[10px] text-slate-400 mt-4">
-                      Demo pricing — update according to Career Optics Computer Centre fee structure.
+                      Demo pricing — update according to Career Optics Computer Academy fee structure.
                     </p>
                   </div>
                 </div>
@@ -988,7 +988,7 @@ export default function Steno() {
               </div>
             </div>
             <p className="text-center text-xs text-slate-500 mt-8">
-              *Fees shown are sample/demo pricing. Update with actual Career Optics Computer Centre fees.
+              *Fees shown are sample/demo pricing. Update with actual Career Optics Computer Academy fees.
             </p>
           </div>
         </section>

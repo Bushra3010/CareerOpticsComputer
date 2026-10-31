@@ -12,7 +12,7 @@ export default function Aitool() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          AI Design Tools & Creative AI Workflow | Career Optics Computer Centre
+          AI Design Tools & Creative AI Workflow | Career Optics Computer Academy
         </title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -1901,7 +1901,7 @@ export default function Aitool() {
                   </span>
                 </h2>
                 <p className="text-slate-400 mt-5 leading-7">
-                  Successfully complete the course, practical assignments and final project to receive a course completion certificate from Career Optics Computer Centre.
+                  Successfully complete the course, practical assignments and final project to receive a course completion certificate from Career Optics Computer Academy.
                 </p>
                 <div className="grid sm:grid-cols-2 gap-3 mt-7">
                   <div className="glass rounded-xl p-4">
@@ -1940,7 +1940,7 @@ export default function Aitool() {
                     <i className="fa-solid fa-award"></i>
                   </div>
                   <p className="uppercase tracking-widest text-xs mt-4">
-                    Career Optics Computer Centre
+                    Career Optics Computer Academy
                   </p>
                   <h3 className="text-2xl font-black mt-3">
                     Certificate of Completion
@@ -2203,7 +2203,7 @@ export default function Aitool() {
               </span>
             </h2>
             <p className="text-blue-100 max-w-2xl mx-auto mt-5 leading-7">
-              Learn AI design tools, prompt engineering and complete creative workflows at Career Optics Computer Centre.
+              Learn AI design tools, prompt engineering and complete creative workflows at Career Optics Computer Academy.
             </p>
             <div className="flex flex-wrap justify-center gap-4 mt-8">
               <a href="#admission" className="bg-white text-blue-700 font-bold px-7 py-3.5 rounded-xl">
@@ -2227,7 +2227,7 @@ export default function Aitool() {
                   </div>
                   <div>
                     <h3 className="text-white font-black">
-                      Career Optics Computer Centre
+                      Career Optics Computer Academy
                     </h3>
                     <p className="text-xs">
                       Skill • Career • Future
@@ -2299,13 +2299,13 @@ export default function Aitool() {
                   </li>
                   <li>
                     <i className="fa-solid fa-location-dot mr-2"></i>
-                    {" "}Career Optics Computer Centre
+                    {" "}Career Optics Computer Academy
                   </li>
                 </ul>
               </div>
             </div>
             <div className="border-t border-slate-800 mt-10 pt-6 text-center text-xs">
-              © 2026 Career Optics Computer Centre. All Rights Reserved.
+              © 2026 Career Optics Computer Academy. All Rights Reserved.
             </div>
           </div>
         </footer>

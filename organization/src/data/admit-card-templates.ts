@@ -47,7 +47,7 @@ export interface Exam {
 export const ADMIT_CARD_TEMPLATES_KEY = "erp-admit-card-templates";
 
 export const INSTITUTE = {
-  name: "Career Optics Computer Centre",
+  name: "Career Optics Computer Academy",
   address: "12 MG Road, Pune - 411001",
 };
 

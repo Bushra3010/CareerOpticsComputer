@@ -23,7 +23,7 @@ export default function English() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Career Optics Computer Centre | Education • Software • Skill Development
+          Career Optics Computer Academy | Education • Software • Skill Development
         </title>
         <link rel="stylesheet" href="style.css" />
         <script src="https://cdn.tailwindcss.com"></script>
@@ -42,7 +42,7 @@ export default function English() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          BSEB English Syllabus | Class 11th & 12th | Career Optics Computer Centre
+          BSEB English Syllabus | Class 11th & 12th | Career Optics Computer Academy
         </title>
         <script src="https://cdn.tailwindcss.com"></script>
         <style dangerouslySetInnerHTML={{ __html: css_62f3992b }} />

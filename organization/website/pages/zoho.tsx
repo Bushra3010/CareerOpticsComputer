@@ -12,7 +12,7 @@ export default function Zoho() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Zoho Complete Package | Career Optics Computer Centre
+          Zoho Complete Package | Career Optics Computer Academy
         </title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -1609,7 +1609,7 @@ export default function Zoho() {
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div>
                 <span className="text-cyan-300 font-bold text-sm uppercase tracking-widest">
-                  {" "}Why Learn From Career Optics Computer Centre{" "}
+                  {" "}Why Learn From Career Optics Computer Academy{" "}
                 </span>
                 <h2 className="text-3xl md:text-5xl font-extrabold mt-4 leading-tight">
                   Practical Skills.
@@ -1732,7 +1732,7 @@ export default function Zoho() {
                     Get Your Zoho Professional Course Certificate
                   </h2>
                   <p className="text-slate-600 mt-4 leading-7">
-                    Successfully complete the practical assignments and final assessment to receive a Career Optics Computer Centre course completion certificate.
+                    Successfully complete the practical assignments and final assessment to receive a Career Optics Computer Academy course completion certificate.
                   </p>
                   <div className="flex flex-wrap gap-3 mt-6">
                     <span className="px-4 py-2 rounded-xl bg-slate-50 text-sm font-semibold">
@@ -1917,7 +1917,7 @@ export default function Zoho() {
                   </div>
                   <div>
                     <div className="font-extrabold text-lg">
-                      Career Optics Computer Centre
+                      Career Optics Computer Academy
                     </div>
                     <div className="text-xs text-slate-400">
                       Skill • Career • Success
@@ -1993,7 +1993,7 @@ export default function Zoho() {
             </div>
             <div className="border-t border-white/10 mt-12 pt-6 flex flex-col md:flex-row justify-between gap-3 text-sm text-slate-500">
               <div>
-                © 2026 Career Optics Computer Centre. All Rights Reserved.
+                © 2026 Career Optics Computer Academy. All Rights Reserved.
               </div>
               <div>
                 Zoho Complete Package Professional Course

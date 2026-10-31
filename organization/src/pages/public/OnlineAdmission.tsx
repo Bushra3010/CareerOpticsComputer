@@ -195,7 +195,7 @@ export default function OnlineAdmission() {
     <div className="min-h-screen bg-muted/30 pb-16">
       <header className="border-b bg-card">
         <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-3">
-          <img src={`${import.meta.env.BASE_URL}career-optics-logo.webp`} alt="Career Optics Computer Centre" className="h-11 w-11 rounded-xl object-contain" />
+          <img src={`${import.meta.env.BASE_URL}career-optics-logo.webp`} alt="Career Optics Computer Academy" className="h-11 w-11 rounded-xl object-contain" />
           <div>
             <p className="font-bold leading-tight">Online Admission</p>
             <p className="text-xs text-muted-foreground">Apply with your documents. Your centre confirms the admission.</p>

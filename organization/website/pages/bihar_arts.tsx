@@ -22,7 +22,7 @@ export default function BiharArts() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Career Optics Computer Centre | Education • Software • Skill Development
+          Career Optics Computer Academy | Education • Software • Skill Development
         </title>
         <link rel="stylesheet" href="style.css" />
         <script src="https://cdn.tailwindcss.com"></script>
@@ -773,7 +773,7 @@ export default function BiharArts() {
                   ADMISSION OPEN 2026-27
                 </div>
                 <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-1">
-                  CAREER OPTICS COMPUTER CENTRE ADMISSION FORM
+                  CAREER OPTICS COMPUTER ACADEMY ADMISSION FORM
                 </h1>
                 <div className="lg:min-w-[1150px] bg-white text-slate-1200 rounded- 2xl p-6">
                   <div className="mt-2">
@@ -1167,7 +1167,7 @@ export default function BiharArts() {
                   <label className="flex items-start gap-3 cursor-pointer">
                     <input type="checkbox" required className="mt-1 rounded text-blue-900 focus:ring-blue-800" />
                     <span className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                      {" "}मैं घोषित करता/करती हूँ कि उपरोक्त जानकारी मेरी जानकारी के अनुसार पूर्णतः सत्य है। मैंने Career Optics Computer Centre के सभी नियमों और शर्तों को पढ़ा है तथा पालन करने के लिए सहमत हूँ।{" "}
+                      {" "}मैं घोषित करता/करती हूँ कि उपरोक्त जानकारी मेरी जानकारी के अनुसार पूर्णतः सत्य है। मैंने Career Optics Computer Academy के सभी नियमों और शर्तों को पढ़ा है तथा पालन करने के लिए सहमत हूँ।{" "}
                     </span>
                   </label>
                   {" "}

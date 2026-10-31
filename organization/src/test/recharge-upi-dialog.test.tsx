@@ -41,11 +41,11 @@ describe("Recharge payment account", () => {
   it("opens on the account already saved, rather than empty", async () => {
     getRechargeUpi.mockResolvedValue({
       success: true,
-      data: { upiId: "careeroptics@icici", merchantName: "Career Optics Computer Centre" },
+      data: { upiId: "careeroptics@icici", merchantName: "Career Optics Computer Academy" },
     });
     open();
     await waitFor(() => expect(upiBox()).toHaveValue("careeroptics@icici"));
-    expect(screen.getByLabelText(/account name/i)).toHaveValue("Career Optics Computer Centre");
+    expect(screen.getByLabelText(/account name/i)).toHaveValue("Career Optics Computer Academy");
   });
 
   it("saves the account against the organisation", async () => {
@@ -54,12 +54,12 @@ describe("Recharge payment account", () => {
 
     fireEvent.change(upiBox(), { target: { value: "careeroptics@icici" } });
     fireEvent.change(screen.getByLabelText(/account name/i), {
-      target: { value: "Career Optics Computer Centre" },
+      target: { value: "Career Optics Computer Academy" },
     });
     save();
 
     await waitFor(() =>
-      expect(setRechargeUpi).toHaveBeenCalledWith("org1", "careeroptics@icici", "Career Optics Computer Centre"),
+      expect(setRechargeUpi).toHaveBeenCalledWith("org1", "careeroptics@icici", "Career Optics Computer Academy"),
     );
     expect(toast).toHaveBeenCalledWith(
       expect.objectContaining({ title: "Payment account saved" }),

@@ -1,6 +1,6 @@
-# Career Optics Computer Centre ERP web application
+# Career Optics Computer Academy ERP web application
 
-Authenticated React and Vite frontend for the Career Optics Computer Centre education ERP.
+Authenticated React and Vite frontend for the Career Optics Computer Academy education ERP.
 
 ## Development
 

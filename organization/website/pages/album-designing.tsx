@@ -16,7 +16,7 @@ export default function AlbumDesigning() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Career Optics Computer Centre | Education • Software • Skill Development
+          Career Optics Computer Academy | Education • Software • Skill Development
         </title>
         <link rel="stylesheet" href="style.css" />
         <script src="https://cdn.tailwindcss.com"></script>
@@ -190,7 +190,7 @@ export default function AlbumDesigning() {
                   Diploma in Album Designing Overview
                 </h2>
                 <p className="section-subtitle mb-5">
-                  Career Optics Computer Centre's Diploma in Album Designing is designed for students, photographers, photo editors, graphic designers and beginners who want to learn professional digital album creation.
+                  Career Optics Computer Academy's Diploma in Album Designing is designed for students, photographers, photo editors, graphic designers and beginners who want to learn professional digital album creation.
                 </p>
                 <p className="section-subtitle mb-6">
                   The course covers photo selection, photo editing, colour correction, retouching, album page composition, wedding album layouts, typography, creative backgrounds, image masking, effects, print setup and professional album portfolio creation.
@@ -2384,7 +2384,7 @@ export default function AlbumDesigning() {
                     {" "}
                   </button>
                   <div className="faq-answer">
-                    A course completion certificate can be provided according to Career Optics Computer Centre's certification policy.
+                    A course completion certificate can be provided according to Career Optics Computer Academy's certification policy.
                   </div>
                 </div>
               </section>
@@ -2463,7 +2463,7 @@ export default function AlbumDesigning() {
                     Need Help?
                   </h4>
                   <p className="text-xs text-slate-500 leading-6 mb-4">
-                    Contact Career Optics Computer Centre admission team for course details.
+                    Contact Career Optics Computer Academy admission team for course details.
                   </p>
                   <a href="https://wa.me/918252532179" target="_blank" className="w-full flex items-center justify-center gap-2 bg-green-500 text-white py-3 rounded-lg font-bold text-sm">
                     💬 WhatsApp Enquiry

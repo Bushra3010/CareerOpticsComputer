@@ -22,7 +22,7 @@ export default function Autocad() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Career Optics Computer Centre | Education • Software • Skill Development
+          Career Optics Computer Academy | Education • Software • Skill Development
         </title>
         <link rel="stylesheet" href="style.css" />
         <script src="https://cdn.tailwindcss.com"></script>
@@ -192,7 +192,7 @@ export default function Autocad() {
                   AutoCAD 2D & 3D Course Overview
                 </h2>
                 <p className="section-subtitle mb-5">
-                  Career Optics Computer Centre's AutoCAD 2D & 3D Course is designed to provide complete practical CAD training for students and professionals interested in architecture, civil, mechanical, interior and product design.
+                  Career Optics Computer Academy's AutoCAD 2D & 3D Course is designed to provide complete practical CAD training for students and professionals interested in architecture, civil, mechanical, interior and product design.
                 </p>
                 <p className="section-subtitle mb-6">
                   The program starts with AutoCAD 2D drafting, drawing commands, layers, dimensions, annotations and layouts, then progresses into 3D coordinates, UCS, solid modeling, Boolean operations, surfaces, materials, lighting, rendering and professional projects.
@@ -2329,7 +2329,7 @@ export default function Autocad() {
                     {" "}
                   </button>
                   <div className="faq-answer">
-                    A course completion certificate can be provided according to Career Optics Computer Centre's certification policy.
+                    A course completion certificate can be provided according to Career Optics Computer Academy's certification policy.
                   </div>
                 </div>
               </section>
@@ -2393,7 +2393,7 @@ export default function Autocad() {
                     Need Help?
                   </h4>
                   <p className="text-xs text-slate-500 leading-6 mb-4">
-                    Contact Career Optics Computer Centre admission team for course details.
+                    Contact Career Optics Computer Academy admission team for course details.
                   </p>
                   <a href="https://wa.me/918252532179" target="_blank" className="w-full flex items-center justify-center gap-2 bg-green-500 text-white py-3 rounded-lg font-bold text-sm">
                     💬 WhatsApp Enquiry

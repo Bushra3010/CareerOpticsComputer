@@ -11,14 +11,14 @@ LIME = colors.HexColor("#c7ff2f")
 def brand(c, title, ref, pagesize=A4):
     width, height = pagesize
     c.setFillColor(DARK); c.rect(0, height-108, width, 108, fill=1, stroke=0)
-    c.setFillColor(LIME); c.setFont("Helvetica-Bold", 22); c.drawString(44, height-50, "CAREER OPTICS COMPUTER CENTRE")
+    c.setFillColor(LIME); c.setFont("Helvetica-Bold", 22); c.drawString(44, height-50, "CAREER OPTICS COMPUTER ACADEMY")
     c.setFillColor(colors.white); c.setFont("Helvetica", 8); c.drawString(44, height-68, "EDUCATION  |  SOFTWARE  |  SKILL DEVELOPMENT")
     c.setFont("Helvetica-Bold", 12); c.drawRightString(width-44, height-50, title)
     c.setFont("Helvetica", 8); c.drawRightString(width-44, height-67, ref)
 
 def footer(c, pagesize=A4):
     width, _ = pagesize; c.setStrokeColor(colors.HexColor("#dddddd")); c.line(44, 38, width-44, 38)
-    c.setFillColor(colors.HexColor("#666666")); c.setFont("Helvetica", 7); c.drawCentredString(width/2, 25, "Main Branch | Generated from verified Career Optics Computer Centre ERP records")
+    c.setFillColor(colors.HexColor("#666666")); c.setFont("Helvetica", 7); c.drawCentredString(width/2, 25, "Main Branch | Generated from verified Career Optics Computer Academy ERP records")
 
 def receipt():
     p=OUT/"demo-fee-statement.pdf"; c=Canvas(str(p),pagesize=A4); w,h=A4;brand(c,"FEE STATEMENT","DEMO-STU-001")
@@ -42,7 +42,7 @@ def marksheet():
 
 def certificate():
     size=landscape(A4);p=OUT/"demo-course-certificate.pdf";c=Canvas(str(p),pagesize=size);w,h=size;c.setFillColor(DARK);c.rect(0,0,w,h,fill=1,stroke=0);c.setStrokeColor(LIME);c.setLineWidth(2);c.roundRect(28,28,w-56,h-56,12,stroke=1,fill=0)
-    c.setFillColor(LIME);c.setFont("Helvetica-Bold",24);c.drawCentredString(w/2,h-88,"CAREER OPTICS COMPUTER CENTRE");c.setFillColor(colors.white);c.setFont("Helvetica-Bold",14);c.drawCentredString(w/2,h-132,"CERTIFICATE OF COURSE COMPLETION")
+    c.setFillColor(LIME);c.setFont("Helvetica-Bold",24);c.drawCentredString(w/2,h-88,"CAREER OPTICS COMPUTER ACADEMY");c.setFillColor(colors.white);c.setFont("Helvetica-Bold",14);c.drawCentredString(w/2,h-132,"CERTIFICATE OF COURSE COMPLETION")
     c.setFillColor(colors.HexColor("#bbbbbb"));c.setFont("Helvetica",11);c.drawCentredString(w/2,h-175,"This is to certify that");c.setFillColor(colors.white);c.setFont("Helvetica-Bold",30);c.drawCentredString(w/2,h-218,"Aarav Sharma");c.setStrokeColor(LIME);c.line(215,h-230,w-215,h-230)
     c.setFont("Helvetica",12);c.drawCentredString(w/2,h-265,"has successfully completed Advanced Computer Applications");c.setFillColor(colors.HexColor("#bbbbbb"));c.setFont("Helvetica",9);c.drawCentredString(w/2,h-290,"Enrollment: DEMO-STU-001 | Main Branch");c.setFillColor(colors.white);c.drawCentredString(165,75,"13 August 2026");c.drawCentredString(w-165,75,"AUTHORIZED SIGNATORY");c.setFillColor(LIME);c.setFont("Helvetica",7);c.drawCentredString(w/2,48,"Digitally generated from verified ERP records");c.save();return p
 

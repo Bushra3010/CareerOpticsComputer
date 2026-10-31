@@ -14,7 +14,7 @@ export default function Html() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Website Designing Course | Career Optics Computer Centre
+          Website Designing Course | Career Optics Computer Academy
         </title>
         <script src="https://cdn.tailwindcss.com"></script>
         <script dangerouslySetInnerHTML={{ __html: js_668463c9 }} />
@@ -22,7 +22,7 @@ export default function Html() {
         <div className="top-strip">
           <div className="container-main py-2 flex flex-col sm:flex-row justify-between gap-2">
             <div>
-              Career Optics Computer Centre • Professional Computer & Web Design Training
+              Career Optics Computer Academy • Professional Computer & Web Design Training
             </div>
             <div className="flex flex-wrap gap-5">
               <span>
@@ -42,7 +42,7 @@ export default function Html() {
                   PNS
                 </div>
                 <div className="logo-name gradient-text">
-                  Career Optics Computer Centre
+                  Career Optics Computer Academy
                 </div>
               </a>
               <nav className="desktop-nav flex items-center gap-7 text-sm font-semibold">
@@ -262,7 +262,7 @@ export default function Html() {
                   Website Designing Course Overview
                 </h2>
                 <p className="section-subtitle mb-5">
-                  The Website Designing Course at Career Optics Computer Centre is designed for beginners and students who want to build modern, responsive and professional websites.
+                  The Website Designing Course at Career Optics Computer Academy is designed for beginners and students who want to build modern, responsive and professional websites.
                 </p>
                 <p className="section-subtitle mb-6">
                   Students learn website structure, HTML5, CSS3, responsive design, JavaScript fundamentals, Bootstrap, Tailwind CSS, UI/UX concepts, WordPress, website deployment and practical live projects.
@@ -2558,7 +2558,7 @@ export default function Html() {
                     {" "}
                   </button>
                   <div className="faq-answer">
-                    A course completion certificate can be provided according to Career Optics Computer Centre's certification policy.
+                    A course completion certificate can be provided according to Career Optics Computer Academy's certification policy.
                   </div>
                 </div>
               </section>
@@ -2637,7 +2637,7 @@ export default function Html() {
                     Need Help?
                   </h4>
                   <p className="text-xs text-slate-500 leading-6 mb-4">
-                    Contact Career Optics Computer Centre admission team for course details.
+                    Contact Career Optics Computer Academy admission team for course details.
                   </p>
                   <a href="https://wa.me/918252532179" target="_blank" className="w-full flex items-center justify-center gap-2 bg-green-500 text-white py-3 rounded-lg font-bold text-sm">
                     💬 WhatsApp Enquiry
@@ -2670,7 +2670,7 @@ export default function Html() {
             <div className="grid md:grid-cols-4 gap-8">
               <div>
                 <div className="text-xl font-extrabold text-white mb-3">
-                  Career Optics Computer Centre
+                  Career Optics Computer Academy
                 </div>
                 <p className="text-sm leading-7 text-slate-400">
                   Professional computer education, web design and career-focused skill development.
@@ -2728,13 +2728,13 @@ export default function Html() {
                     ✉ careeropticsconsultancy@gmail.com
                   </div>
                   <div>
-                    📍 Career Optics Computer Centre
+                    📍 Career Optics Computer Academy
                   </div>
                 </div>
               </div>
             </div>
             <div className="border-t border-slate-700 mt-8 pt-6 text-center text-xs text-slate-500">
-              © 2026 Career Optics Computer Centre. All Rights Reserved.
+              © 2026 Career Optics Computer Academy. All Rights Reserved.
             </div>
           </div>
         </footer>

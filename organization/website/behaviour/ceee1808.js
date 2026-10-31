@@ -132,7 +132,7 @@ document.getElementById("admissionForm")
 
 *Internship:* Full Stack Development Internship
 
-*Career Optics Computer Centre*`;
+*Career Optics Computer Academy*`;
 
 
     const whatsappNumber =

@@ -1,4 +1,4 @@
-# Career Optics Computer Centre ERP deployment
+# Career Optics Computer Academy ERP deployment
 
 ## Prerequisites
 
@@ -18,7 +18,7 @@
 curl -X POST https://erp.example.com/api/v1/auth/bootstrap \
   -H 'Content-Type: application/json' \
   -H 'x-bootstrap-token: YOUR_ONE_TIME_TOKEN' \
-  -d '{"organizationName":"Career Optics Computer Centre","adminName":"Administrator","email":"admin@example.com","phone":"9999999999","password":"CHANGE-THIS-PASSWORD","branchName":"Main Branch","city":"Your City","state":"Your State","pincode":"000000"}'
+  -d '{"organizationName":"Career Optics Computer Academy","adminName":"Administrator","email":"admin@example.com","phone":"9999999999","password":"CHANGE-THIS-PASSWORD","branchName":"Main Branch","city":"Your City","state":"Your State","pincode":"000000"}'
 ```
 
 6. Remove `BOOTSTRAP_TOKEN` from the deployment environment and restart the API.

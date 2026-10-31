@@ -66,7 +66,7 @@ const base: StudentDocument = {
   enrollmentNo: "IDS/2026/0003",
   applicationNo: "APP-2026-0003",
   admissionDate: "2026-09-11",
-  branch: { name: "Patna Branch", phone: "", email: "", organization: { name: "Career Optics Computer Centre" } },
+  branch: { name: "Patna Branch", phone: "", email: "", organization: { name: "Career Optics Computer Academy" } },
   feeInvoices: [],
   examResults: [paper(33, 100, 33), paper(26, 50, 17)],
 };

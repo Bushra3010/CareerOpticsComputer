@@ -131,7 +131,7 @@ export default function SiteHeader() {
               <b>
                 Career <span>Optics</span>
               </b>
-              <small>Computer Centre · {BRAND.tagline}</small>
+              <small>Computer Academy · {BRAND.tagline}</small>
             </span>
           </a>
           <nav className="co-nav" aria-label="Main">

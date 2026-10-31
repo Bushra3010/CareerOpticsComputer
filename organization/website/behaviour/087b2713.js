@@ -119,7 +119,7 @@ document.getElementById("mode").value;
 
 
 const message =
-`Hello Career Optics Computer Centre,
+`Hello Career Optics Computer Academy,
 
 I want to enquire about the Video Editor Professional Course.
 

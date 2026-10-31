@@ -14,7 +14,7 @@ export default function BpPoliceDetails() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Career Optics Computer Centre | Education • Software • Skill Development
+          Career Optics Computer Academy | Education • Software • Skill Development
         </title>
         <link rel="stylesheet" href="style.css" />
         <script src="https://cdn.tailwindcss.com"></script>
@@ -506,7 +506,7 @@ export default function BpPoliceDetails() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
               <span className="text-blue-600 font-black text-xs uppercase tracking-widest">
-                {" "}Why Join Career Optics Computer Centre{" "}
+                {" "}Why Join Career Optics Computer Academy{" "}
               </span>
               <h2 className="text-3xl sm:text-4xl font-black mt-3">
                 Course में आपको{" "}
@@ -756,7 +756,7 @@ export default function BpPoliceDetails() {
               </div>
             </div>
             <p className="text-center text-xs text-slate-500 mt-8">
-              *ऊपर दी गई राशि Career Optics Computer Centre की sample course pricing है। Government recruitment/ application fee अलग हो सकती है।
+              *ऊपर दी गई राशि Career Optics Computer Academy की sample course pricing है। Government recruitment/ application fee अलग हो सकती है।
             </p>
           </div>
         </section>

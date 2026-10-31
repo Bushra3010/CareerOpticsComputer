@@ -45,7 +45,7 @@ afterEach(() => {
 });
 
 const COURSE_PAGE = `
-  <h1>Python Programming | Career Optics Computer Centre</h1>
+  <h1>Python Programming | Career Optics Computer Academy</h1>
   <form id="admissionForm">
     <input type="text" id="studentName" required placeholder="Enter your name" value="Rahul Kumar">
     <input type="tel" id="mobile" required placeholder="Enter mobile number" value="9876543210">

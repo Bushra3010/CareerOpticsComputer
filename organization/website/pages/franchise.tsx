@@ -2276,7 +2276,7 @@ export default function Franchise() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Career Optics Computer Centre | Education • Software • Skill Development
+          Career Optics Computer Academy | Education • Software • Skill Development
         </title>
         <link rel="stylesheet" href="style.css" />
         <script src="https://cdn.tailwindcss.com"></script>
@@ -2311,7 +2311,7 @@ export default function Franchise() {
                   {" "}Training Centre
                 </h1>
                 <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
-                  Become an Career Optics Computer Centre Franchise Partner and bring future-ready AI, technology, digital marketing and career-focused courses to students in your city.
+                  Become an Career Optics Computer Academy Franchise Partner and bring future-ready AI, technology, digital marketing and career-focused courses to students in your city.
                 </p>
                 <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                   <a href="#franchise-form" className="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-6 py-3.5 font-bold text-white shadow-lg shadow-indigo-600/25 transition hover:bg-indigo-500 hover:-translate-y-0.5">
@@ -2368,7 +2368,7 @@ export default function Franchise() {
                           Franchise Partner
                         </p>
                         <h2 className="mt-1 text-2xl font-black">
-                          Career Optics Computer Centre
+                          Career Optics Computer Academy
                         </h2>
                       </div>
                       <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-2xl">
@@ -2443,7 +2443,7 @@ export default function Franchise() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-3xl text-center">
               <span className="text-sm font-bold uppercase tracking-widest text-indigo-600">
-                {" "}Why Career Optics Computer Centre{" "}
+                {" "}Why Career Optics Computer Academy{" "}
               </span>
               <h2 className="mt-3 text-3xl font-black text-slate-900 sm:text-4xl">
                 More Than a Franchise.{" "}
@@ -2539,7 +2539,7 @@ export default function Franchise() {
                   </span>
                 </h2>
                 <p className="mt-5 leading-8 text-slate-600">
-                  Career Optics Computer Centre can help you position your local centre around practical, career-oriented digital skills. Choose the programs that match your local student demand.
+                  Career Optics Computer Academy can help you position your local centre around practical, career-oriented digital skills. Choose the programs that match your local student demand.
                 </p>
                 <div className="mt-8 space-y-4">
                   <div className="flex gap-4 rounded-2xl bg-white p-5 shadow-sm">
@@ -3293,7 +3293,7 @@ export default function Franchise() {
               <div className="faq-item rounded-2xl border border-slate-200 bg-white">
                 <button className="faq-btn flex w-full items-center justify-between gap-5 p-6 text-left">
                   <span className="font-bold text-slate-900">
-                    {" "}Who can apply for an Career Optics Computer Centre franchise?{" "}
+                    {" "}Who can apply for an Career Optics Computer Academy franchise?{" "}
                   </span>
                   <span className="faq-icon text-2xl text-indigo-600">
                     {" "}+{" "}
@@ -3554,7 +3554,7 @@ export default function Franchise() {
                   Start Your Own AI & Digital Skills Centre
                 </h2>
                 <p className="mt-4 leading-7 text-indigo-100">
-                  Partner with Career Optics Computer Centre and bring practical, future-ready technology education to your local market.
+                  Partner with Career Optics Computer Academy and bring practical, future-ready technology education to your local market.
                 </p>
                 <a href="#franchise-form" className="mt-8 inline-flex items-center justify-center rounded-xl bg-white px-7 py-4 font-black text-indigo-700 shadow-xl transition hover:-translate-y-1">
                   Apply for Franchise

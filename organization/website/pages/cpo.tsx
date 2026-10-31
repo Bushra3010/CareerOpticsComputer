@@ -20,7 +20,7 @@ export default function Cpo() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Career Optics Computer Centre | Education • Software • Skill Development
+          Career Optics Computer Academy | Education • Software • Skill Development
         </title>
         <link rel="stylesheet" href="style.css" />
         <script src="https://cdn.tailwindcss.com"></script>
@@ -1095,7 +1095,7 @@ export default function Cpo() {
               </div>
             </div>
             <p className="text-center text-xs text-slate-500 mt-8">
-              *Fees shown on this demo page are sample pricing. Update them with Career Optics Computer Centre's actual course fees.
+              *Fees shown on this demo page are sample pricing. Update them with Career Optics Computer Academy's actual course fees.
             </p>
           </div>
         </section>

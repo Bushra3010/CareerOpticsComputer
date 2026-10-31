@@ -134,7 +134,7 @@ document.getElementById("admissionForm")
 
 
     const whatsappMessage =
-`Hello Career Optics Computer Centre,
+`Hello Career Optics Computer Academy,
 
 I want to apply for the Python Programming & Development Course.
 

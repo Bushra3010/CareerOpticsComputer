@@ -3,7 +3,7 @@ import { config } from "./config";
 import { prisma } from "./db";
 
 const server = app.listen(config.PORT, () => {
-  console.log(`Career Optics Computer Centre ERP API listening on port ${config.PORT}`);
+  console.log(`Career Optics Computer Academy ERP API listening on port ${config.PORT}`);
 });
 
 const shutdown = async () => { server.close(async () => { await prisma.$disconnect(); process.exit(0); }); };

@@ -8,13 +8,13 @@ export default function Wedding() {
     <html lang="en">
       <head></head>
       <body className="bg-slate-50 text-slate-800">
-        Bilkul. Neeche **Wedding Album & Video Editing** ka complete responsive **Tailwind CSS single-file code** hai, jo aapke Career Optics Computer Centre ke premium course-page design mein directly use ho sakta hai. ```html
+        Bilkul. Neeche **Wedding Album & Video Editing** ka complete responsive **Tailwind CSS single-file code** hai, jo aapke Career Optics Computer Academy ke premium course-page design mein directly use ho sakta hai. ```html
         <script src="/cms-config.js"></script>
         <script src="/cms.js" defer></script>
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Wedding Album & Video Editing | Career Optics Computer Centre
+          Wedding Album & Video Editing | Career Optics Computer Academy
         </title>
         <script src="https://cdn.tailwindcss.com"></script>
         <script dangerouslySetInnerHTML={{ __html: js_e0da92e2 }} />
@@ -28,7 +28,7 @@ export default function Wedding() {
                 </div>
                 <div>
                   <div className="font-black text-slate-900 leading-none">
-                    Career Optics Computer Centre
+                    Career Optics Computer Academy
                   </div>
                   <div className="text-[11px] text-slate-500 mt-1">
                     Professional Skills Institute
@@ -1663,7 +1663,7 @@ export default function Wedding() {
               Professional Course Certificate
             </h2>
             <p className="text-pink-50 max-w-2xl mx-auto mt-4 leading-relaxed">
-              Successfully complete the training and practical projects to receive a Career Optics Computer Centre course completion certificate.
+              Successfully complete the training and practical projects to receive a Career Optics Computer Academy course completion certificate.
             </p>
             <a href="#admission" className="inline-block mt-7 px-7 py-3.5 rounded-xl bg-white text-pink-700 font-bold">
               {" "}Join Course{" "}
@@ -1743,7 +1743,7 @@ export default function Wedding() {
                   </span>
                 </button>
                 <div className="faq-content hidden px-5 pb-5 text-sm text-slate-600">
-                  Yes. Students who successfully complete the course and required practical work receive a Career Optics Computer Centre certificate.
+                  Yes. Students who successfully complete the course and required practical work receive a Career Optics Computer Academy certificate.
                 </div>
               </div>
             </div>
@@ -1777,7 +1777,7 @@ export default function Wedding() {
                     P
                   </div>
                   <div className="text-white font-black">
-                    Career Optics Computer Centre
+                    Career Optics Computer Academy
                   </div>
                 </div>
                 <p className="text-sm mt-4 leading-relaxed">
@@ -1824,7 +1824,7 @@ export default function Wedding() {
               </div>
             </div>
             <div className="border-t border-slate-800 mt-10 pt-6 text-center text-xs">
-              © 2026 Career Optics Computer Centre. All Rights Reserved.
+              © 2026 Career Optics Computer Academy. All Rights Reserved.
             </div>
           </div>
         </footer>

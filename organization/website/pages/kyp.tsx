@@ -16,7 +16,7 @@ export default function Kyp() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          KYP Course Syllabus | Career Optics Computer Centre
+          KYP Course Syllabus | Career Optics Computer Academy
         </title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -2072,7 +2072,7 @@ export default function Kyp() {
                   </div>
                   <div>
                     <div className="font-extrabold text-lg">
-                      Career Optics Computer Centre
+                      Career Optics Computer Academy
                     </div>
                     <div className="text-xs text-slate-400">
                       Skill Development
@@ -2158,7 +2158,7 @@ export default function Kyp() {
             </div>
             <div className="border-t border-slate-800 mt-10 pt-6 flex flex-col md:flex-row justify-between gap-3 text-sm text-slate-500">
               <div>
-                © 2026 Career Optics Computer Centre. All Rights Reserved.
+                © 2026 Career Optics Computer Academy. All Rights Reserved.
               </div>
               <div>
                 KYP Course Syllabus

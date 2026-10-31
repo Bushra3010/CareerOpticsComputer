@@ -22,7 +22,7 @@ export default function Deo() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          Career Optics Computer Centre | Education • Software • Skill Development
+          Career Optics Computer Academy | Education • Software • Skill Development
         </title>
         <link rel="stylesheet" href="style.css" />
         <script src="https://cdn.tailwindcss.com"></script>
@@ -1600,10 +1600,10 @@ export default function Deo() {
                 🏆
               </div>
               <h2 className="text-3xl font-black mt-4">
-                Career Optics Computer Centre Certificate
+                Career Optics Computer Academy Certificate
               </h2>
               <p className="text-gray-600 leading-7 max-w-2xl mx-auto mt-4">
-                Students who successfully complete the required training and final practical assessment can receive the Career Optics Computer Centre Data Entry Operator Course completion certificate.
+                Students who successfully complete the required training and final practical assessment can receive the Career Optics Computer Academy Data Entry Operator Course completion certificate.
               </p>
               <div className="flex flex-wrap justify-center gap-3 mt-6">
                 <span className="bg-white border px-4 py-2 rounded-full text-sm">

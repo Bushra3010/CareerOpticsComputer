@@ -14,7 +14,7 @@ export default function C() {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>
-          C & C++ Programming Course | Career Optics Computer Centre
+          C & C++ Programming Course | Career Optics Computer Academy
         </title>
         <script src="https://cdn.tailwindcss.com"></script>
         <script dangerouslySetInnerHTML={{ __html: js_3d284604 }} />
@@ -28,7 +28,7 @@ export default function C() {
                 </div>
                 <div>
                   <h1 className="font-black text-lg leading-none">
-                    Career Optics Computer Centre
+                    Career Optics Computer Academy
                   </h1>
                   <p className="text-[10px] text-slate-500 mt-1">
                     Learn • Build • Grow
@@ -1714,7 +1714,7 @@ export default function C() {
                 Course Completion Certificate
               </h2>
               <p className="text-slate-600 leading-7 mt-4">
-                Students successfully completing the C & C++ Programming course will receive a course completion certificate from Career Optics Computer Centre.
+                Students successfully completing the C & C++ Programming course will receive a course completion certificate from Career Optics Computer Academy.
               </p>
               <div className="grid sm:grid-cols-3 gap-4 mt-8">
                 <div className="p-4 rounded-xl bg-slate-50">
@@ -1830,7 +1830,7 @@ export default function C() {
               Ready to Master C & C++?
             </h2>
             <p className="text-indigo-100 mt-4">
-              Join Career Optics Computer Centre and build your programming career with practical training.
+              Join Career Optics Computer Academy and build your programming career with practical training.
             </p>
             <a href="#admission" className="inline-block mt-7 px-8 py-4 rounded-xl bg-white text-indigo-700 font-black hover:bg-indigo-50">
               {" "}Apply Now →{" "}
@@ -1847,7 +1847,7 @@ export default function C() {
                   </div>
                   <div>
                     <h3 className="text-white font-black">
-                      Career Optics Computer Centre
+                      Career Optics Computer Academy
                     </h3>
                     <p className="text-xs">
                       Learn • Build • Grow
@@ -1895,7 +1895,7 @@ export default function C() {
               </div>
             </div>
             <div className="border-t border-slate-800 mt-10 pt-6 text-center text-xs">
-              © 2026 Career Optics Computer Centre. All Rights Reserved.
+              © 2026 Career Optics Computer Academy. All Rights Reserved.
             </div>
           </div>
         </footer>
