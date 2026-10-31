@@ -36,6 +36,9 @@ export async function getCentreDashboard(branchId: string | null): Promise<Centr
 
   let exams = supabase.from("exams").select("id", { count: "exact", head: true });
   if (branchId) exams = exams.eq("branchId", branchId);
+  // A centre's own online exams (centre-exams.sql) count as exams too.
+  let onlineExams = supabase.from("online_exams").select("id", { count: "exact", head: true }).is("deletedAt", null);
+  if (branchId) onlineExams = onlineExams.eq("branchId", branchId);
 
   // fee_payments reaches a branch only through its invoice.
   const payments = branchId
@@ -45,12 +48,14 @@ export async function getCentreDashboard(branchId: string | null): Promise<Centr
   let dues = supabase.from("fee_invoices").select("totalAmount,paidAmount").in("status", ["DUE", "PARTIAL"]);
   if (branchId) dues = dues.eq("branchId", branchId);
 
-  let certificates = supabase.from("certificate_issues").select("id", { count: "exact", head: true });
+  // "Order Certificate" counts the orders placed from the centre panel.
+  let certificates = supabase.from("certificate_orders").select("id", { count: "exact", head: true });
   if (branchId) certificates = certificates.eq("branchId", branchId);
 
-  const [studentsRes, examsRes, paymentsRes, duesRes, certificatesRes] = await Promise.all([
+  const [studentsRes, examsRes, onlineExamsRes, paymentsRes, duesRes, certificatesRes] = await Promise.all([
     students,
     exams,
+    onlineExams,
     payments,
     dues,
     certificates,
@@ -82,7 +87,7 @@ export async function getCentreDashboard(branchId: string | null): Promise<Centr
     registeredStudents: statuses.length - requestedStudents - approvedStudents,
     requestedStudents,
     approvedStudents,
-    totalExams: examsRes.count || 0,
+    totalExams: (examsRes.count || 0) + (onlineExamsRes.count || 0),
     todaysPayment,
     totalPayment,
     totalDues,

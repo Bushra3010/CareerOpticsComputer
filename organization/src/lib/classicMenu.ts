@@ -70,6 +70,7 @@ const FRANCHISE_PLAN: Plan = [
       ["/centre/students?type=online", "Online Students"],
       ["/centre/students?type=deactivated", "Deactivated Students"],
       "/centre/student-add",
+      ["/student/passout", "Passout Students"],
     ],
   },
   { title: "Admission Forms", icon: Globe, urls: ["/centre/admission-forms"] },
