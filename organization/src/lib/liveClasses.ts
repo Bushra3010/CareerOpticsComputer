@@ -35,3 +35,17 @@ export const studentsOnSchedule = (
     (sum, count) => sum + count,
     0,
   );
+
+/**
+ * What the details panel says about a recording.
+ *
+ * `recorded` is set when the class is scheduled to be recorded, which says
+ * nothing about whether a recording exists yet: a class that has not happened
+ * was reading "Available". Only a finished class can have one.
+ */
+export function recordingLabel(status: string, recorded: boolean | undefined): string {
+  if (!recorded) return "Not recorded";
+  if (status === "completed") return "Available";
+  if (status === "cancelled") return "Not recorded";
+  return "Will be recorded";
+}

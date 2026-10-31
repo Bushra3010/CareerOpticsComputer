@@ -29,23 +29,89 @@ import {
   type SupportTicket,
   type TicketStatus,
 } from "@/lib/supabase/centrePanel";
+import {
+  buildThread,
+  cleanMessage,
+  listTicketReplies,
+  postTicketReply,
+  type TicketReply,
+} from "@/lib/supabase/ticketReplies";
 
 const TOPICS = Object.keys(TICKET_TOPICS);
 const blank = () => ({ category: TOPICS[0], subcategory: TICKET_TOPICS[TOPICS[0]][0], subject: "", content: "", branchId: "" });
 
-/** One ticket opened: what the centre wrote and what the head office answered. */
+const stamp = (d: string) =>
+  new Date(d).toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+
+/**
+ * One ticket opened: what the centre wrote, then every message since, oldest
+ * first. It used to hold a single reply that each save overwrote, so the head
+ * office's earlier answers vanished and the centre could not answer back.
+ */
 function TicketThread({ ticket, isAdmin, onSaved }: { ticket: SupportTicket; isAdmin: boolean; onSaved: (t: SupportTicket) => void }) {
   const { toast } = useToast();
-  const [reply, setReply] = useState(ticket.reply || "");
+  const [replies, setReplies] = useState<TicketReply[]>([]);
+  const [loadingThread, setLoadingThread] = useState(true);
+  const [threadError, setThreadError] = useState<string | null>(null);
+  const [message, setMessage] = useState("");
   const [status, setStatus] = useState<TicketStatus>(ticket.status);
   const [saving, setSaving] = useState(false);
 
-  const save = async (patch: { reply?: string | null; status?: TicketStatus }) => {
+  useEffect(() => {
+    let cancelled = false;
+    setLoadingThread(true);
+    listTicketReplies(ticket.id)
+      .then((rows) => {
+        if (!cancelled) {
+          setReplies(rows);
+          setThreadError(null);
+        }
+      })
+      .catch((error: Error) => {
+        if (!cancelled) setThreadError(error.message);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingThread(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [ticket.id]);
+
+  const thread = buildThread(ticket, replies);
+  const canFollowUp = !isAdmin && ticket.status !== "CLOSED";
+
+  const send = async () => {
+    if (!cleanMessage(message)) {
+      toast({ title: "Write a message first", description: "An empty message cannot be sent.", variant: "destructive" });
+      return;
+    }
     setSaving(true);
     try {
-      const saved = await updateSupportTicket(ticket.id, patch);
+      const result = await postTicketReply(ticket, {
+        author: isAdmin ? "HEAD_OFFICE" : "CENTRE",
+        message,
+        status: isAdmin ? status : undefined,
+      });
+      setReplies((all) => [...all, result.reply]);
+      setMessage("");
+      if (result.ticket) onSaved({ ...ticket, ...result.ticket } as SupportTicket);
+      toast({ title: isAdmin ? "Reply sent" : "Message sent" });
+    } catch (error) {
+      toast({ title: "Could not send the message", description: (error as Error).message, variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Status alone, for when there is nothing to add: marking a ticket resolved
+  // should not need a message written for the sake of it.
+  const setTicketStatus = async (next: TicketStatus) => {
+    setSaving(true);
+    try {
+      const saved = await updateSupportTicket(ticket.id, { status: next });
       onSaved({ ...ticket, ...saved });
-      toast({ title: "Ticket updated" });
+      toast({ title: next === "CLOSED" ? "Ticket closed" : "Status updated" });
     } catch (error) {
       toast({ title: "Could not update the ticket", description: (error as Error).message, variant: "destructive" });
     } finally {
@@ -68,28 +134,55 @@ function TicketThread({ ticket, isAdmin, onSaved }: { ticket: SupportTicket; isA
           <img src={ticket.image} alt="Attached" className="max-h-64 rounded border bg-white" />
         </a>
       )}
-      <div className="rounded border-l-4 border-[#38c3be] bg-white p-3">
-        <p className="mb-1 text-[12px] font-bold uppercase text-slate-500">Head office reply</p>
-        {isAdmin ? (
-          <div className="space-y-2">
-            <DceTextarea value={reply} onChange={(e) => setReply(e.target.value)} placeholder="Write a reply…" aria-label="Reply" />
-            <div className="flex flex-wrap items-center gap-2">
+
+      <ol className="space-y-2" aria-label="Conversation">
+        {loadingThread && <li className="text-slate-500">Loading conversation…</li>}
+        {!loadingThread && thread.length === 0 && (
+          <li className="text-slate-500">No replies yet. The head office will answer here.</li>
+        )}
+        {thread.map((r) => (
+          <li
+            key={r.id}
+            className={`rounded border-l-4 bg-white p-3 ${r.author === "HEAD_OFFICE" ? "border-[#38c3be]" : "border-slate-400"}`}
+          >
+            <p className="mb-1 text-[12px] font-bold uppercase text-slate-500">
+              {r.author === "HEAD_OFFICE" ? "Head office" : "Centre"} · <span className="font-normal normal-case">{stamp(r.createdAt)}</span>
+            </p>
+            <p className="whitespace-pre-wrap text-slate-700">{r.message}</p>
+          </li>
+        ))}
+      </ol>
+      {threadError && <p className="text-[12px] text-red-600">{threadError}</p>}
+
+      {(isAdmin || canFollowUp) && (
+        <div className="space-y-2">
+          <DceTextarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder={isAdmin ? "Write a reply…" : "Add a follow-up message…"}
+            aria-label={isAdmin ? "Reply" : "Follow-up message"}
+          />
+          <div className="flex flex-wrap items-center gap-2">
+            {isAdmin && (
               <DceSelect value={status} onChange={(e) => setStatus(e.target.value as TicketStatus)} className="w-44" aria-label="Status">
                 {TICKET_STATUSES.map((s) => (
                   <option key={s} value={s}>{s.replace("_", " ")}</option>
                 ))}
               </DceSelect>
-              <DceButton tone="teal" disabled={saving} onClick={() => void save({ reply: reply.trim() || null, status })}>
-                {saving ? "Saving…" : "Save Reply"}
+            )}
+            <DceButton tone="teal" disabled={saving || !cleanMessage(message)} onClick={() => void send()}>
+              {saving ? "Sending…" : isAdmin ? "Send Reply" : "Send Message"}
+            </DceButton>
+            {isAdmin && status !== ticket.status && (
+              <DceButton tone="slate" disabled={saving} onClick={() => void setTicketStatus(status)}>
+                Update Status Only
               </DceButton>
-            </div>
+            )}
           </div>
-        ) : (
-          <p className="whitespace-pre-wrap text-slate-700">{ticket.reply || "No reply yet. The head office will answer here."}</p>
-        )}
-      </div>
-      {!isAdmin && ticket.status !== "CLOSED" && (
-        <DceButton tone="slate" size="sm" disabled={saving} onClick={() => void save({ status: "CLOSED" })}>
+        </div>
+      )}
+      {canFollowUp && (
+        <DceButton tone="slate" size="sm" disabled={saving} onClick={() => void setTicketStatus("CLOSED")}>
           Close Ticket
         </DceButton>
       )}

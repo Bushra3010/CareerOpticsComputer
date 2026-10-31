@@ -21,11 +21,15 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Layers, IndianRupee, Users, BookOpen } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
-import { addPayment } from "@/lib/supabase/data";
+import {
+  feeGroupUsage,
+  listFeeGroupInvoices,
+  studentsOnFeeGroups,
+  type FeeGroupInvoice,
+} from "@/lib/supabase/studentFee";
 import { FEE_GROUPS_KEY, FEE_TYPES_KEY } from "@/data/fee-catalog";
 
 interface FeeGroup {
@@ -35,8 +39,14 @@ interface FeeGroup {
   feeTypes: string[];
   totalAmount: number;
   courses: string[];
+  /** Read from the group's invoices on load; the stored figure is ignored. */
   studentsCount: number;
   status: "active" | "inactive";
+}
+
+/** A group as the table shows it: the stored package plus who it is billed to. */
+interface FeeGroupRow extends FeeGroup {
+  invoiceCount: number;
 }
 
 interface FeeType {
@@ -64,7 +74,7 @@ function suggestCode(name: string, existing: FeeType[]): string {
   return code;
 }
 
-const columns: Column<FeeGroup>[] = [
+const columns: Column<FeeGroupRow>[] = [
   {
     key: "name",
     header: "Fee Group",
@@ -133,7 +143,6 @@ const columns: Column<FeeGroup>[] = [
 const BLANK = { name: "", courses: "All Courses", description: "", feeTypeIds: [] as string[] };
 
 export default function FeeGroups() {
-  const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [groups, setGroups] = useState<FeeGroup[]>([]);
@@ -141,21 +150,52 @@ export default function FeeGroups() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ ...BLANK });
-  const [details, setDetails] = useState<FeeGroup | null>(null);
-  const [assigning, setAssigning] = useState<FeeGroup | null>(null);
-  const [assignCount, setAssignCount] = useState("");
-  const [pendingDelete, setPendingDelete] = useState<FeeGroup | null>(null);
+  const [details, setDetails] = useState<FeeGroupRow | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<FeeGroupRow | null>(null);
+  // null until the invoices have loaded. A delete is refused while it is, since
+  // "no students" cannot be told apart from "not counted yet".
+  const [invoices, setInvoices] = useState<FeeGroupInvoice[] | null>(null);
+  const [usageError, setUsageError] = useState<string | null>(null);
 
   useEffect(() => {
-    let cancelled = false;
     try {
       const g = localStorage.getItem(FEE_GROUPS_KEY);
       if (g) setGroups(JSON.parse(g));
       const f = localStorage.getItem(FEE_TYPES_KEY);
       if (f) setAllFeeTypes(JSON.parse(f));
     } catch { /* use empty */ }
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    // Row-level security scopes the invoices to what this login may see.
+    listFeeGroupInvoices(null)
+      .then((rows) => {
+        if (!cancelled) {
+          setInvoices(rows);
+          setUsageError(null);
+        }
+      })
+      .catch((error: Error) => {
+        if (!cancelled) setUsageError(error.message || "Could not count the students on each group.");
+      });
     return () => { cancelled = true; };
   }, []);
+
+  const usage = useMemo(() => feeGroupUsage(invoices ?? []), [invoices]);
+  const rows: FeeGroupRow[] = useMemo(
+    () =>
+      groups.map((g) => ({
+        ...g,
+        studentsCount: usage.get(g.id)?.students ?? 0,
+        invoiceCount: usage.get(g.id)?.invoices ?? 0,
+      })),
+    [groups, usage],
+  );
+  const studentsAssigned = useMemo(
+    () => studentsOnFeeGroups(invoices ?? [], groups.map((g) => g.id)),
+    [invoices, groups],
+  );
 
   // Every caller passes an updater function, so these have to resolve it before
   // writing: `JSON.stringify(fn)` is `undefined`, which stored the literal string
@@ -238,8 +278,8 @@ export default function FeeGroups() {
       feeTypes: chosen.map((f) => f.name),
       totalAmount: chosen.reduce((sum, f) => sum + f.defaultAmount, 0),
       courses: courses.length ? courses : ["All Courses"],
-      status: "active" as const,
-      studentsCount: editingId ? groups.find((g) => g.id === editingId)?.studentsCount ?? 0 : 0,
+      status: editingId ? groups.find((g) => g.id === editingId)?.status ?? "active" : "active",
+      studentsCount: 0,
     };
 
     if (editingId) {
@@ -254,46 +294,45 @@ export default function FeeGroups() {
     setForm({ ...BLANK });
   };
 
-  const duplicate = (group: FeeGroup) => {
+  const duplicate = ({ invoiceCount: _usage, ...group }: FeeGroupRow) => {
     const name = `${group.name} (Copy)`;
     const copy: FeeGroup = { ...group, id: `${Date.now().toString(36)}`, name, studentsCount: 0, status: "inactive" };
     persistGroups((prev) => [copy, ...prev]);
     toast({ title: "Fee group duplicated", description: `${name} was created as inactive.` });
   };
 
-  const confirmAssign = () => {
-    if (!assigning) return;
-    const count = Number(assignCount);
-    if (!assignCount.trim() || !Number.isFinite(count) || count <= 0) {
-      toast({ title: "Enter how many students to assign", variant: "destructive" });
-      return;
+  /**
+   * Deleting is refused, not merely warned about, while any invoice names the
+   * group. The invoices would survive (the group lives only in this browser),
+   * but they would lose the package they were billed from and read as
+   * "Custom invoice" on allocation, with nothing left to say what they were
+   * for. Void or re-allocate those invoices first; the group can go after.
+   */
+  const deleteBlocker = (group: FeeGroupRow): string | null => {
+    if (invoices === null) {
+      return usageError
+        ? `Could not check which invoices use this group (${usageError}). Try again before deleting.`
+        : "Still counting the invoices on this group. Try again in a moment.";
     }
-    persistGroups((prev) => prev.map((g) => (g.id === assigning.id ? { ...g, studentsCount: g.studentsCount + count } : g)));
-    toast({
-      title: "Fee group assigned",
-      description: `${count} student(s) added to ${assigning.name} · ₹${(count * assigning.totalAmount).toLocaleString()} billed.`,
-    });
-    setAssigning(null);
-    setAssignCount("");
+    if (group.invoiceCount > 0) {
+      return `${group.invoiceCount} invoice${group.invoiceCount === 1 ? "" : "s"} for ${group.studentsCount} student${group.studentsCount === 1 ? "" : "s"} use this group. Void or re-allocate them on Fee Allocation before deleting it.`;
+    }
+    return null;
   };
 
   const confirmDelete = () => {
-    if (!pendingDelete) return;
+    if (!pendingDelete || deleteBlocker(pendingDelete)) return;
     persistGroups((prev) => prev.filter((g) => g.id !== pendingDelete.id));
     toast({ title: "Fee group deleted", description: `${pendingDelete.name} was removed.` });
     setPendingDelete(null);
   };
 
-  const handleActions = (group: FeeGroup) => [
+  const handleActions = (group: FeeGroupRow) => [
     { label: "View Details", onClick: () => setDetails(group) },
     { label: "Edit Group", onClick: () => openEdit(group) },
-    {
-      label: "Assign to Students",
-      onClick: () => {
-        setAssigning(group);
-        setAssignCount("");
-      },
-    },
+    // Students are put on a group by allocating it, which bills them. The
+    // number typed here used to be added to a counter and billed no one.
+    { label: "Assign to Students", onClick: () => navigate("/fee/allocation") },
     { label: "Duplicate", onClick: () => duplicate(group) },
     { label: "Delete", onClick: () => setPendingDelete(group), destructive: true },
   ];
@@ -340,7 +379,7 @@ export default function FeeGroups() {
                 <Users className="h-5 w-5 text-success" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{groups.reduce((sum, g) => sum + g.studentsCount, 0)}</p>
+                <p className="text-2xl font-bold">{invoices === null && !usageError ? "…" : studentsAssigned}</p>
                 <p className="text-sm text-muted-foreground">Students Assigned</p>
               </div>
             </div>
@@ -375,7 +414,7 @@ export default function FeeGroups() {
       </div>
 
       <DataTable
-        data={groups}
+        data={rows}
         columns={columns}
         searchPlaceholder="Search fee groups..."
         actions={handleActions}
@@ -482,6 +521,7 @@ export default function FeeGroups() {
                 {[
                   ["Total amount", `₹${details.totalAmount.toLocaleString()}`],
                   ["Students assigned", String(details.studentsCount)],
+                  ["Invoices", String(details.invoiceCount)],
                   ["Courses", details.courses.join(", ")],
                   ["Expected revenue", `₹${(details.totalAmount * details.studentsCount).toLocaleString()}`],
                 ].map(([label, value]) => (
@@ -516,58 +556,19 @@ export default function FeeGroups() {
         </DialogContent>
       </Dialog>
 
-      <Dialog
-        open={!!assigning}
-        onOpenChange={(open) => {
-          if (!open) {
-            setAssigning(null);
-            setAssignCount("");
-          }
-        }}
-      >
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Assign {assigning?.name}</DialogTitle>
-            <DialogDescription>
-              ₹{assigning?.totalAmount.toLocaleString()} per student · {assigning?.studentsCount} already assigned.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-2">
-            <Label htmlFor="assign-count">Number of students</Label>
-            <Input
-              id="assign-count"
-              type="number"
-              min={1}
-              placeholder="e.g., 25"
-              value={assignCount}
-              onChange={(e) => setAssignCount(e.target.value)}
-            />
-            {Number(assignCount) > 0 && assigning && (
-              <p className="text-xs text-muted-foreground">
-                Bills ₹{(Number(assignCount) * assigning.totalAmount).toLocaleString()} in total.
-              </p>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setAssigning(null)}>Cancel</Button>
-            <Button onClick={confirmAssign}>Assign</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       <AlertDialog open={!!pendingDelete} onOpenChange={(open) => !open && setPendingDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete {pendingDelete?.name}?</AlertDialogTitle>
             <AlertDialogDescription>
-              {pendingDelete?.studentsCount
-                ? `${pendingDelete.studentsCount} students are on this package — they will lose their fee structure.`
-                : "This fee group has no students assigned."}
+              {pendingDelete && (deleteBlocker(pendingDelete) ?? "No invoice uses this fee group. It can be deleted safely.")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+            <AlertDialogCancel>{pendingDelete && deleteBlocker(pendingDelete) ? "Close" : "Cancel"}</AlertDialogCancel>
+            {pendingDelete && !deleteBlocker(pendingDelete) && (
+              <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+            )}
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

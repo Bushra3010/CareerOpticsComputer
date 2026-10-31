@@ -15,6 +15,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { getNotices, createNotice, updateNotice, deleteNotice, getBranches, getBatches, getCourses } from "@/lib/supabase/data";
+import { dayValue, formatDay } from "@/lib/dates";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type NoticeType = "BRANCH" | "BATCH";
 type NoticePriority = "LOW" | "MEDIUM" | "HIGH";
@@ -49,8 +60,12 @@ interface Branch {
  */
 const ALL_BRANCHES = "__all_branches__";
 
-const today = () => new Date().toISOString().slice(0, 10);
-const inAMonth = () => new Date(Date.now() + 30 * 864e5).toISOString().slice(0, 10);
+// The viewer's own calendar day: `toISOString()` gave yesterday in India
+// until 5:30 in the morning.
+const localDay = (at: Date) =>
+  `${at.getFullYear()}-${String(at.getMonth() + 1).padStart(2, "0")}-${String(at.getDate()).padStart(2, "0")}`;
+const today = () => localDay(new Date());
+const inAMonth = () => localDay(new Date(Date.now() + 30 * 864e5));
 
 const blankDraft = (branchId: string): Notice => ({
   id: "",
@@ -107,11 +122,20 @@ export default function BranchNoticeBoard() {
   // Batch names repeat across courses ("Morning"), so each is shown with its course.
   const [courseNames, setCourseNames] = useState<Map<string, string>>(new Map());
   const [metaLoading, setMetaLoading] = useState(true);
+  // A notice is gone for every branch the moment it is deleted, so one stray
+  // click on the bin is not enough.
+  const [pendingDelete, setPendingDelete] = useState<Notice | null>(null);
+
+  // Older sessions carried the organisation as `orgId`.
+  const userOrgId =
+    (user as { organizationId?: string; orgId?: string } | null)?.organizationId ||
+    (user as { orgId?: string } | null)?.orgId ||
+    null;
 
   useEffect(() => {
     const fetchMeta = async () => {
       try {
-        const orgId = (user as any)?.organizationId || (user as any)?.orgId || null;
+        const orgId = userOrgId;
         const [branchRes, batchRes] = await Promise.all([
           orgId ? getBranches(orgId) : Promise.resolve({ success: true, data: [] }),
           user?.branchId ? getBatches(user.branchId) : Promise.resolve({ success: true, data: [] }),
@@ -121,7 +145,7 @@ export default function BranchNoticeBoard() {
           .then((r) => setCourseNames(new Map((r.data as Array<{ id: string; name: string }>).map((c) => [String(c.id), c.name]))))
           .catch(() => setCourseNames(new Map()));
         setBatches(
-          (batchRes.data || []).map((b: any) => ({
+          (batchRes.data || []).map((b: Record<string, unknown>) => ({
             id: b.id as string,
             name: (b.name || b.title || `Batch ${b.id}`) as string,
             courseId: String(b.courseId ?? ""),
@@ -138,7 +162,7 @@ export default function BranchNoticeBoard() {
       }
     };
     fetchMeta();
-  }, [toast, user?.branchId, (user as any)?.organizationId, (user as any)?.orgId]);
+  }, [toast, user?.branchId, userOrgId]);
 
   useEffect(() => {
     const fetchNotices = async () => {
@@ -172,6 +196,9 @@ export default function BranchNoticeBoard() {
   const openEdit = (notice: Notice) => {
     setDraft({
       ...notice,
+      // The date picker wants the day alone; the row carries "T00:00:00".
+      publishDate: dayValue(notice.publishDate),
+      expiryDate: dayValue(notice.expiryDate),
       branchId: notice.branchId || ALL_BRANCHES,
       meetingTime: toLocalInput(notice.meetingTime),
       meetingLink: notice.meetingLink || "",
@@ -238,6 +265,7 @@ export default function BranchNoticeBoard() {
   };
 
   const deleteNoticeHandler = async (notice: Notice) => {
+    setPendingDelete(null);
     try {
       await deleteNotice(notice.id);
       setItems((list) => list.filter((n) => n.id !== notice.id));
@@ -298,9 +326,9 @@ export default function BranchNoticeBoard() {
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <span className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
-              Published: {notice.publishDate}
+              Published: {formatDay(notice.publishDate)}
             </span>
-            <span>Expires: {notice.expiryDate}</span>
+            <span>Expires: {formatDay(notice.expiryDate)}</span>
             <span className="flex items-center gap-1">
               <Eye className="h-4 w-4" />
               {notice.views} views
@@ -322,7 +350,7 @@ export default function BranchNoticeBoard() {
               variant="ghost"
               size="icon"
               title="Delete notice"
-              onClick={() => deleteNoticeHandler(notice)}
+              onClick={() => setPendingDelete(notice)}
             >
               <Trash2 className="h-4 w-4 text-destructive" />
             </Button>
@@ -413,7 +441,7 @@ export default function BranchNoticeBoard() {
                         try {
                           const res = await getBatches(v);
                           setBatches(
-                            (res.data || []).map((b: any) => ({
+                            (res.data || []).map((b: Record<string, unknown>) => ({
                               id: b.id as string,
                               name: (b.name || b.title || `Batch ${b.id}`) as string,
                               courseId: String(b.courseId ?? ""),
@@ -585,6 +613,26 @@ export default function BranchNoticeBoard() {
           {batchNotices.map(NoticeCard)}
         </TabsContent>
       </Tabs>
+
+      <AlertDialog open={!!pendingDelete} onOpenChange={(open) => !open && setPendingDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this notice?</AlertDialogTitle>
+            <AlertDialogDescription>
+              "{pendingDelete?.title}" will be removed for everyone who can see it. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => pendingDelete && void deleteNoticeHandler(pendingDelete)}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppLayout>
   );
 }

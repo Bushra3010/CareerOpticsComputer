@@ -235,6 +235,78 @@ export async function listInvoices(
   throw new Error(lastError?.message || "Could not load invoices.");
 }
 
+/* ============================
+   FEE GROUP USAGE
+   ============================ */
+
+export interface FeeGroupUsage {
+  /** Distinct students billed under the group. */
+  students: number;
+  /** Invoices that name the group. */
+  invoices: number;
+}
+
+/**
+ * How many students and invoices each fee group is actually on.
+ *
+ * Fee groups kept a hand-typed `studentsCount` that allocation never touched,
+ * so a group billed to a student still read 0 and could be deleted from under
+ * its invoices. The count is the invoices themselves: a student is on a group
+ * when they hold a live (non-VOID) invoice for it, counted once however many
+ * invoices they hold.
+ */
+export function feeGroupUsage(
+  invoices: Array<Pick<InvoiceRow, "studentId" | "feeGroupId" | "status">>,
+): Map<string, FeeGroupUsage> {
+  const students = new Map<string, Set<string>>();
+  const counts = new Map<string, number>();
+  for (const invoice of invoices) {
+    const groupId = invoice.feeGroupId ? String(invoice.feeGroupId) : "";
+    if (!groupId || toFeeStatus(invoice.status) === "VOID") continue;
+    counts.set(groupId, (counts.get(groupId) || 0) + 1);
+    if (!students.has(groupId)) students.set(groupId, new Set());
+    if (invoice.studentId) students.get(groupId)!.add(String(invoice.studentId));
+  }
+  const usage = new Map<string, FeeGroupUsage>();
+  for (const [groupId, invoiceCount] of counts) {
+    usage.set(groupId, { students: students.get(groupId)?.size ?? 0, invoices: invoiceCount });
+  }
+  return usage;
+}
+
+/**
+ * Distinct students on any of the given groups. Summing per-group counts
+ * would count a student on two groups twice.
+ */
+export function studentsOnFeeGroups(
+  invoices: Array<Pick<InvoiceRow, "studentId" | "feeGroupId" | "status">>,
+  groupIds: Iterable<string>,
+): number {
+  const wanted = new Set(groupIds);
+  const students = new Set<string>();
+  for (const invoice of invoices) {
+    if (!invoice.studentId || !invoice.feeGroupId || !wanted.has(String(invoice.feeGroupId))) continue;
+    if (toFeeStatus(invoice.status) === "VOID") continue;
+    students.add(String(invoice.studentId));
+  }
+  return students.size;
+}
+
+export type FeeGroupInvoice = Pick<InvoiceRow, "id" | "studentId" | "feeGroupId" | "status">;
+
+/** The live invoices that name a fee group, across what this login can see. */
+export async function listFeeGroupInvoices(branchId: string | null): Promise<FeeGroupInvoice[]> {
+  let query = supabase
+    .from("fee_invoices")
+    .select("id,studentId,feeGroupId,status")
+    .not("feeGroupId", "is", null)
+    .neq("status", "VOID");
+  if (branchId) query = query.eq("branchId", branchId);
+  const { data, error } = await query;
+  if (error) throw new Error(error.message);
+  return (data || []) as FeeGroupInvoice[];
+}
+
 /** Sum of non-reversed payments on an invoice, safe against missing embeds. */
 export function paidFromPayments(invoice: Pick<InvoiceRow, "payments" | "paidAmount">): number {
   const payments = Array.isArray(invoice?.payments) ? invoice.payments : null;

@@ -15,9 +15,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useEffect, useState } from "react";
-import { Settings, Bell, Shield, Palette, Save, RotateCcw } from "lucide-react";
+import { Settings, Bell, Shield, Palette, Save, RotateCcw, Lock } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  DEFAULT_GENERAL_SETTINGS as DEFAULTS,
+  type GeneralSettings as SettingsValues,
+  clearLegacySettings,
+  getOrgSettings,
+  readLegacySettings,
+  saveOrgSettings,
+} from "@/lib/supabase/orgSettings";
 
 const NOTIFICATIONS = [
   { key: "email", title: "Email Notifications", description: "Receive email notifications for important updates" },
@@ -28,56 +37,86 @@ const NOTIFICATIONS = [
   { key: "attendance", title: "Attendance Alerts", description: "Notifications for low attendance" },
 ];
 
-const DEFAULTS = {
-  schoolName: "",
-  schoolCode: "",
-  email: "",
-  phone: "",
-  address: "",
-  city: "",
-  state: "",
-  country: "India",
-  academicYear: "",
-  timezone: "ist",
-  currency: "inr",
-  dateFormat: "dd-mm-yyyy",
-  notifications: Object.fromEntries(NOTIFICATIONS.map((n) => [n.key, true])) as Record<string, boolean>,
-  twoFactor: false,
-  sessionTimeout: "30",
-  passwordPolicy: true,
-  accentColor: "bg-blue-500",
-  compact: false,
-};
+// Mirrors public.is_org_admin(): the database refuses anyone else's update,
+// so the page does not offer them a Save that would fail.
+const ADMIN_ROLES = ["SUPER_ADMIN", "ORGANIZATION_ADMIN"];
 
-const STORAGE_KEY = "erp-settings-general";
+/** Drops blank strings, so an empty field in the old browser copy does not
+ *  wipe a value the organisation already has. */
+const withoutBlanks = (values: Partial<SettingsValues>) =>
+  Object.fromEntries(Object.entries(values).filter(([, v]) => v !== "" && v !== null && v !== undefined));
 
 export default function GeneralSettings() {
   const { toast } = useToast();
   const { theme, setTheme } = useTheme();
-  const [form, setForm] = useState<Record<string, any>>(DEFAULTS);
+  const { user, organizationId } = useAuth();
+  const canEdit = !!organizationId && ADMIN_ROLES.includes((user?.role ?? "").toUpperCase());
+  const [form, setForm] = useState<SettingsValues>(DEFAULTS);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  /** The browser's old copy was folded in and is cleared after the first save. */
+  const [usedLegacy, setUsedLegacy] = useState(false);
+  const locked = !canEdit || loading;
 
   useEffect(() => {
+    if (!organizationId) {
+      setLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    getOrgSettings(organizationId)
+      .then(({ settings, isEmpty }) => {
+        if (cancelled) return;
+        const legacy = isEmpty ? readLegacySettings() : null;
+        if (legacy) {
+          const clean = withoutBlanks(legacy) as Partial<SettingsValues>;
+          setForm({
+            ...settings,
+            ...clean,
+            notifications: { ...settings.notifications, ...(clean.notifications ?? {}) },
+          });
+          setUsedLegacy(true);
+        } else {
+          setForm(settings);
+        }
+      })
+      .catch((err: Error) => {
+        if (cancelled) return;
+        toast({ title: "Could not load settings", description: err.message, variant: "destructive" });
+      })
+      .finally(() => !cancelled && setLoading(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [organizationId, toast]);
+
+  const set = <K extends keyof SettingsValues>(key: K, value: SettingsValues[K]) =>
+    setForm((prev) => ({ ...prev, [key]: value }));
+
+  const save = async () => {
+    if (!organizationId || !canEdit) return;
+    setSaving(true);
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setForm({ ...DEFAULTS, ...JSON.parse(raw) });
-    } catch { /* use defaults */ }
-  }, []);
-
-  const persist = (next: Record<string, any>) => {
-    setForm(next);
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch { /* quota */ }
-  };
-
-  const set = <K extends keyof typeof DEFAULTS>(key: K, value: (typeof DEFAULTS)[K]) =>
-    persist({ ...form, [key]: value });
-
-  const save = () => {
-    toast({ title: "Settings saved", description: "Your changes are stored on this device." });
+      await saveOrgSettings(organizationId, form);
+      if (usedLegacy) {
+        clearLegacySettings();
+        setUsedLegacy(false);
+      }
+      toast({ title: "Settings saved", description: "Saved for the whole organisation." });
+    } catch (err) {
+      toast({
+        title: "Settings not saved",
+        description: err instanceof Error ? err.message : "Something went wrong.",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
   };
   const resetAll = () => {
-    persist(DEFAULTS);
-    setTheme("light");
-    toast({ title: "Settings restored", description: "Every field is back to its default." });
+    setForm(DEFAULTS);
+    toast({ title: "Defaults restored", description: "Press Save Changes to apply them to the organisation." });
   };
 
   return (
@@ -90,6 +129,17 @@ export default function GeneralSettings() {
           { label: "General Settings" },
         ]}
       />
+
+      {!organizationId ? (
+        <p className="mb-4 rounded-md border bg-muted/40 p-3 text-sm text-muted-foreground">
+          This account is not linked to an organisation, so there are no settings to show.
+        </p>
+      ) : !canEdit ? (
+        <p className="mb-4 flex items-center gap-2 rounded-md border bg-muted/40 p-3 text-sm text-muted-foreground">
+          <Lock className="h-4 w-4 shrink-0" />
+          These settings apply to the whole organisation. Only an organisation admin can change them.
+        </p>
+      ) : null}
 
       <Tabs defaultValue="general" className="space-y-6">
         <TabsList className="grid w-full max-w-2xl grid-cols-4">
@@ -112,6 +162,7 @@ export default function GeneralSettings() {
         </TabsList>
 
         <TabsContent value="general" className="space-y-6">
+          <fieldset disabled={locked} className="min-w-0 space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>School Information</CardTitle>
@@ -164,7 +215,7 @@ export default function GeneralSettings() {
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="academicYear">Current Academic Year</Label>
-                  <Select value={form.academicYear} onValueChange={(v) => set("academicYear", v)}>
+                  <Select disabled={locked} value={form.academicYear} onValueChange={(v) => set("academicYear", v)}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -177,7 +228,7 @@ export default function GeneralSettings() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="timezone">Timezone</Label>
-                  <Select value={form.timezone} onValueChange={(v) => set("timezone", v)}>
+                  <Select disabled={locked} value={form.timezone} onValueChange={(v) => set("timezone", v)}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -190,7 +241,7 @@ export default function GeneralSettings() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="currency">Currency</Label>
-                  <Select value={form.currency} onValueChange={(v) => set("currency", v)}>
+                  <Select disabled={locked} value={form.currency} onValueChange={(v) => set("currency", v)}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -203,7 +254,7 @@ export default function GeneralSettings() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="dateFormat">Date Format</Label>
-                  <Select value={form.dateFormat} onValueChange={(v) => set("dateFormat", v)}>
+                  <Select disabled={locked} value={form.dateFormat} onValueChange={(v) => set("dateFormat", v)}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -217,9 +268,11 @@ export default function GeneralSettings() {
               </div>
             </CardContent>
           </Card>
+          </fieldset>
         </TabsContent>
 
         <TabsContent value="notifications" className="space-y-6">
+          <fieldset disabled={locked} className="min-w-0 space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Notification Preferences</CardTitle>
@@ -231,7 +284,7 @@ export default function GeneralSettings() {
                     <p className="font-medium">{item.title}</p>
                     <p className="text-sm text-muted-foreground">{item.description}</p>
                   </div>
-                  <Switch
+                  <Switch disabled={locked}
                     checked={form.notifications[item.key] ?? false}
                     onCheckedChange={(checked) =>
                       set("notifications", { ...form.notifications, [item.key]: checked })
@@ -241,9 +294,11 @@ export default function GeneralSettings() {
               ))}
             </CardContent>
           </Card>
+          </fieldset>
         </TabsContent>
 
         <TabsContent value="security" className="space-y-6">
+          <fieldset disabled={locked} className="min-w-0 space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Security Settings</CardTitle>
@@ -254,14 +309,14 @@ export default function GeneralSettings() {
                   <p className="font-medium">Two-Factor Authentication</p>
                   <p className="text-sm text-muted-foreground">Add an extra layer of security</p>
                 </div>
-                <Switch checked={form.twoFactor} onCheckedChange={(v) => set("twoFactor", v)} />
+                <Switch disabled={locked} checked={form.twoFactor} onCheckedChange={(v) => set("twoFactor", v)} />
               </div>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">Session Timeout</p>
                   <p className="text-sm text-muted-foreground">Automatically log out after inactivity</p>
                 </div>
-                <Select value={form.sessionTimeout} onValueChange={(v) => set("sessionTimeout", v)}>
+                <Select disabled={locked} value={form.sessionTimeout} onValueChange={(v) => set("sessionTimeout", v)}>
                   <SelectTrigger className="w-32">
                     <SelectValue />
                   </SelectTrigger>
@@ -277,10 +332,11 @@ export default function GeneralSettings() {
                   <p className="font-medium">Password Policy</p>
                   <p className="text-sm text-muted-foreground">Require strong passwords</p>
                 </div>
-                <Switch checked={form.passwordPolicy} onCheckedChange={(v) => set("passwordPolicy", v)} />
+                <Switch disabled={locked} checked={form.passwordPolicy} onCheckedChange={(v) => set("passwordPolicy", v)} />
               </div>
             </CardContent>
           </Card>
+          </fieldset>
         </TabsContent>
 
         <TabsContent value="appearance" className="space-y-6">
@@ -289,6 +345,8 @@ export default function GeneralSettings() {
               <CardTitle>Appearance Settings</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
+              {/* The theme is this person's own choice on this device, not an
+                  organisation setting, so it stays usable for everyone. */}
               <div className="space-y-2">
                 <Label>Theme</Label>
                 <div className="flex gap-4">
@@ -304,6 +362,7 @@ export default function GeneralSettings() {
                   ))}
                 </div>
               </div>
+              <fieldset disabled={locked} className="min-w-0 space-y-6">
               <div className="space-y-2">
                 <Label>Primary Color</Label>
                 <div className="flex gap-2">
@@ -326,23 +385,26 @@ export default function GeneralSettings() {
                   <p className="font-medium">Compact Mode</p>
                   <p className="text-sm text-muted-foreground">Reduce spacing for more content</p>
                 </div>
-                <Switch checked={form.compact} onCheckedChange={(v) => set("compact", v)} />
+                <Switch disabled={locked} checked={form.compact} onCheckedChange={(v) => set("compact", v)} />
               </div>
+              </fieldset>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
 
-      <div className="flex justify-end gap-2 mt-6">
-        <Button variant="outline" className="gap-2" onClick={resetAll}>
-          <RotateCcw className="h-4 w-4" />
-          Reset to Defaults
-        </Button>
-        <Button className="gap-2" onClick={save}>
-          <Save className="h-4 w-4" />
-          Save Changes
-        </Button>
-      </div>
+      {canEdit && (
+        <div className="flex justify-end gap-2 mt-6">
+          <Button variant="outline" className="gap-2" onClick={resetAll} disabled={loading || saving}>
+            <RotateCcw className="h-4 w-4" />
+            Reset to Defaults
+          </Button>
+          <Button className="gap-2" onClick={save} disabled={loading || saving}>
+            <Save className="h-4 w-4" />
+            {saving ? "Saving..." : "Save Changes"}
+          </Button>
+        </div>
+      )}
     </AppLayout>
   );
 }

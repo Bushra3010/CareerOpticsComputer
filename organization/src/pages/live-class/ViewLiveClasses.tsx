@@ -18,7 +18,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { downloadCsv } from "@/lib/export";
 import { getLiveClasses, updateBatchTiming } from "@/lib/supabase/data";
-import { liveClassState, studentsOnSchedule } from "@/lib/liveClasses";
+import { liveClassState, recordingLabel, studentsOnSchedule } from "@/lib/liveClasses";
 
 interface LiveClass {
   id: string;
@@ -190,7 +190,7 @@ export default function ViewLiveClasses() {
   };
 
   const recording = (liveClass: LiveClass) => {
-    if (!liveClass.recorded) {
+    if (!liveClass.recorded || liveClass.status !== "completed") {
       toast({
         title: "No recording available",
         description: `${liveClass.title} was not recorded.`,
@@ -394,7 +394,7 @@ export default function ViewLiveClasses() {
                   ["Duration", details.duration],
                   ["Platform", details.platform],
                   ["Attendance", `${details.attendees}/${details.totalStudents}`],
-                  ["Recording", details.recorded ? "Available" : "Not recorded"],
+                  ["Recording", recordingLabel(details.status, details.recorded)],
                 ].map(([label, value]) => (
                   <div key={label}>
                     <dt className="text-xs text-muted-foreground">{label}</dt>

@@ -275,6 +275,9 @@ export default function LiveClassSetup() {
         subject: form.subject,
         instructor: form.instructor,
         roomNo: "",
+        // The timetable reads the mode from this column; left unset, the class
+        // showed there as "Offline" despite its meeting link.
+        classMode: "Online",
         title: form.title.trim(),
         platform: form.platform,
         meetingLink: link,

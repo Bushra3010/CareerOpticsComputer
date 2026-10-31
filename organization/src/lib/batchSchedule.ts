@@ -42,6 +42,9 @@ export interface TimingRow {
   colour?: string | null;
   description?: string | null;
   status?: string | null;
+  /** Written by Live Class Setup (add-batch-timing-class-fields.sql). */
+  platform?: string | null;
+  meetingLink?: string | null;
 }
 
 /** One class, and the days of the week it runs on. */
@@ -70,10 +73,27 @@ const text = (value: unknown) => String(value ?? "").trim();
 /** A slot is off only when it says so; anything unset is a running class. */
 export const isActive = (status: unknown) => text(status).toLowerCase() !== "inactive";
 
-const asMode = (value: unknown): ClassMode => {
-  const raw = text(value);
-  return (CLASS_MODES as readonly string[]).includes(raw) ? (raw as ClassMode) : "Offline";
-};
+/**
+ * The slot's mode, as stored or, where nothing was stored, as its own fields
+ * say. Live Class Setup wrote no `classMode` before it was taught to, so every
+ * class it scheduled read back as "Offline" here even though it carried a
+ * meeting link and a platform. A link, or a platform that is not a room, is
+ * what makes a slot online.
+ */
+export function inferClassMode(
+  row: Pick<TimingRow, "classMode" | "platform" | "meetingLink">,
+): ClassMode {
+  const raw = text(row.classMode);
+  const stored = CLASS_MODES.find((mode) => mode.toLowerCase() === raw.toLowerCase());
+  if (stored) return stored;
+  const platform = text(row.platform).toLowerCase();
+  if (text(row.meetingLink) || (platform && platform !== "in person")) return "Online";
+  return "Offline";
+}
+
+/** Whether a slot belongs on the live-class list: anything taught over a link. */
+export const isOnlineSlot = (row: Pick<TimingRow, "classMode" | "platform" | "meetingLink">) =>
+  inferClassMode(row) !== "Offline";
 
 const asColour = (value: unknown): TimingColour => {
   const raw = text(value).toLowerCase();
@@ -89,7 +109,7 @@ export function timingKey(row: TimingRow): string {
     text(row.subject),
     text(row.instructor),
     text(row.roomNo),
-    asMode(row.classMode),
+    inferClassMode(row),
   ].join("|");
 }
 
@@ -120,7 +140,7 @@ export function groupIntoTimings(rows: TimingRow[]): Timing[] {
       subject: text(row.subject),
       instructor: text(row.instructor),
       roomNo: text(row.roomNo),
-      classMode: asMode(row.classMode),
+      classMode: inferClassMode(row),
       breakStart: text(row.breakStart),
       breakEnd: text(row.breakEnd),
       colour: asColour(row.colour),

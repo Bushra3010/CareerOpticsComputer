@@ -17,6 +17,7 @@ import {
   type RecordPaymentInput,
 } from "./studentFee";
 import { feeStanding } from "../fees";
+import { isOnlineSlot } from "../batchSchedule";
 import { asExamResults, termPlan, type MarkLine } from "../examWorkflow";
 import type { Permissions } from "../permissions";
 
@@ -1070,7 +1071,11 @@ const minutesOfDay = (time: string) => {
 };
 
 export async function getLiveClasses(branchId: string | null) {
-  const timings = (await getBatchTimings(branchId as string)).data as Record<string, any>[];
+  // The timetable holds in-room slots too. Listing them here counted a batch's
+  // classroom timings as live classes, so only slots taught over a link count.
+  const timings = ((await getBatchTimings(branchId as string)).data as Record<string, any>[]).filter(
+    (slot) => isOnlineSlot(slot),
+  );
   const batchIds = [...new Set(timings.map((t) => t.batchId).filter(Boolean))];
   const batchById = new Map<string, Record<string, any>>();
   const courseById = new Map<string, Record<string, any>>();
@@ -1145,7 +1150,7 @@ export async function getLiveClasses(branchId: string | null) {
       date: date.toISOString().slice(0, 10),
       time: slot.startTime || "",
       duration: end > start ? `${end - start} min` : "",
-      platform: slot.platform || (slot.roomNo ? "In person" : "Online"),
+      platform: slot.platform || "Online",
       meetingLink: slot.meetingLink || undefined,
       meetingId: slot.meetingId || undefined,
       description: slot.description || undefined,
@@ -1154,9 +1159,12 @@ export async function getLiveClasses(branchId: string | null) {
       attendees: 0,
       totalStudents: enrolledIn.get(slot.batchId) || 0,
       capacity: Number(batch.maxSeats || 0),
-      // `status` only exists once add-batch-timing-class-fields.sql has been run;
-      // until then a slot's state is whatever the clock says it is.
-      status: (slot.status as "scheduled" | "active" | "completed" | "cancelled") || derived,
+      // A stored status only ever means something when it is a cancellation:
+      // setup writes "scheduled" once and nothing moves it on, so reading it
+      // back kept every class upcoming forever. The clock decides the rest.
+      status: (["cancelled", "inactive"].includes(String(slot.status ?? "").toLowerCase())
+        ? "cancelled"
+        : derived) as "scheduled" | "active" | "completed" | "cancelled",
     };
   });
 

@@ -1,421 +1,294 @@
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { DataTable } from "@/components/ui/DataTable";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { EmptyState } from "@/components/ui/EmptyState";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Eye, Edit, Trash2, DollarSign, UserPlus, MapPin, Mail, Phone, Building2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-
-interface Partner {
-  id: string;
-  partnerName: string;
-  partnerType: string;
-  email: string;
-  phone: string;
-  address?: string;
-  city: string;
-  state?: string;
-  pincode?: string;
-  commissionRate: string;
-  gstNumber?: string;
-  panNumber?: string;
-  bankName?: string;
-  accountNumber?: string;
-  ifscCode?: string;
-  branchName?: string;
-  contactPerson?: string;
-  designation?: string;
-  notes?: string;
-  status: "active" | "inactive";
-  joinedDate: string;
-}
-
-const samplePartners: Partner[] = [
-  {
-    id: "1",
-    partnerName: "John Education Services",
-    partnerType: "organization",
-    email: "john@edu.com",
-    phone: "+91 9876543210",
-    city: "Mumbai",
-    commissionRate: "10",
-    status: "active",
-    joinedDate: "2024-01-15",
-    contactPerson: "John Doe",
-    address: "123 Education Lane",
-  },
-  {
-    id: "2",
-    partnerName: "Sarah Learning Hub",
-    partnerType: "individual",
-    email: "sarah@learning.com",
-    phone: "+91 9876543211",
-    city: "Delhi",
-    commissionRate: "8",
-    status: "active",
-    joinedDate: "2024-02-20",
-    contactPerson: "Sarah Smith",
-  },
-];
+import { useAuth } from "@/contexts/AuthContext";
+import { Plus, Pencil, Trash2, Users, Search } from "lucide-react";
+import {
+  deletePartner,
+  formatRupees,
+  listPartnerTransactions,
+  listPartners,
+  partnerBalances,
+  partnerToForm,
+  updatePartner,
+  type Partner,
+  type PartnerInput,
+} from "@/lib/supabase/partners";
+import { PartnerForm } from "./PartnerForm";
 
 const AllPartners = () => {
   const { toast } = useToast();
-  const navigate = useNavigate();
-  const [partners, setPartners] = useState<Partner[]>(samplePartners);
-  const [selectedPartner, setSelectedPartner] = useState<Partner | null>(null);
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [formData, setFormData] = useState<Partial<Partner>>({});
+  const { organizationId } = useAuth();
+  const [partners, setPartners] = useState<Partner[]>([]);
+  const [balances, setBalances] = useState<Map<string, number>>(new Map());
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [editing, setEditing] = useState<Partner | null>(null);
+  const [deleting, setDeleting] = useState<Partner | null>(null);
 
-  const handleDelete = (id: string) => {
-    setPartners(prev => prev.filter(p => p.id !== id));
-    toast({
-      title: "Partner Deleted",
-      description: "The partner has been removed successfully.",
-    });
-  };
+  const report = useCallback(
+    (title: string, err: unknown) =>
+      toast({ title, description: err instanceof Error ? err.message : "Something went wrong.", variant: "destructive" }),
+    [toast],
+  );
 
-  const handleEdit = (partner: Partner) => {
-    setSelectedPartner(partner);
-    setFormData(partner);
-    setIsEditModalOpen(true);
-  };
+  const load = useCallback(async () => {
+    if (!organizationId) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    try {
+      const [rows, txs] = await Promise.all([listPartners(organizationId), listPartnerTransactions(organizationId)]);
+      setPartners(rows);
+      setBalances(partnerBalances(txs));
+      setLoadError(null);
+    } catch (err) {
+      setLoadError(err instanceof Error ? err.message : "Could not load partners.");
+    } finally {
+      setLoading(false);
+    }
+  }, [organizationId]);
 
-  const handleView = (partner: Partner) => {
-    setSelectedPartner(partner);
-    setIsViewModalOpen(true);
-  };
+  useEffect(() => {
+    void load();
+  }, [load]);
 
-  const handleUpdate = (e: React.FormEvent) => {
-    e.preventDefault();
-    setPartners(prev =>
-      prev.map(p => (p.id === formData.id ? { ...p, ...formData } as Partner : p))
+  const visible = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return partners;
+    return partners.filter((p) =>
+      [p.name, p.contactPerson, p.phone, p.email, p.city, p.state].some((v) => (v ?? "").toLowerCase().includes(q)),
     );
-    setIsEditModalOpen(false);
-    toast({
-      title: "Success",
-      description: "Partner details updated successfully!",
-    });
+  }, [partners, search]);
+
+  const totals = useMemo(() => {
+    const active = partners.filter((p) => p.status === "ACTIVE").length;
+    let owed = 0;
+    for (const p of partners) owed += Math.round((balances.get(p.id) ?? 0) * 100);
+    return { total: partners.length, active, inactive: partners.length - active, owed: owed / 100 };
+  }, [partners, balances]);
+
+  const toggleStatus = async (p: Partner, active: boolean) => {
+    const status = active ? "ACTIVE" : "INACTIVE";
+    try {
+      await updatePartner(p.id, { status });
+      setPartners((rows) => rows.map((r) => (r.id === p.id ? { ...r, status } : r)));
+    } catch (err) {
+      report("Status not changed", err);
+    }
   };
 
-  const handleCreate = (e: React.FormEvent) => {
-    e.preventDefault();
-    const newPartner: Partner = {
-      ...(formData as Partner),
-      id: Math.random().toString(36).substr(2, 9),
-      status: "active",
-      joinedDate: new Date().toISOString().split("T")[0],
-    };
-    setPartners(prev => [...prev, newPartner]);
-    setIsCreateModalOpen(false);
-    setFormData({});
-    toast({
-      title: "Success",
-      description: "New partner registered successfully!",
-    });
+  const saveEdit = async (value: PartnerInput) => {
+    if (!editing) return;
+    try {
+      await updatePartner(editing.id, value);
+      setPartners((rows) => rows.map((r) => (r.id === editing.id ? { ...r, ...value } : r)));
+      toast({ title: "Partner updated", description: `${value.name} has been saved.` });
+      setEditing(null);
+    } catch (err) {
+      report("Partner not saved", err);
+      throw err;
+    }
   };
 
-  const columns = [
-    {
-      key: "partnerName",
-      header: "Partner Name",
-      sortable: true,
-      cell: (item: Partner) => (
-        <div className="flex flex-col">
-          <span className="font-medium">{item.partnerName}</span>
-          <span className="text-xs text-muted-foreground">{item.contactPerson}</span>
-        </div>
-      ),
-    },
-    {
-      key: "partnerType",
-      header: "Type",
-      cell: (item: Partner) => (
-        <Badge variant="outline" className="capitalize">
-          {item.partnerType}
-        </Badge>
-      ),
-    },
-    { key: "email", header: "Email" },
-    { key: "phone", header: "Phone" },
-    { key: "city", header: "City", sortable: true },
-    {
-      key: "commissionRate",
-      header: "Comm.",
-      cell: (item: Partner) => `${item.commissionRate}%`,
-    },
-    {
-      key: "status",
-      header: "Status",
-      cell: (item: Partner) => (
-        <Badge variant={item.status === "active" ? "default" : "secondary"}>
-          {item.status}
-        </Badge>
-      ),
-    },
-  ];
-
-  const handleActions = (item: Partner) => [
-    { label: "View Details", onClick: () => handleView(item) },
-    { label: "Edit Partner", onClick: () => handleEdit(item) },
-    { label: "Transactions", onClick: () => navigate(`/partners/transactions`) },
-    { label: "Delete", onClick: () => handleDelete(item.id), destructive: true }
-  ];
+  const confirmDelete = async () => {
+    if (!deleting) return;
+    const target = deleting;
+    setDeleting(null);
+    try {
+      await deletePartner(target.id);
+      setPartners((rows) => rows.filter((r) => r.id !== target.id));
+      toast({ title: "Partner deleted", description: `${target.name} has been removed. Their transactions are kept.` });
+    } catch (err) {
+      report("Partner not deleted", err);
+    }
+  };
 
   return (
     <AppLayout>
-      <div className="container mx-auto p-6">
-        <PageHeader
-          title="All Partners"
-          description="Manage and view all registered partners"
-          breadcrumbs={[
-            { label: "Partners", href: "/partners/all" },
-            { label: "All Partners" },
-          ]}
-          actions={
-            <Button onClick={() => { setFormData({ partnerType: "individual" }); setIsCreateModalOpen(true); }}>
+      <PageHeader
+        title="All Partners"
+        description="Manage and view all registered partners"
+        breadcrumbs={[
+          { label: "Partners", href: "/partners/all" },
+          { label: "All Partners" },
+        ]}
+        actions={
+          <Button asChild>
+            <Link to="/partners/add">
               <Plus className="mr-2 h-4 w-4" />
-              Add New Partner
-            </Button>
-          }
-        />
+              Add Partner
+            </Link>
+          </Button>
+        }
+      />
 
-        <div className="mt-6">
-          <DataTable
-            columns={columns}
-            data={partners}
-            searchPlaceholder="Search partners by name, email or phone..."
-            actions={handleActions}
-          />
-        </div>
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        {[
+          { label: "Total Partners", value: String(totals.total) },
+          { label: "Active", value: String(totals.active) },
+          { label: "Inactive", value: String(totals.inactive) },
+          { label: "Balance Owed", value: formatRupees(totals.owed) },
+        ].map((s) => (
+          <Card key={s.label}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">{s.label}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{s.value}</div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      {/* View Modal */}
-      <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>Partner Profile</DialogTitle>
-            <DialogDescription>Full details and configuration for {selectedPartner?.partnerName}</DialogDescription>
-          </DialogHeader>
-          {selectedPartner && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                   <div className="bg-primary/10 p-2 rounded-full"><Building2 className="h-4 w-4 text-primary" /></div>
-                   <div>
-                      <Label className="text-muted-foreground text-[10px] uppercase">Business Info</Label>
-                      <p className="font-bold text-lg">{selectedPartner.partnerName}</p>
-                      <p className="text-sm text-muted-foreground">Type: <span className="capitalize">{selectedPartner.partnerType}</span></p>
-                      <p className="text-sm text-muted-foreground">Joined: {selectedPartner.joinedDate}</p>
-                   </div>
-                </div>
-                <div className="flex items-start gap-3">
-                   <div className="bg-primary/10 p-2 rounded-full"><Mail className="h-4 w-4 text-primary" /></div>
-                   <div>
-                      <Label className="text-muted-foreground text-[10px] uppercase">Contact</Label>
-                      <p className="text-sm font-medium">{selectedPartner.email}</p>
-                      <p className="text-sm flex items-center gap-1"><Phone className="h-3 w-3" /> {selectedPartner.phone}</p>
-                   </div>
-                </div>
-                <div className="flex items-start gap-3">
-                   <div className="bg-primary/10 p-2 rounded-full"><MapPin className="h-4 w-4 text-primary" /></div>
-                   <div>
-                      <Label className="text-muted-foreground text-[10px] uppercase">Address</Label>
-                      <p className="text-sm">{selectedPartner.address || "N/A"}</p>
-                      <p className="text-sm">{selectedPartner.city}{selectedPartner.state ? `, ${selectedPartner.state}` : ""}</p>
-                   </div>
-                </div>
-              </div>
-              <div className="space-y-4 bg-muted/30 p-4 rounded-lg">
-                 <div>
-                    <Label className="text-muted-foreground text-[10px] uppercase">Commission Rate</Label>
-                    <p className="text-3xl font-bold text-primary">{selectedPartner.commissionRate}%</p>
-                 </div>
-                 <div className="grid grid-cols-2 gap-2">
-                    <div>
-                        <Label className="text-xs text-muted-foreground">GST #</Label>
-                        <p className="text-sm font-medium">{selectedPartner.gstNumber || "N/A"}</p>
-                    </div>
-                    <div>
-                        <Label className="text-xs text-muted-foreground">PAN #</Label>
-                        <p className="text-sm font-medium">{selectedPartner.panNumber || "N/A"}</p>
-                    </div>
-                 </div>
-                 <div className="border-t pt-2 mt-2">
-                    <Label className="text-xs text-muted-foreground">Bank Details</Label>
-                    <p className="text-xs font-medium">{selectedPartner.bankName || "No Bank Linked"}</p>
-                    {selectedPartner.accountNumber && <p className="text-xs">A/C: {selectedPartner.accountNumber}</p>}
-                 </div>
-              </div>
-              {selectedPartner.notes && (
-                <div className="col-span-2 space-y-1">
-                   <Label className="text-xs text-muted-foreground uppercase">Internal Notes</Label>
-                   <p className="text-sm bg-background border p-2 rounded italic text-muted-foreground">{selectedPartner.notes}</p>
-                </div>
-              )}
-            </div>
+      <Card className="mt-6">
+        <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0">
+          <CardTitle>Partners</CardTitle>
+          <div className="relative w-full max-w-xs">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              aria-label="Search partners"
+              placeholder="Search by name, phone, email or city"
+              className="pl-8"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+        </CardHeader>
+        <CardContent>
+          {!organizationId ? (
+            <p className="text-sm text-muted-foreground">This account is not linked to an organisation.</p>
+          ) : loading ? (
+            <p className="py-8 text-center text-sm text-muted-foreground">Loading partners...</p>
+          ) : loadError ? (
+            <p className="py-8 text-center text-sm text-destructive">{loadError}</p>
+          ) : partners.length === 0 ? (
+            <EmptyState icon={Users} title="No partners yet" description="Partners you register will be listed here." />
+          ) : visible.length === 0 ? (
+            <p className="py-8 text-center text-sm text-muted-foreground">No partners match "{search}".</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Partner</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Phone</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>City</TableHead>
+                  <TableHead className="text-right">Comm.</TableHead>
+                  <TableHead className="text-right">Balance</TableHead>
+                  <TableHead>Active</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {visible.map((p) => (
+                  <TableRow key={p.id}>
+                    <TableCell>
+                      <div className="font-medium">{p.name}</div>
+                      {p.contactPerson && <div className="text-xs text-muted-foreground">{p.contactPerson}</div>}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="capitalize">
+                        {p.partnerType}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{p.phone || "-"}</TableCell>
+                    <TableCell>{p.email || "-"}</TableCell>
+                    <TableCell>{p.city || "-"}</TableCell>
+                    <TableCell className="text-right">{p.commissionPercent}%</TableCell>
+                    <TableCell className="text-right">{formatRupees(balances.get(p.id) ?? 0)}</TableCell>
+                    <TableCell>
+                      <Switch
+                        aria-label={`${p.name} active`}
+                        checked={p.status === "ACTIVE"}
+                        onCheckedChange={(v) => void toggleStatus(p, v)}
+                      />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="ghost" size="icon" aria-label={`Edit ${p.name}`} onClick={() => setEditing(p)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={`Delete ${p.name}`}
+                        className="text-destructive"
+                        onClick={() => setDeleting(p)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsViewModalOpen(false)}>Close</Button>
-            <Button onClick={() => { setIsViewModalOpen(false); handleEdit(selectedPartner!); }}>Edit Partner</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </CardContent>
+      </Card>
 
-      {/* Create/Edit Modal */}
-      <Dialog 
-        open={isCreateModalOpen || isEditModalOpen} 
-        onOpenChange={(open) => {
-          if (!open) {
-            setIsCreateModalOpen(false);
-            setIsEditModalOpen(false);
-          }
-        }}
-      >
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <Dialog open={!!editing} onOpenChange={(open) => !open && setEditing(null)}>
+        <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{isCreateModalOpen ? "Register New Partner" : "Update Partner Profile"}</DialogTitle>
+            <DialogTitle>Edit Partner</DialogTitle>
           </DialogHeader>
-          <form onSubmit={isCreateModalOpen ? handleCreate : handleUpdate} className="space-y-6">
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2 col-span-2">
-                <Label htmlFor="partnerName">Partner Name *</Label>
-                <Input
-                  id="partnerName"
-                  value={formData.partnerName || ""}
-                  onChange={(e) => setFormData({ ...formData, partnerName: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="partnerType">Partner Type</Label>
-                <Select
-                  value={formData.partnerType}
-                  onValueChange={(value) => setFormData({ ...formData, partnerType: value })}
-                >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="individual">Individual</SelectItem>
-                    <SelectItem value="organization">Organization</SelectItem>
-                    <SelectItem value="institution">Institution</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email *</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email || ""}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone *</Label>
-                <Input
-                  id="phone"
-                  value={formData.phone || ""}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="commissionRate">Commission Rate (%)</Label>
-                <Input
-                  id="commissionRate"
-                  type="number"
-                  value={formData.commissionRate || ""}
-                  onChange={(e) => setFormData({ ...formData, commissionRate: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="contactPerson">Contact Person</Label>
-                <Input
-                  id="contactPerson"
-                  value={formData.contactPerson || ""}
-                  onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="address">City</Label>
-                <Input
-                  id="city"
-                  value={formData.city || ""}
-                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="gstNumber">GST Number</Label>
-                <Input
-                  id="gstNumber"
-                  value={formData.gstNumber || ""}
-                  onChange={(e) => setFormData({ ...formData, gstNumber: e.target.value })}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-4 border-t pt-4">
-               <h4 className="text-sm font-semibold flex items-center gap-2"><DollarSign className="h-4 w-4" /> Bank Information</h4>
-               <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                     <Label>Bank Name</Label>
-                     <Input value={formData.bankName || ""} onChange={e => setFormData({...formData, bankName: e.target.value})} />
-                  </div>
-                  <div className="space-y-2 text-red-600">
-                     <Label className="text-foreground">Acc Number</Label>
-                     <Input value={formData.accountNumber || ""} onChange={e => setFormData({...formData, accountNumber: e.target.value})} />
-                  </div>
-                  <div className="space-y-2">
-                     <Label>IFSC Code</Label>
-                     <Input value={formData.ifscCode || ""} onChange={e => setFormData({...formData, ifscCode: e.target.value})} />
-                  </div>
-               </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="notes">Notes</Label>
-              <textarea
-                id="notes"
-                className="w-full min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                value={formData.notes || ""}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              />
-            </div>
-            
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => { setIsCreateModalOpen(false); setIsEditModalOpen(false); }}>Cancel</Button>
-              <Button type="submit">
-                <UserPlus className="mr-2 h-4 w-4" />
-                {isCreateModalOpen ? "Register Partner" : "Update Profile"}
-              </Button>
-            </DialogFooter>
-          </form>
+          {editing && (
+            <PartnerForm
+              key={editing.id}
+              initial={partnerToForm(editing)}
+              submitLabel="Save Changes"
+              onSubmit={saveEdit}
+              onCancel={() => setEditing(null)}
+            />
+          )}
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deleting} onOpenChange={(open) => !open && setDeleting(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {deleting?.name}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              The partner is removed from the list. Their transaction history is kept for your records.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => void confirmDelete()}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppLayout>
   );
 };
 
 export default AllPartners;
-

@@ -27,6 +27,7 @@ import {
   type OrderStatus,
   type OrderableStudent,
 } from "@/lib/supabase/centrePanel";
+import { announceWalletChange, friendlyChargeError } from "@/lib/supabase/data";
 
 /** The students on one order, fetched when the row is opened. */
 function OrderStudents({ ids }: { ids: string[] }) {
@@ -68,6 +69,21 @@ const NEXT: Record<OrderStatus, OrderStatus[]> = {
   REJECTED: [],
 };
 
+/**
+ * certificate-order-wallet.sql refuses an approval the centre's wallet cannot
+ * cover with "INSUFFICIENT_BALANCE: certificate order … needs Rs Y, wallet
+ * balance is Rs X." The head office is not the one who can fix it, so the
+ * toast says who should.
+ */
+function orderErrorMessage(message: string): string {
+  const low = /INSUFFICIENT_BALANCE:.*?needs Rs\s*([\d.,]+),\s*wallet balance is Rs\s*(-?[\d.,]+)/i.exec(message || "");
+  if (low) {
+    const [needed, available] = [low[1], low[2]].map((v) => Number(v.replace(/,/g, "").replace(/\.$/, "")));
+    return `Centre wallet balance is too low — ${inr(available)} available, ${inr(needed)} needed. Ask the centre to recharge.`;
+  }
+  return /INSUFFICIENT_BALANCE/.test(message || "") ? friendlyChargeError(message) : message;
+}
+
 function OrderReview({ order, onSaved }: { order: CertificateOrder; onSaved: (o: CertificateOrder) => void }) {
   const { toast } = useToast();
   const [amount, setAmount] = useState(order.amount ? String(order.amount) : "");
@@ -79,14 +95,27 @@ function OrderReview({ order, onSaved }: { order: CertificateOrder; onSaved: (o:
       toast({ title: "Enter the order amount", description: "Above zero, with at most 2 decimal places.", variant: "destructive" });
       return;
     }
-    if (status === "REJECTED" && !window.confirm(`Reject order ${order.orderNo}? Its students can then be ordered again.`)) return;
+    if (status === "REJECTED") {
+      // Only an approved order was charged, so only it has money to give back.
+      const refund = order.status === "APPROVED" && order.amount > 0 ? ` ${inr(order.amount)} will be refunded to the centre's wallet.` : "";
+      if (!window.confirm(`Reject order ${order.orderNo}?${refund} Its students can then be ordered again.`)) return;
+    }
     setBusy(true);
     try {
       const saved = await updateCertificateOrder(order.id, status === "APPROVED" ? { status, amount: value } : { status });
       onSaved({ ...order, ...saved, amount: Number(saved?.amount ?? order.amount) || 0 });
-      toast({ title: `Order ${order.orderNo} ${status.toLowerCase()}` });
+      if (status === "APPROVED" || (status === "REJECTED" && order.status === "APPROVED")) announceWalletChange();
+      toast({
+        title: `Order ${order.orderNo} ${status.toLowerCase()}`,
+        description:
+          status === "APPROVED"
+            ? `${inr(value)} charged to the centre's wallet.`
+            : status === "REJECTED" && order.status === "APPROVED" && order.amount > 0
+              ? `${inr(order.amount)} refunded to the centre's wallet.`
+              : undefined,
+      });
     } catch (error) {
-      toast({ title: "Could not update the order", description: (error as Error).message, variant: "destructive" });
+      toast({ title: "Could not update the order", description: orderErrorMessage((error as Error).message), variant: "destructive" });
     } finally {
       setBusy(false);
     }

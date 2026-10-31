@@ -1,14 +1,13 @@
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { DataTable } from "@/components/ui/DataTable";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DatePicker } from "@/components/ui/date-picker";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DatePicker } from "@/components/ui/date-picker";
+import { EmptyState } from "@/components/ui/EmptyState";
 import {
   Select,
   SelectContent,
@@ -16,458 +15,371 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { DollarSign, TrendingUp, TrendingDown, Calendar, Filter } from "lucide-react";
-import { format } from "date-fns";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { Receipt } from "lucide-react";
+import {
+  createPartnerTransaction,
+  formatRupees,
+  listPartnerTransactions,
+  listPartners,
+  partnerBalances,
+  signedAmount,
+  summarise,
+  validateTransaction,
+  type Partner,
+  type PartnerTransaction,
+  type TransactionErrors,
+  type TransactionFormValues,
+  type TransactionType,
+} from "@/lib/supabase/partners";
 
-interface Transaction {
-  id: string;
-  partnerId: string;
-  partnerName: string;
-  type: "commission" | "payment" | "refund" | "adjustment";
-  amount: number;
-  status: "completed" | "pending" | "failed";
-  description: string;
-  date: string;
-  referenceId: string;
-  paymentMethod?: string;
-}
+const TYPE_LABELS: Record<TransactionType, string> = {
+  COMMISSION: "Commission",
+  PAYOUT: "Payout",
+  ADJUSTMENT: "Adjustment",
+};
 
-/** `YYYY-MM-DD`, `days` before today — fixtures must stay near "now" or the
- *  date filters open on an empty table. */
-const daysAgo = (days: number) =>
-  new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
+/** Today as `yyyy-mm-dd` in local time; toISOString would give yesterday's
+ *  date for the first five and a half hours of an Indian morning. */
+const today = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
 
-// Sample data - replace with actual API data
-const sampleTransactions: Transaction[] = [
-  {
-    id: "1",
-    partnerId: "1",
-    partnerName: "John Education Services",
-    type: "commission",
-    amount: 5000,
-    status: "completed",
-    description: "Commission for student admission - new batch",
-    date: daysAgo(4),
-    referenceId: "COMM-2024-001",
-    paymentMethod: "Bank Transfer",
-  },
-  {
-    id: "2",
-    partnerId: "1",
-    partnerName: "John Education Services",
-    type: "payment",
-    amount: 10000,
-    status: "completed",
-    description: "Partner incentive payment",
-    date: daysAgo(9),
-    referenceId: "PAY-2024-045",
-    paymentMethod: "UPI",
-  },
-  {
-    id: "3",
-    partnerId: "1",
-    partnerName: "John Education Services",
-    type: "commission",
-    amount: 3500,
-    status: "pending",
-    description: "Commission for online course enrollment",
-    date: daysAgo(1),
-    referenceId: "COMM-2024-002",
-  },
-  {
-    id: "4",
-    partnerId: "1",
-    partnerName: "John Education Services",
-    type: "refund",
-    amount: 2000,
-    status: "completed",
-    description: "Refund for cancelled admission",
-    date: daysAgo(14),
-    referenceId: "REF-2024-012",
-    paymentMethod: "Bank Transfer",
-  },
-  {
-    id: "5",
-    partnerId: "1",
-    partnerName: "John Education Services",
-    type: "adjustment",
-    amount: 500,
-    status: "completed",
-    description: "Tax adjustment for last month",
-    date: daysAgo(21),
-    referenceId: "ADJ-2024-003",
-  },
-  {
-    id: "6",
-    partnerId: "2",
-    partnerName: "Bright Future Consultants",
-    type: "commission",
-    amount: 7250,
-    status: "pending",
-    description: "Commission for corporate training referrals",
-    date: daysAgo(33),
-    referenceId: "COMM-2024-003",
-    paymentMethod: "Cheque",
-  },
-  {
-    id: "7",
-    partnerId: "2",
-    partnerName: "Bright Future Consultants",
-    type: "payment",
-    amount: 4200,
-    status: "failed",
-    description: "Quarterly settlement - retry pending",
-    date: daysAgo(47),
-    referenceId: "PAY-2024-046",
-    paymentMethod: "Bank Transfer",
-  },
-];
+const blankForm = (partnerId = ""): TransactionFormValues => ({
+  partnerId,
+  type: "COMMISSION",
+  direction: "CREDIT",
+  amount: "",
+  date: today(),
+  reference: "",
+  note: "",
+});
 
-const PAYMENT_METHODS = ["Bank Transfer", "UPI", "Cheque"];
-
-const BLANK_FILTERS = { from: "", to: "", min: "", max: "", method: "all" };
+const ALL = "all";
 
 const PartnerTransactions = () => {
-  const [transactions] = useState<Transaction[]>(sampleTransactions);
-  const [filterStatus, setFilterStatus] = useState<string>("all");
-  /** Everything behind the "More Filters" popover. */
-  const [more, setMore] = useState(BLANK_FILTERS);
+  const { toast } = useToast();
+  const { organizationId } = useAuth();
+  const [partners, setPartners] = useState<Partner[]>([]);
+  const [transactions, setTransactions] = useState<PartnerTransaction[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [form, setForm] = useState<TransactionFormValues>(blankForm());
+  const [errors, setErrors] = useState<TransactionErrors>({});
+  const [saving, setSaving] = useState(false);
+  const [filterPartner, setFilterPartner] = useState(ALL);
 
-  const setFilter = <K extends keyof typeof BLANK_FILTERS>(
-    key: K,
-    value: (typeof BLANK_FILTERS)[K],
-  ) => setMore((f) => ({ ...f, [key]: value }));
+  const load = useCallback(async () => {
+    if (!organizationId) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    try {
+      const [rows, txs] = await Promise.all([listPartners(organizationId), listPartnerTransactions(organizationId)]);
+      setPartners(rows);
+      setTransactions(txs);
+      setLoadError(null);
+    } catch (err) {
+      setLoadError(err instanceof Error ? err.message : "Could not load transactions.");
+    } finally {
+      setLoading(false);
+    }
+  }, [organizationId]);
 
-  const activeCount =
-    (more.from ? 1 : 0) +
-    (more.to ? 1 : 0) +
-    (more.min ? 1 : 0) +
-    (more.max ? 1 : 0) +
-    (more.method === "all" ? 0 : 1);
+  useEffect(() => {
+    void load();
+  }, [load]);
 
-  const filteredTransactions = transactions.filter((transaction) => {
-    if (filterStatus !== "all" && transaction.status !== filterStatus) return false;
-    if (more.from && transaction.date < more.from) return false;
-    if (more.to && transaction.date > more.to) return false;
-    if (more.min && transaction.amount < Number(more.min)) return false;
-    if (more.max && transaction.amount > Number(more.max)) return false;
-    if (more.method !== "all" && (transaction.paymentMethod ?? "") !== more.method) return false;
-    return true;
-  });
+  const partnerName = useMemo(() => new Map(partners.map((p) => [p.id, p.name])), [partners]);
+  const balances = useMemo(() => partnerBalances(transactions), [transactions]);
+  const shown = useMemo(
+    () => (filterPartner === ALL ? transactions : transactions.filter((t) => t.partnerId === filterPartner)),
+    [transactions, filterPartner],
+  );
+  const summary = useMemo(() => summarise(shown), [shown]);
 
-  // Calculate summary — over what the filters currently show
-  const totalCommission = filteredTransactions
-    .filter((t) => t.type === "commission")
-    .reduce((sum, t) => sum + t.amount, 0);
+  const set = <K extends keyof TransactionFormValues>(key: K, value: TransactionFormValues[K]) => {
+    setForm((f) => ({ ...f, [key]: value }));
+    if (errors[key]) setErrors((e) => ({ ...e, [key]: undefined }));
+  };
 
-  const totalPayment = filteredTransactions
-    .filter((t) => t.type === "payment")
-    .reduce((sum, t) => sum + t.amount, 0);
-
-  const totalRefund = filteredTransactions
-    .filter((t) => t.type === "refund")
-    .reduce((sum, t) => sum + t.amount, 0);
-
-  const netAmount = totalCommission + totalPayment - totalRefund;
-
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case "commission":
-        return "bg-green-100 text-green-800";
-      case "payment":
-        return "bg-blue-100 text-blue-800";
-      case "refund":
-        return "bg-red-100 text-red-800";
-      case "adjustment":
-        return "bg-yellow-100 text-yellow-800";
-      default:
-        return "bg-gray-100 text-gray-800";
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!organizationId) return;
+    const { errors: found, value } = validateTransaction(form);
+    setErrors(found);
+    if (!value) return;
+    setSaving(true);
+    try {
+      const created = await createPartnerTransaction(organizationId, value);
+      setTransactions((rows) => [created, ...rows].sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0)));
+      // Keep the partner chosen: entries for one partner usually come in a run.
+      setForm(blankForm(value.partnerId));
+      toast({
+        title: "Transaction recorded",
+        description: `${TYPE_LABELS[value.type]} of ${formatRupees(value.amount)} for ${partnerName.get(value.partnerId) ?? "partner"}.`,
+      });
+    } catch (err) {
+      toast({
+        title: "Transaction not saved",
+        description: err instanceof Error ? err.message : "Something went wrong.",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "completed":
-        return "bg-green-100 text-green-800";
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "failed":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
+  const error = (key: keyof TransactionFormValues) =>
+    errors[key] ? (
+      <p id={`tx-${key}-error`} className="text-sm text-destructive">
+        {errors[key]}
+      </p>
+    ) : null;
 
-  const columns = [
-    {
-      key: "date" as keyof Transaction,
-      header: "Date",
-      cell: (item: Transaction) => format(new Date(item.date), "dd MMM yyyy"),
-    },
-    {
-      key: "referenceId" as keyof Transaction,
-      header: "Reference ID",
-    },
-    {
-      key: "type" as keyof Transaction,
-      header: "Type",
-      cell: (item: Transaction) => (
-        <Badge className={getTypeColor(item.type)}>
-          {item.type.charAt(0).toUpperCase() + item.type.slice(1)}
-        </Badge>
-      ),
-    },
-    {
-      key: "description" as keyof Transaction,
-      header: "Description",
-    },
-    {
-      key: "amount" as keyof Transaction,
-      header: "Amount",
-      cell: (item: Transaction) => (
-        <span className="font-semibold">₹{item.amount.toLocaleString()}</span>
-      ),
-    },
-    {
-      key: "status" as keyof Transaction,
-      header: "Status",
-      cell: (item: Transaction) => (
-        <Badge className={getStatusColor(item.status)}>
-          {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
-        </Badge>
-      ),
-    },
-    {
-      key: "paymentMethod" as keyof Transaction,
-      header: "Payment Method",
-      cell: (item: Transaction) => item.paymentMethod || "-",
-    },
-  ];
+  const activePartners = partners.filter((p) => p.status === "ACTIVE");
 
   return (
     <AppLayout>
-      <div className="container mx-auto p-6">
-        <PageHeader
-          title="Partner Transactions"
-          description="View and manage partner financial transactions"
-          breadcrumbs={[
-            { label: "Partners", href: "/partners/all" },
-            { label: "Transactions" },
-          ]}
-        />
+      <PageHeader
+        title="Partner Transactions"
+        description="Commission earned, payouts made and the balance owed to each partner"
+        breadcrumbs={[
+          { label: "Partners", href: "/partners/all" },
+          { label: "Transactions" },
+        ]}
+      />
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Commission</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">₹{totalCommission.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              From all commission transactions
-            </p>
-          </CardContent>
-        </Card>
+      {!organizationId ? (
+        <p className="text-sm text-muted-foreground">This account is not linked to an organisation.</p>
+      ) : loadError ? (
+        <p className="py-8 text-center text-sm text-destructive">{loadError}</p>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            {[
+              { label: "Commission", value: summary.commission },
+              { label: "Payouts", value: summary.payouts },
+              { label: "Adjustments", value: summary.adjustments },
+              { label: "Balance Owed", value: summary.balance },
+            ].map((s) => (
+              <Card key={s.label}>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">{s.label}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold" data-testid={`summary-${s.label}`}>
+                    {formatRupees(s.value)}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Payments</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">₹{totalPayment.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Total payments made
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Refunds</CardTitle>
-            <TrendingDown className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">₹{totalRefund.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Total refunds processed
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Net Amount</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">₹{netAmount.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Commission + Payments - Refunds
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filters and Table */}
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle>All Transactions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="all" className="space-y-4">
-            <div className="flex items-center justify-between">
-              <TabsList>
-                <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="commission">Commission</TabsTrigger>
-                <TabsTrigger value="payment">Payment</TabsTrigger>
-                <TabsTrigger value="refund">Refund</TabsTrigger>
-                <TabsTrigger value="adjustment">Adjustment</TabsTrigger>
-              </TabsList>
-
-              <div className="flex items-center gap-2">
-                <Select value={filterStatus} onValueChange={setFilterStatus}>
-                  <SelectTrigger className="w-[150px]">
-                    <SelectValue placeholder="Filter by status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="failed">Failed</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <Filter className="mr-2 h-4 w-4" />
-                      More Filters
-                      {activeCount > 0 && (
-                        <Badge className="ml-2 h-5 px-1.5" variant="secondary">
-                          {activeCount}
-                        </Badge>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent align="end" className="w-80 space-y-4">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1.5">
-                        <Label htmlFor="from">From date</Label>
-                        <DatePicker value={more.from} onChange={(v) => setFilter("from", v)} id="from" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label htmlFor="to">To date</Label>
-                        <DatePicker value={more.to} onChange={(v) => setFilter("to", v)} id="to" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label htmlFor="min">Min amount</Label>
-                        <Input
-                          id="min"
-                          type="number"
-                          placeholder="0"
-                          value={more.min}
-                          onChange={(e) => setFilter("min", e.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label htmlFor="max">Max amount</Label>
-                        <Input
-                          id="max"
-                          type="number"
-                          placeholder="Any"
-                          value={more.max}
-                          onChange={(e) => setFilter("max", e.target.value)}
-                        />
-                      </div>
+          <div className="mt-6 grid gap-6 lg:grid-cols-3">
+            <Card className="lg:col-span-1">
+              <CardHeader>
+                <CardTitle>Record Transaction</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {!loading && activePartners.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Add an active partner first to record transactions.</p>
+                ) : (
+                  <form onSubmit={submit} noValidate className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="tx-partnerId">Partner *</Label>
+                      <Select value={form.partnerId} onValueChange={(v) => set("partnerId", v)}>
+                        <SelectTrigger id="tx-partnerId" aria-invalid={!!errors.partnerId}>
+                          <SelectValue placeholder="Choose a partner" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {activePartners.map((p) => (
+                            <SelectItem key={p.id} value={p.id}>
+                              {p.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {error("partnerId")}
                     </div>
-
-                    <div className="space-y-1.5">
-                      <Label>Payment method</Label>
-                      <Select value={more.method} onValueChange={(v) => setFilter("method", v)}>
-                        <SelectTrigger>
+                    <div className="space-y-2">
+                      <Label htmlFor="tx-type">Type</Label>
+                      <Select value={form.type} onValueChange={(v) => set("type", v as TransactionType)}>
+                        <SelectTrigger id="tx-type">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">Any method</SelectItem>
-                          {PAYMENT_METHODS.map((method) => (
-                            <SelectItem key={method} value={method}>
-                              {method}
+                          {(Object.keys(TYPE_LABELS) as TransactionType[]).map((t) => (
+                            <SelectItem key={t} value={t}>
+                              {TYPE_LABELS[t]}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
-
-                    <div className="flex items-center justify-between pt-1">
-                      <p className="text-xs text-muted-foreground">
-                        {filteredTransactions.length} of {transactions.length} shown
-                      </p>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setMore(BLANK_FILTERS)}
-                        disabled={activeCount === 0}
-                      >
-                        Reset
-                      </Button>
+                    {form.type === "ADJUSTMENT" && (
+                      <div className="space-y-2">
+                        <Label htmlFor="tx-direction">Adjustment</Label>
+                        <Select value={form.direction} onValueChange={(v) => set("direction", v as TransactionFormValues["direction"])}>
+                          <SelectTrigger id="tx-direction">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="CREDIT">Add to balance owed</SelectItem>
+                            <SelectItem value="DEBIT">Deduct from balance owed</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                    <div className="space-y-2">
+                      <Label htmlFor="tx-amount">Amount (₹) *</Label>
+                      <Input
+                        id="tx-amount"
+                        inputMode="decimal"
+                        value={form.amount}
+                        onChange={(e) => set("amount", e.target.value)}
+                        aria-invalid={!!errors.amount}
+                        aria-describedby={errors.amount ? "tx-amount-error" : undefined}
+                      />
+                      {error("amount")}
                     </div>
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="tx-date">Date *</Label>
+                      <DatePicker id="tx-date" value={form.date} onChange={(v) => set("date", v)} />
+                      {error("date")}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="tx-reference">Reference</Label>
+                      <Input
+                        id="tx-reference"
+                        placeholder="UTR, cheque no., admission no."
+                        value={form.reference}
+                        onChange={(e) => set("reference", e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="tx-note">Note</Label>
+                      <Input id="tx-note" value={form.note} onChange={(e) => set("note", e.target.value)} />
+                    </div>
+                    <Button type="submit" className="w-full" disabled={saving || loading}>
+                      {saving ? "Saving..." : "Record Transaction"}
+                    </Button>
+                  </form>
+                )}
+              </CardContent>
+            </Card>
 
-            <TabsContent value="all" className="space-y-4">
-              <DataTable
-                columns={columns}
-                data={filteredTransactions}
-                searchable={false}
-                emptyMessage="No transactions found"
-              />
-            </TabsContent>
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle>Balance by Partner</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {loading ? (
+                  <p className="py-6 text-center text-sm text-muted-foreground">Loading...</p>
+                ) : partners.length === 0 ? (
+                  <p className="py-6 text-center text-sm text-muted-foreground">No partners yet.</p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Partner</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Balance Owed</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {partners.map((p) => (
+                        <TableRow key={p.id}>
+                          <TableCell className="font-medium">{p.name}</TableCell>
+                          <TableCell>
+                            <Badge variant={p.status === "ACTIVE" ? "default" : "secondary"}>
+                              {p.status === "ACTIVE" ? "Active" : "Inactive"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right" data-testid={`balance-${p.id}`}>
+                            {formatRupees(balances.get(p.id) ?? 0)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </div>
 
-            <TabsContent value="commission" className="space-y-4">
-              <DataTable
-                columns={columns}
-                data={filteredTransactions.filter((t) => t.type === "commission")}
-                searchable={false}
-                emptyMessage="No commission transactions found"
-              />
-            </TabsContent>
-
-            <TabsContent value="payment" className="space-y-4">
-              <DataTable
-                columns={columns}
-                data={filteredTransactions.filter((t) => t.type === "payment")}
-                searchable={false}
-                emptyMessage="No payment transactions found"
-              />
-            </TabsContent>
-
-            <TabsContent value="refund" className="space-y-4">
-              <DataTable
-                columns={columns}
-                data={filteredTransactions.filter((t) => t.type === "refund")}
-                searchable={false}
-                emptyMessage="No refund transactions found"
-              />
-            </TabsContent>
-
-            <TabsContent value="adjustment" className="space-y-4">
-              <DataTable
-                columns={columns}
-                data={filteredTransactions.filter((t) => t.type === "adjustment")}
-                searchable={false}
-                emptyMessage="No adjustment transactions found"
-              />
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
-      </div>
+          <Card className="mt-6">
+            <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0">
+              <CardTitle>Transactions</CardTitle>
+              <Select value={filterPartner} onValueChange={setFilterPartner}>
+                <SelectTrigger className="w-56" aria-label="Filter by partner">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL}>All partners</SelectItem>
+                  {partners.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <p className="py-8 text-center text-sm text-muted-foreground">Loading transactions...</p>
+              ) : shown.length === 0 ? (
+                <EmptyState
+                  icon={Receipt}
+                  title="No transactions yet"
+                  description="Commission, payouts and adjustments you record will appear here."
+                />
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Partner</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Reference</TableHead>
+                      <TableHead>Note</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {shown.map((t) => (
+                      <TableRow key={t.id}>
+                        <TableCell className="whitespace-nowrap">{t.date}</TableCell>
+                        <TableCell>{partnerName.get(t.partnerId) ?? "Deleted partner"}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">
+                            {TYPE_LABELS[t.type]}
+                            {t.type === "ADJUSTMENT" && (t.direction === "DEBIT" ? " (−)" : " (+)")}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{t.reference || "-"}</TableCell>
+                        <TableCell>{t.note || "-"}</TableCell>
+                        <TableCell className="text-right font-medium">{formatRupees(signedAmount(t))}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </>
+      )}
     </AppLayout>
   );
 };

@@ -27,6 +27,17 @@ import {
 const STATUS_LABEL: Record<WalletTransactionItem["status"], string> = { COMPLETED: "PAID", PENDING: "PENDING", FAILED: "REJECTED" };
 
 /**
+ * Categories are written by several SQL migrations as SCREAMING_CASE. A
+ * CERTIFICATE_ORDER credit is the refund of a rejected order's charge
+ * (certificate-order-wallet.sql), which "Certificate order" alone would hide.
+ */
+function categoryLabel(r: Pick<WalletTransactionItem, "category" | "type">): string {
+  if (r.category === "CERTIFICATE_ORDER") return r.type === "credit" ? "Certificate order refund" : "Certificate order";
+  const words = r.category.replaceAll("_", " ").toLowerCase();
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
+/**
  * "Manage Wallet": the balance, the history of every credit and debit, and a
  * way to top up. Payment itself stays on the existing recharge page
  * (/branch/wallet), which handles the UPI request and proof upload.
@@ -88,7 +99,7 @@ export default function CentreWallet() {
       render: (r) => (
         <div>
           <span className={r.type === "credit" ? "font-semibold text-[#2fb878]" : "font-semibold text-[#e45454]"}>{r.type === "credit" ? "Credit" : "Debit"}</span>
-          <p className="text-[11.5px] text-slate-500">{r.category.replaceAll("_", " ")}</p>
+          <p className="text-[11.5px] text-slate-500">{categoryLabel(r)}</p>
         </div>
       ),
     },
