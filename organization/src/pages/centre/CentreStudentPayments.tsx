@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Printer } from "lucide-react";
+import { feeStanding } from "@/lib/fees";
 import { AppLayout } from "@/components/layout/AppLayout";
 import {
   DceBadge,
@@ -129,7 +130,7 @@ export default function CentreStudentPayments() {
         if (branchId) query = query.eq("branchId", branchId);
         return query.maybeSingle();
       };
-      let res = await run("*, course:courses(name,code), branch:branches(name)");
+      let res = await run("*, course:courses(name,code,baseFee), branch:branches(name)");
       if (res.error) res = await run("*");
       if (res.error) throw new Error(res.error.message);
       if (!res.data) throw new Error("That student could not be found in this centre.");
@@ -150,10 +151,14 @@ export default function CentreStudentPayments() {
 
   const live = useMemo(() => invoices.filter((i) => i.status.toUpperCase() !== "VOID"), [invoices]);
   const summary = useMemo(() => {
-    const total = live.reduce((s, i) => s + i.amount, 0);
-    const paid = live.reduce((s, i) => s + i.paid, 0);
-    return { total, paid, dues: Math.max(0, total - paid) };
-  }, [live]);
+    // Same rule as the roster and the portal: the course fee, unless more was invoiced.
+    const standing = feeStanding({
+      courseFee: student?.course?.baseFee,
+      invoiced: live.reduce((s, i) => s + i.amount, 0),
+      paid: live.reduce((s, i) => s + i.paid, 0),
+    });
+    return { total: standing.total, paid: standing.paid, dues: standing.balance };
+  }, [live, student]);
   // Oldest first, so a payment settles the earliest charge before a later one.
   const open = useMemo(
     () => live.filter((i) => i.balance > 0).sort((a, b) => a.createdAt.localeCompare(b.createdAt)),

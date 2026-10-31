@@ -224,7 +224,10 @@ export default function CentreAddStudent() {
 
   const pickCourse = (courseId: string) => {
     const course = courses.find((c) => String(c.id) === courseId);
-    const fee = branchFees.get(courseId) ?? (course ? Number(course.baseFee) || 0 : 0);
+    // The student pays the course fee. branch_courses.branchFee is the franchise
+    // price -- what the centre pays the head office -- and only stands in when
+    // the course has no fee of its own.
+    const fee = (course ? Number(course.baseFee) || 0 : 0) || branchFees.get(courseId) || 0;
     setForm((prev) => ({ ...prev, courseId, batchId: "", fees: courseId ? String(fee || "") : prev.fees }));
     setErrors((prev) => ({ ...prev, courseId: undefined, fees: undefined }));
   };

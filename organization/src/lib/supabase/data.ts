@@ -3045,7 +3045,9 @@ export async function getBranchWebsites(organizationId: string | null) {
 
 export async function getBranchSettings(branchId: string | null) {
   if (!branchId) return { success: true, data: null };
-  const { data, error } = await supabase.from("branch_settings").select("*").eq("branchId", branchId).single();
+  // `maybeSingle`: a branch that has never saved its website settings has no
+  // row, and `single` answers that with a 406 the browser logs on every page.
+  const { data, error } = await supabase.from("branch_settings").select("*").eq("branchId", branchId).maybeSingle();
   if (error && error.code !== "PGRST116") throw new Error(error.message);
   return { success: true, data: data || null };
 }

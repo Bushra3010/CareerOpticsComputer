@@ -19,6 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase/client";
 import { getBranches } from "@/lib/supabase/data";
 import { paidFromPayments, type InvoiceRow } from "@/lib/supabase/studentFee";
+import { feeStanding } from "@/lib/fees";
 import { downloadCsv } from "@/lib/export";
 import { cn } from "@/lib/utils";
 
@@ -111,8 +112,8 @@ async function queryStudents(
   // round trip; a deployment that does not expose a relationship still lists
   // its students, and `applicationSource` arrives only with online-admission.sql.
   const attempts: Array<[string, boolean]> = [
-    ["*, course:courses(id,name,code), branch:branches(name)", true],
-    ["*, course:courses(id,name,code)", true],
+    ["*, course:courses(id,name,code,baseFee), branch:branches(name)", true],
+    ["*, course:courses(id,name,code,baseFee)", true],
     ["*", true],
     ["*", false],
   ];
@@ -148,7 +149,10 @@ async function feeTotals(ids: string[]) {
 }
 
 function toRow(row: Raw, fees: Map<string, { total: number; paid: number }>): CentreStudentRow {
-  const fee = fees.get(String(row.id)) || { total: 0, paid: 0 };
+  const billed = fees.get(String(row.id)) || { total: 0, paid: 0 };
+  // The rule the branch roster and the student's portal use, so all three
+  // read the same balance: the course fee, unless more has been invoiced.
+  const fee = feeStanding({ courseFee: (row.course as { baseFee?: unknown } | undefined)?.baseFee, invoiced: billed.total, paid: billed.paid });
   return {
     id: String(row.id),
     code: String(row.enrollmentNo || row.applicationNo || "—"),
@@ -161,7 +165,7 @@ function toRow(row: Raw, fees: Map<string, { total: number; paid: number }>): Ce
     status: studentStatus(row),
     total: fee.total,
     paid: fee.paid,
-    dues: Math.max(0, fee.total - fee.paid),
+    dues: fee.balance,
     raw: row,
   };
 }
