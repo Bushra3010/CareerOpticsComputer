@@ -102,9 +102,6 @@ export default function Certification() {
                   <button type="button" className="p" data-cert={`/image/certificates/${r.file}.jpg`}>
                     <i data-lucide="zoom-in"></i>View certificate
                   </button>
-                  <a className="s" href={`/image/certificates/${r.file}.jpg`} download>
-                    <i data-lucide="download"></i>Download
-                  </a>
                 </div>
               </div>
             </div>
