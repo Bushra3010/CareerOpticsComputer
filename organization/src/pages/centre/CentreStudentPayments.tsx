@@ -194,6 +194,12 @@ export default function CentreStudentPayments() {
       toast({ title: "Enter the amount received", variant: "destructive" });
       return;
     }
+    // Money has paise, not fractions of them: 100.555 was stored as entered and
+    // then read as ₹101 here and ₹100.56 elsewhere.
+    if (Math.round(amount * 100) !== amount * 100) {
+      toast({ title: "Use at most 2 decimal places", description: "For example 100 or 100.50.", variant: "destructive" });
+      return;
+    }
     if (amount > target.balance + 0.001) {
       toast({
         title: "More than is owed",
@@ -228,8 +234,8 @@ export default function CentreStudentPayments() {
   const submitInvoice = async (e: React.FormEvent) => {
     e.preventDefault();
     const amount = Number(raise.amount);
-    if (!student || !Number.isFinite(amount) || amount <= 0) {
-      toast({ title: "Enter the fee amount", variant: "destructive" });
+    if (!student || !Number.isFinite(amount) || amount <= 0 || Math.round(amount * 100) !== amount * 100) {
+      toast({ title: "Enter the fee amount", description: "In rupees, with at most 2 decimal places.", variant: "destructive" });
       return;
     }
     setSaving(true);

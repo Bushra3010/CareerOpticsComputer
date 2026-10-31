@@ -141,5 +141,6 @@ export function DceDivider() {
   return <hr className="my-5 border-slate-200" />;
 }
 
-export const inr = (n: number | string | null | undefined) => `₹${Math.round(Number(n || 0)).toLocaleString("en-IN")}`;
+// Paise show when there are paise, so every page reads the same figure.
+export const inr = (n: number | string | null | undefined) => `₹${Number(n || 0).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
 export const shortDate = (d?: string | null) => (d ? new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "—");

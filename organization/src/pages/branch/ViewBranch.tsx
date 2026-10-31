@@ -652,6 +652,11 @@ export default function ViewBranch() {
       toast({ title: "Name and code are required", variant: "destructive" });
       return;
     }
+    // Create Branch checks the phone; editing let "123" through.
+    if (!/^[6-9]\d{9}$/.test(String(editing.phone || "").replace(/\D/g, "").slice(-10))) {
+      toast({ title: "Enter a valid 10-digit phone number", variant: "destructive" });
+      return;
+    }
     setSaving(true);
     const licenseExpiry = isoOrNull(editing.expiryDate);
     try {

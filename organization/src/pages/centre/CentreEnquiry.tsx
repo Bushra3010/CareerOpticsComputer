@@ -18,7 +18,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase/client";
 import { createEnquiry, getBranches, getCourses, updateEnquiry } from "@/lib/supabase/data";
-import { ENQUIRY_STATUSES, toDepartmentEnum, toIsoTimestamp } from "@/lib/supabase/reception";
+import { ENQUIRY_STATUSES, toDepartmentEnum } from "@/lib/supabase/reception";
 
 // Rows as PostgREST returns them, embeds included; the columns vary by deployment.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -202,7 +202,9 @@ export default function CentreEnquiry() {
       address: form.address.trim() || null,
       enquiryReason: form.course ? `${COURSE_PREFIX}${form.course}` : null,
       remarks: form.remarks.trim() || null,
-      followUpDate: form.followUpDate ? toIsoTimestamp(form.followUpDate) : null,
+      // The day as picked. Converting local midnight to UTC (toIsoTimestamp)
+      // lands on the previous day east of UTC in this zone-less column.
+      followUpDate: form.followUpDate ? `${form.followUpDate}T00:00:00` : null,
     };
     setSaving(true);
     try {

@@ -246,6 +246,10 @@ const READ_ONLY_COLUMNS = [
 const asDateInput = (value: unknown) => {
   const text = String(value ?? "");
   if (!text) return "";
+  // A stored day comes back as "2003-01-20T00:00:00" with no zone. Parsing it
+  // reads local midnight, and toISOString then gives the previous day east of
+  // UTC -- so every save moved the date back one day. Keep the day as written.
+  if (/^\d{4}-\d{2}-\d{2}/.test(text)) return text.slice(0, 10);
   const date = new Date(text);
   return Number.isNaN(date.getTime()) ? text.slice(0, 10) : date.toISOString().slice(0, 10);
 };
@@ -400,11 +404,12 @@ export default function AdmissionsWorkspace() {
         setDraft(draftFromRecord(data as Record<string, unknown>));
         // The files already on the record, so they can be seen and kept: the
         // documents column is written whole, and an edit that attached one new
-        // scan used to save that scan alone and lose the rest.
+        // scan used to save that scan alone and lose the rest. Every file is
+        // kept, not only this form's slots: the centre panel's "Document of
+        // Student" is stored under its own key and was dropped on each edit.
         setDocuments(
           Object.fromEntries(
             studentFiles(data as Record<string, unknown>)
-              .filter((file) => ADMISSION_DOCUMENTS.some((doc) => doc.id === file.key))
               .map((file) => [file.key, { name: file.name || file.label, dataUrl: file.url, uploadedAt: file.uploadedAt || "" }]),
           ),
         );

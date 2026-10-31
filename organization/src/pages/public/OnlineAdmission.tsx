@@ -110,8 +110,12 @@ export default function OnlineAdmission() {
     if (at === 1) {
       if (!form.firstName.trim() || !form.lastName.trim()) return "Enter your first and last name.";
       if (!form.dateOfBirth) return "Enter your date of birth.";
+      // The picker's max does not stop a typed date; compare as yyyy-mm-dd.
+      if (form.dateOfBirth >= new Date().toLocaleDateString("en-CA")) return "Your date of birth must be in the past.";
       if (!form.gender) return "Choose your gender.";
       if (!/^[6-9]\d{9}$/.test(form.phone.replace(/\D/g, "").slice(-10))) return "Enter a valid 10-digit mobile number.";
+      if (form.whatsappNumber.trim() && !/^[6-9]\d{9}$/.test(form.whatsappNumber.replace(/\D/g, "").slice(-10))) return "Enter a valid 10-digit WhatsApp number, or leave it empty.";
+      if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) return "Enter a valid email address, or leave it empty.";
     }
     if (at === 2) {
       if (!form.fatherName.trim() || !form.motherName.trim()) return "Enter your father's and mother's names.";

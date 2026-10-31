@@ -17,7 +17,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase/client";
 import { getBranches } from "@/lib/supabase/data";
-import { updateStudentRow, type InvoiceRow } from "@/lib/supabase/studentFee";
+import { createInvoiceRow, updateStudentRow, type InvoiceRow } from "@/lib/supabase/studentFee";
 import { paymentFor } from "@/lib/onlineAdmissions";
 import { studentFiles } from "@/lib/studentDocuments";
 
@@ -74,7 +74,7 @@ export default function CentreAdmissionForms() {
         if (branchId) query = query.eq("branchId", branchId);
         return query;
       };
-      let res = await run("*, course:courses(id,name,code)");
+      let res = await run("*, course:courses(id,name,code,baseFee)");
       if (res.error) res = await run("*");
       if (res.error) throw new Error(res.error.message);
       const students = (res.data || []) as Raw[];
@@ -138,6 +138,17 @@ export default function CentreAdmissionForms() {
       // The same write the Online Admission List makes: approving also clears
       // any documents that had been asked for, and charges the centre's wallet.
       await updateStudentRow(String(s.id), { status: "approved", decisionNote: "", requestedDocuments: [] });
+      // An admitted student owes the course fee. Bill it now, so the student's
+      // Payments page, the roster and the portal all have an invoice to show
+      // rather than a balance with nothing behind it.
+      const fee = Number((s.course as { baseFee?: unknown } | undefined)?.baseFee) || 0;
+      if (fee > 0 && !(invoices.get(String(s.id)) || []).length) {
+        await createInvoiceRow(String(s.branchId || "") || null, {
+          studentId: String(s.id),
+          totalAmount: fee,
+          description: `${s.course?.name || "Course"} fee`,
+        });
+      }
       toast({ title: "Application approved", description: `${nameOf(s)} · ${s.course?.name || ""}` });
       setRows((prev) => prev.filter((r) => r.id !== s.id));
       setViewing(null);

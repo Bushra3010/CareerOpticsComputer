@@ -120,7 +120,9 @@ function validateStudentForm(form: StudentForm, opts: { needsBranch: boolean; ha
   if (form.aadharNumber && !/^\d{12}$/.test(form.aadharNumber.trim())) errors.aadharNumber = "Aadhaar must be 12 digits";
   if (form.pincode && !/^\d{6}$/.test(form.pincode.trim())) errors.pincode = "Pin code must be 6 digits";
   if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) errors.email = "Enter a valid email";
-  if (form.fees && !(Number(form.fees) >= 0)) errors.fees = "Enter the fee in rupees";
+  // A fee of 0 used to register the student with no invoice while the lists still
+  // showed the course fee as due; every admission is billed.
+  if (form.fees && !(Number(form.fees) > 0)) errors.fees = "Enter the fee in rupees";
   if (form.dateOfBirth && form.dateOfBirth >= today()) errors.dateOfBirth = "Date of birth must be in the past";
   return errors;
 }

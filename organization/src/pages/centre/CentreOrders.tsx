@@ -54,16 +54,36 @@ function OrderStudents({ ids }: { ids: string[] }) {
   );
 }
 
-/** The head office's controls on an order: price it, then approve, dispatch or reject it. */
+/**
+ * The head office's controls on an order. An order moves one way only:
+ * PENDING → APPROVED → DISPATCHED, or PENDING / APPROVED → REJECTED. A
+ * dispatched or rejected order is closed -- reopening one let a student hold
+ * two standing orders. certificate-orders-rules.sql enforces the same in the
+ * database.
+ */
+const NEXT: Record<OrderStatus, OrderStatus[]> = {
+  PENDING: ["APPROVED", "REJECTED"],
+  APPROVED: ["DISPATCHED", "REJECTED"],
+  DISPATCHED: [],
+  REJECTED: [],
+};
+
 function OrderReview({ order, onSaved }: { order: CertificateOrder; onSaved: (o: CertificateOrder) => void }) {
   const { toast } = useToast();
   const [amount, setAmount] = useState(order.amount ? String(order.amount) : "");
   const [busy, setBusy] = useState(false);
+  const allowed = NEXT[order.status as OrderStatus] || [];
   const act = async (status: OrderStatus) => {
+    const value = Number(amount);
+    if (status === "APPROVED" && !(value > 0 && Math.round(value * 100) === value * 100)) {
+      toast({ title: "Enter the order amount", description: "Above zero, with at most 2 decimal places.", variant: "destructive" });
+      return;
+    }
+    if (status === "REJECTED" && !window.confirm(`Reject order ${order.orderNo}? Its students can then be ordered again.`)) return;
     setBusy(true);
     try {
-      const saved = await updateCertificateOrder(order.id, { status, amount: Number(amount) || 0 });
-      onSaved({ ...order, ...saved, amount: Number(saved?.amount ?? amount) || 0 });
+      const saved = await updateCertificateOrder(order.id, status === "APPROVED" ? { status, amount: value } : { status });
+      onSaved({ ...order, ...saved, amount: Number(saved?.amount ?? order.amount) || 0 });
       toast({ title: `Order ${order.orderNo} ${status.toLowerCase()}` });
     } catch (error) {
       toast({ title: "Could not update the order", description: (error as Error).message, variant: "destructive" });
@@ -71,12 +91,15 @@ function OrderReview({ order, onSaved }: { order: CertificateOrder; onSaved: (o:
       setBusy(false);
     }
   };
+  if (!allowed.length) return <span className="text-[12px] text-slate-400">Closed</span>;
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      <DceInput type="number" min="0" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Amount" className="w-24 py-1" aria-label={`Amount for ${order.orderNo}`} />
-      <DceButton size="sm" tone="green" disabled={busy} onClick={() => void act("APPROVED")}>Approve</DceButton>
-      <DceButton size="sm" tone="teal" disabled={busy} onClick={() => void act("DISPATCHED")}>Dispatch</DceButton>
-      <DceButton size="sm" tone="red" disabled={busy} onClick={() => void act("REJECTED")}>Reject</DceButton>
+      {allowed.includes("APPROVED") && (
+        <DceInput type="number" min="0.01" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Amount" className="w-24 py-1" aria-label={`Amount for ${order.orderNo}`} />
+      )}
+      {allowed.includes("APPROVED") && <DceButton size="sm" tone="green" disabled={busy} onClick={() => void act("APPROVED")}>Approve</DceButton>}
+      {allowed.includes("DISPATCHED") && <DceButton size="sm" tone="teal" disabled={busy} onClick={() => void act("DISPATCHED")}>Dispatch</DceButton>}
+      {allowed.includes("REJECTED") && <DceButton size="sm" tone="red" disabled={busy} onClick={() => void act("REJECTED")}>Reject</DceButton>}
     </div>
   );
 }
