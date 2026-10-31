@@ -30,48 +30,26 @@ import {
   studentsOnFeeGroups,
   type FeeGroupInvoice,
 } from "@/lib/supabase/studentFee";
-import { FEE_GROUPS_KEY, FEE_TYPES_KEY } from "@/data/fee-catalog";
-
-interface FeeGroup {
-  id: string;
-  name: string;
-  description: string;
-  feeTypes: string[];
-  totalAmount: number;
-  courses: string[];
-  /** Read from the group's invoices on load; the stored figure is ignored. */
-  studentsCount: number;
-  status: "active" | "inactive";
-}
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  canManageFeeStructures,
+  copyName,
+  createFeeGroup,
+  deleteFeeGroup,
+  feeGroupProblem,
+  loadFeeCatalog,
+  updateFeeGroup,
+  type FeeGroup,
+  type FeeType,
+} from "@/lib/supabase/feeStructures";
 
 /** A group as the table shows it: the stored package plus who it is billed to. */
 interface FeeGroupRow extends FeeGroup {
+  /** Fee type names for display; a live type's current name wins over the item's copy. */
+  feeTypes: string[];
+  /** Read from the group's invoices. */
+  studentsCount: number;
   invoiceCount: number;
-}
-
-interface FeeType {
-  id: string;
-  name: string;
-  code: string;
-  category: string;
-  defaultAmount: number;
-  frequency: string;
-  applicableTo: string[];
-  description: string;
-  status: "active" | "inactive";
-}
-
-const COURSE_OPTIONS = ["All Courses", "Computer Science", "Engineering", "Commerce", "Science"] as const;
-
-function suggestCode(name: string, existing: FeeType[]): string {
-  const initials = name.split(/\s+/).filter(Boolean).map((word) => word[0]?.toUpperCase() ?? "").join("").slice(0, 3) || "FEE";
-  let counter = 1;
-  let code = `${initials}${String(counter).padStart(3, "0")}`;
-  while (existing.some((f) => f.code.toUpperCase() === code)) {
-    counter += 1;
-    code = `${initials}${String(counter).padStart(3, "0")}`;
-  }
-  return code;
 }
 
 const columns: Column<FeeGroupRow>[] = [
@@ -145,8 +123,14 @@ const BLANK = { name: "", courses: "All Courses", description: "", feeTypeIds: [
 export default function FeeGroups() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const organizationId = user?.organizationId ?? null;
+  const canManage = canManageFeeStructures(user?.role);
   const [groups, setGroups] = useState<FeeGroup[]>([]);
   const [allFeeTypes, setAllFeeTypes] = useState<FeeType[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ ...BLANK });
@@ -158,13 +142,37 @@ export default function FeeGroups() {
   const [usageError, setUsageError] = useState<string | null>(null);
 
   useEffect(() => {
-    try {
-      const g = localStorage.getItem(FEE_GROUPS_KEY);
-      if (g) setGroups(JSON.parse(g));
-      const f = localStorage.getItem(FEE_TYPES_KEY);
-      if (f) setAllFeeTypes(JSON.parse(f));
-    } catch { /* use empty */ }
-  }, []);
+    let cancelled = false;
+    setLoading(true);
+    loadFeeCatalog(organizationId, { canImport: canManage })
+      .then(({ types, groups: loaded, imported, importError }) => {
+        if (cancelled) return;
+        setAllFeeTypes(types);
+        setGroups(loaded);
+        setLoadError(null);
+        if (importError) {
+          toast({
+            title: "Could not move this browser's fee catalogue to the database",
+            description: `${importError} It is still saved in this browser; reopen the page to retry.`,
+            variant: "destructive",
+          });
+        }
+        if (imported) {
+          toast({
+            title: "Fee catalogue moved to the database",
+            description: `${imported.types} fee type(s) and ${imported.groups} group(s) from this browser are now shared by every computer.`,
+          });
+        }
+      })
+      .catch((error: Error) => {
+        if (!cancelled) setLoadError(error.message || "Could not load fee groups.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `toast` is stable; reload only when the login changes.
+  }, [organizationId, canManage]);
 
   useEffect(() => {
     let cancelled = false;
@@ -187,33 +195,19 @@ export default function FeeGroups() {
     () =>
       groups.map((g) => ({
         ...g,
+        feeTypes: g.items.map((item) => allFeeTypes.find((f) => f.id === item.feeTypeId)?.name ?? item.name),
         studentsCount: usage.get(g.id)?.students ?? 0,
         invoiceCount: usage.get(g.id)?.invoices ?? 0,
       })),
-    [groups, usage],
+    [groups, usage, allFeeTypes],
   );
   const studentsAssigned = useMemo(
     () => studentsOnFeeGroups(invoices ?? [], groups.map((g) => g.id)),
     [invoices, groups],
   );
 
-  // Every caller passes an updater function, so these have to resolve it before
-  // writing: `JSON.stringify(fn)` is `undefined`, which stored the literal string
-  // "undefined" and made the next `JSON.parse` throw - fee groups never persisted.
-  const persistGroups = (next: FeeGroup[] | ((prev: FeeGroup[]) => FeeGroup[])) => {
-    setGroups((prev) => {
-      const value = typeof next === "function" ? next(prev) : next;
-      try { localStorage.setItem(FEE_GROUPS_KEY, JSON.stringify(value)); } catch { /* quota */ }
-      return value;
-    });
-  };
-  const persistFeeTypes = (next: FeeType[] | ((prev: FeeType[]) => FeeType[])) => {
-    setAllFeeTypes((prev) => {
-      const value = typeof next === "function" ? next(prev) : next;
-      try { localStorage.setItem(FEE_TYPES_KEY, JSON.stringify(value)); } catch { /* quota */ }
-      return value;
-    });
-  };
+  const failed = (title: string, error: unknown) =>
+    toast({ title, description: (error as Error)?.message || "Please try again.", variant: "destructive" });
 
   /** Only live fee types can go into a new package. */
   const availableFeeTypes = allFeeTypes.filter((f) => f.status === "active");
@@ -246,67 +240,82 @@ export default function FeeGroups() {
       name: group.name,
       courses: group.courses.join(", "),
       description: group.description,
-      feeTypeIds: allFeeTypes.filter((f) => group.feeTypes.includes(f.name)).map((f) => f.id),
+      feeTypeIds: group.items
+        .map((item) => item.feeTypeId)
+        .filter((id): id is string => !!id && allFeeTypes.some((f) => f.id === id)),
     });
     setIsDialogOpen(true);
   };
 
-  const save = () => {
+  const save = async () => {
     const name = form.name.trim();
-    if (!name) {
-      toast({ title: "Group name is required", variant: "destructive" });
-      return;
-    }
-    if (!form.feeTypeIds.length) {
-      toast({ title: "Pick at least one fee type", variant: "destructive" });
-      return;
-    }
-    if (groups.some((g) => g.id !== editingId && g.name.toLowerCase() === name.toLowerCase())) {
-      toast({ title: "A fee group with that name already exists", variant: "destructive" });
+    const chosen = allFeeTypes.filter((f) => form.feeTypeIds.includes(f.id));
+    const items = chosen.map((f) => ({ feeTypeId: f.id, name: f.name, amount: f.defaultAmount }));
+    const problem = feeGroupProblem({ name, items }, groups, editingId);
+    if (problem) {
+      toast({ title: problem, variant: "destructive" });
       return;
     }
 
-    const chosen = allFeeTypes.filter((f) => form.feeTypeIds.includes(f.id));
     const courses = form.courses
       .split(",")
       .map((c) => c.trim())
       .filter(Boolean);
-    const payload: FeeGroup = {
-      id: editingId ?? `${Date.now().toString(36)}`,
+    const input = {
       name,
       description: form.description.trim() || `${chosen.length} fee types`,
-      feeTypes: chosen.map((f) => f.name),
-      totalAmount: chosen.reduce((sum, f) => sum + f.defaultAmount, 0),
       courses: courses.length ? courses : ["All Courses"],
-      status: editingId ? groups.find((g) => g.id === editingId)?.status ?? "active" : "active",
-      studentsCount: 0,
+      // Frozen at save, as before: repricing a fee type later must not change
+      // what allocation bills for a package students are already on.
+      totalAmount: Math.round(items.reduce((sum, item) => sum + item.amount, 0) * 100) / 100,
+      status: editingId ? groups.find((g) => g.id === editingId)?.status ?? ("active" as const) : ("active" as const),
+      items,
     };
 
-    if (editingId) {
-      persistGroups((prev) => prev.map((g) => (g.id === editingId ? payload : g)));
-      toast({ title: "Fee group updated", description: `${name} was saved.` });
-    } else {
-      persistGroups((prev) => [payload, ...prev]);
-      toast({ title: "Fee group created", description: `${name} · ₹${payload.totalAmount.toLocaleString()}` });
+    setSaving(true);
+    try {
+      if (editingId) {
+        await updateFeeGroup(editingId, input);
+        setGroups((prev) => prev.map((g) => (g.id === editingId ? { ...input, id: editingId } : g)));
+        toast({ title: "Fee group updated", description: `${name} was saved.` });
+      } else {
+        const created = await createFeeGroup(organizationId, input);
+        setGroups((prev) => [created, ...prev]);
+        toast({ title: "Fee group created", description: `${name} · ₹${input.totalAmount.toLocaleString()}` });
+      }
+      setIsDialogOpen(false);
+      setEditingId(null);
+      setForm({ ...BLANK });
+    } catch (error) {
+      failed("Could not save the fee group", error);
+    } finally {
+      setSaving(false);
     }
-    setIsDialogOpen(false);
-    setEditingId(null);
-    setForm({ ...BLANK });
   };
 
-  const duplicate = ({ invoiceCount: _usage, ...group }: FeeGroupRow) => {
-    const name = `${group.name} (Copy)`;
-    const copy: FeeGroup = { ...group, id: `${Date.now().toString(36)}`, name, studentsCount: 0, status: "inactive" };
-    persistGroups((prev) => [copy, ...prev]);
-    toast({ title: "Fee group duplicated", description: `${name} was created as inactive.` });
+  const duplicate = async (group: FeeGroupRow) => {
+    const name = copyName(group.name, groups.map((g) => g.name));
+    try {
+      const copy = await createFeeGroup(organizationId, {
+        name,
+        description: group.description,
+        courses: group.courses,
+        totalAmount: group.totalAmount,
+        status: "inactive",
+        items: group.items,
+      });
+      setGroups((prev) => [copy, ...prev]);
+      toast({ title: "Fee group duplicated", description: `${name} was created as inactive.` });
+    } catch (error) {
+      failed("Could not duplicate the fee group", error);
+    }
   };
 
   /**
    * Deleting is refused, not merely warned about, while any invoice names the
-   * group. The invoices would survive (the group lives only in this browser),
-   * but they would lose the package they were billed from and read as
-   * "Custom invoice" on allocation, with nothing left to say what they were
-   * for. Void or re-allocate those invoices first; the group can go after.
+   * group. The group is only soft-deleted, but it drops off every list, so its
+   * invoices would read as "Custom invoice" on allocation with nothing left to
+   * say what they were for. Void or re-allocate those invoices first; the group can go after.
    */
   const deleteBlocker = (group: FeeGroupRow): string | null => {
     if (invoices === null) {
@@ -320,22 +329,32 @@ export default function FeeGroups() {
     return null;
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (!pendingDelete || deleteBlocker(pendingDelete)) return;
-    persistGroups((prev) => prev.filter((g) => g.id !== pendingDelete.id));
-    toast({ title: "Fee group deleted", description: `${pendingDelete.name} was removed.` });
-    setPendingDelete(null);
+    const target = pendingDelete;
+    try {
+      await deleteFeeGroup(target.id);
+      setGroups((prev) => prev.filter((g) => g.id !== target.id));
+      toast({ title: "Fee group deleted", description: `${target.name} was removed.` });
+    } catch (error) {
+      failed("Could not delete the fee group", error);
+    } finally {
+      setPendingDelete(null);
+    }
   };
 
-  const handleActions = (group: FeeGroupRow) => [
-    { label: "View Details", onClick: () => setDetails(group) },
-    { label: "Edit Group", onClick: () => openEdit(group) },
-    // Students are put on a group by allocating it, which bills them. The
-    // number typed here used to be added to a counter and billed no one.
-    { label: "Assign to Students", onClick: () => navigate("/fee/allocation") },
-    { label: "Duplicate", onClick: () => duplicate(group) },
-    { label: "Delete", onClick: () => setPendingDelete(group), destructive: true },
-  ];
+  const handleActions = (group: FeeGroupRow) =>
+    canManage
+      ? [
+          { label: "View Details", onClick: () => setDetails(group) },
+          { label: "Edit Group", onClick: () => openEdit(group) },
+          // Students are put on a group by allocating it, which bills them. The
+          // number typed here used to be added to a counter and billed no one.
+          { label: "Assign to Students", onClick: () => navigate("/fee/allocation") },
+          { label: "Duplicate", onClick: () => duplicate(group) },
+          { label: "Delete", onClick: () => setPendingDelete(group), destructive: true },
+        ]
+      : [{ label: "View Details", onClick: () => setDetails(group) }];
 
   const avgAmount = groups.length
     ? Math.round(groups.reduce((sum, g) => sum + g.totalAmount, 0) / groups.length / 1000)
@@ -351,10 +370,12 @@ export default function FeeGroups() {
           { label: "Fee Groups" },
         ]}
         actions={
-          <Button className="gap-2" onClick={openCreate}>
-            <Plus className="h-4 w-4" />
-            Create Fee Group
-          </Button>
+          canManage ? (
+            <Button className="gap-2" onClick={openCreate} disabled={loading || !!loadError}>
+              <Plus className="h-4 w-4" />
+              Create Fee Group
+            </Button>
+          ) : undefined
         }
       />
 
@@ -413,11 +434,21 @@ export default function FeeGroups() {
         </Card>
       </div>
 
+      {loadError && (
+        <p role="alert" className="mb-4 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+          {loadError}
+        </p>
+      )}
+      {!canManage && !loadError && (
+        <p className="mb-4 text-sm text-muted-foreground">Only an organisation admin can change fee groups.</p>
+      )}
+
       <DataTable
         data={rows}
         columns={columns}
         searchPlaceholder="Search fee groups..."
         actions={handleActions}
+        emptyMessage={loading ? "Loading fee groups…" : "No fee groups yet"}
       />
 
       <Dialog
@@ -504,7 +535,7 @@ export default function FeeGroups() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-            <Button onClick={save}>{editingId ? "Save changes" : "Create Group"}</Button>
+            <Button onClick={save} disabled={saving}>{editingId ? "Save changes" : "Create Group"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -534,13 +565,14 @@ export default function FeeGroups() {
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground">Fee types</p>
                 <ul className="divide-y rounded-lg border text-sm">
-                  {details.feeTypes.map((name) => {
-                    const fee = allFeeTypes.find((f) => f.name === name);
+                  {details.items.map((item, index) => {
+                    const fee = allFeeTypes.find((f) => f.id === item.feeTypeId);
                     return (
-                      <li key={name} className="flex items-center justify-between p-2">
-                        <span>{name}</span>
+                      <li key={`${item.feeTypeId ?? item.name}-${index}`} className="flex items-center justify-between p-2">
+                        <span>{fee?.name ?? item.name}</span>
                         <span className="text-muted-foreground">
-                          {fee ? `₹${fee.defaultAmount.toLocaleString()}` : "not in catalogue"}
+                          ₹{item.amount.toLocaleString()}
+                          {!fee && " · not in catalogue"}
                         </span>
                       </li>
                     );

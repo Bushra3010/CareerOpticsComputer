@@ -16,6 +16,7 @@ import {
   type InvoiceRow,
   type RecordPaymentInput,
 } from "./studentFee";
+import { listFeeGroups, listFeeTypes } from "./feeStructures";
 import { feeStanding } from "../fees";
 import { isOnlineSlot } from "../batchSchedule";
 import { asExamResults, termPlan, type MarkLine } from "../examWorkflow";
@@ -4147,12 +4148,13 @@ export async function rejectRecharge(transactionId: string, note: string, review
   return { success: true as const };
 }
 
-export async function getFeeTypes() {
-  return { success: true, data: [] };
+/** Envelope wrappers over feeStructures.ts, for callers written against data.ts. */
+export async function getFeeTypes(organizationId: string | null = null) {
+  return { success: true as const, data: await listFeeTypes(organizationId) };
 }
 
-export async function getFeeGroups() {
-  return { success: true, data: [] };
+export async function getFeeGroups(organizationId: string | null = null) {
+  return { success: true as const, data: await listFeeGroups(organizationId) };
 }
 
 /* ============================

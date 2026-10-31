@@ -29,7 +29,7 @@ import {
   type InvoiceRow,
   type StudentRow,
 } from "@/lib/supabase/studentFee";
-import { FEE_GROUPS_KEY, FeeGroup } from "@/data/fee-catalog";
+import { listFeeGroups, type FeeGroup } from "@/lib/supabase/feeStructures";
 
 interface StudentAllocation {
   /** Always the student's id, so row selection and lookups agree. */
@@ -189,13 +189,8 @@ export default function FeeAllocation() {
         const [studentsData, invoicesData, groupsData] = await Promise.all([
           listStudents(branchId, 200),
           listInvoices(branchId, { includeVoid: false }),
-          (async () => {
-            try {
-              const raw = localStorage.getItem(FEE_GROUPS_KEY);
-              const parsed = raw ? JSON.parse(raw) : [];
-              return Array.isArray(parsed) ? (parsed as FeeGroup[]) : [];
-            } catch { return [] as FeeGroup[]; }
-          })(),
+          // Groups are the organisation's, not the branch's; RLS scopes them.
+          listFeeGroups(user?.organizationId ?? null),
         ]);
         if (!cancelled) {
           setStudents(studentsData.data);
@@ -211,6 +206,7 @@ export default function FeeAllocation() {
           });
           setStudents([]);
           setInvoices([]);
+          setFeeGroups([]);
         }
       } finally {
         if (!cancelled) {
@@ -221,7 +217,7 @@ export default function FeeAllocation() {
     loadData();
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [branchId]);
+  }, [branchId, user?.organizationId]);
 
   useEffect(() => {
     if (!showBranch) return;

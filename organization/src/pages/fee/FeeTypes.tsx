@@ -20,12 +20,25 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { FEE_GROUPS_KEY, FEE_TYPES_KEY, FeeGroup, FeeType, suggestCode } from "@/data/fee-catalog";
+import { suggestCode } from "@/data/fee-catalog";
 import { Plus, IndianRupee, Tags, Edit } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import { EditableSelect } from "@/components/ui/EditableSelect";
+import {
+  canManageFeeStructures,
+  copyName,
+  createFeeType,
+  deleteFeeType,
+  feeTypeProblem,
+  loadFeeCatalog,
+  parseAmount,
+  updateFeeType,
+  type FeeGroup,
+  type FeeType,
+} from "@/lib/supabase/feeStructures";
 
 const COURSE_OPTIONS = ["All Courses", "Computer Science", "Engineering", "Commerce", "Science"] as const;
 
@@ -98,11 +111,20 @@ const BLANK = {
   active: true,
 };
 
+/** Whether a group is built from this fee type. */
+const groupUses = (group: FeeGroup, fee: FeeType) => group.items.some((item) => item.feeTypeId === fee.id);
+
 export default function FeeTypes() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const organizationId = user?.organizationId ?? null;
+  const canManage = canManageFeeStructures(user?.role);
   const [feeTypes, setFeeTypes] = useState<FeeType[]>([]);
   const [feeGroups, setFeeGroups] = useState<FeeGroup[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ ...BLANK });
@@ -111,31 +133,39 @@ export default function FeeTypes() {
 
   useEffect(() => {
     let cancelled = false;
-    try {
-      const t = localStorage.getItem(FEE_TYPES_KEY);
-      if (t) setFeeTypes(JSON.parse(t));
-      const g = localStorage.getItem(FEE_GROUPS_KEY);
-      if (g) setFeeGroups(JSON.parse(g));
-    } catch { /* use empty */ }
+    setLoading(true);
+    loadFeeCatalog(organizationId, { canImport: canManage })
+      .then(({ types, groups, imported, importError }) => {
+        if (cancelled) return;
+        setFeeTypes(types);
+        setFeeGroups(groups);
+        setLoadError(null);
+        if (importError) {
+          toast({
+            title: "Could not move this browser's fee catalogue to the database",
+            description: `${importError} It is still saved in this browser; reopen the page to retry.`,
+            variant: "destructive",
+          });
+        }
+        if (imported) {
+          toast({
+            title: "Fee catalogue moved to the database",
+            description: `${imported.types} fee type(s) and ${imported.groups} group(s) from this browser are now shared by every computer.`,
+          });
+        }
+      })
+      .catch((error: Error) => {
+        if (!cancelled) setLoadError(error.message || "Could not load fee types.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
     return () => { cancelled = true; };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `toast` is stable; reload only when the login changes.
+  }, [organizationId, canManage]);
 
-  // Callers pass updater functions; `JSON.stringify(fn)` is `undefined`, which
-  // wrote the literal string "undefined" and broke the next load's `JSON.parse`.
-  const persistFeeTypes = (next: FeeType[] | ((prev: FeeType[]) => FeeType[])) => {
-    setFeeTypes((prev) => {
-      const value = typeof next === "function" ? next(prev) : next;
-      try { localStorage.setItem(FEE_TYPES_KEY, JSON.stringify(value)); } catch { /* quota */ }
-      return value;
-    });
-  };
-  const persistFeeGroups = (next: FeeGroup[] | ((prev: FeeGroup[]) => FeeGroup[])) => {
-    setFeeGroups((prev) => {
-      const value = typeof next === "function" ? next(prev) : next;
-      try { localStorage.setItem(FEE_GROUPS_KEY, JSON.stringify(value)); } catch { /* quota */ }
-      return value;
-    });
-  };
+  const failed = (title: string, error: unknown) =>
+    toast({ title, description: (error as Error)?.message || "Please try again.", variant: "destructive" });
 
   const set = <K extends keyof typeof BLANK>(key: K, value: (typeof BLANK)[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
@@ -161,84 +191,102 @@ export default function FeeTypes() {
     setIsDialogOpen(true);
   };
 
-  const save = () => {
+  const save = async () => {
     const name = form.name.trim();
     const code = (form.code.trim() || suggestCode(name, feeTypes)).toUpperCase();
-    const amount = Number(form.defaultAmount);
-
-    if (!name) {
-      toast({ title: "Fee name is required", variant: "destructive" });
-      return;
-    }
-    if (!form.defaultAmount || !Number.isFinite(amount) || amount < 0) {
-      toast({ title: "Enter a valid default amount", variant: "destructive" });
-      return;
-    }
-    if (feeTypes.some((f) => f.id !== editingId && f.code.toUpperCase() === code)) {
-      toast({ title: "That fee code is already in use", description: code, variant: "destructive" });
+    const problem = feeTypeProblem({ name, code, defaultAmount: form.defaultAmount }, feeTypes, editingId);
+    if (problem) {
+      toast({ title: problem, variant: "destructive" });
       return;
     }
 
-    const payload: FeeType = {
-      id: editingId ?? `${Date.now().toString(36)}`,
+    const input = {
       name,
       code,
       category: form.category,
-      defaultAmount: amount,
+      defaultAmount: parseAmount(form.defaultAmount) as number,
       frequency: form.frequency,
       applicableTo: [form.applicableTo],
       description: form.description.trim(),
       status: form.active ? ("active" as const) : ("inactive" as const),
     };
 
-    if (editingId) {
-      persistFeeTypes((prev) => prev.map((f) => (f.id === editingId ? payload : f)));
-      toast({ title: "Fee type updated", description: `${name} was saved.` });
-    } else {
-      persistFeeTypes((prev) => [payload, ...prev]);
-      toast({ title: "Fee type added", description: `${name} (${code}) is now available.` });
+    setSaving(true);
+    try {
+      if (editingId) {
+        await updateFeeType(editingId, input);
+        setFeeTypes((prev) => prev.map((f) => (f.id === editingId ? { ...input, id: editingId } : f)));
+        toast({ title: "Fee type updated", description: `${name} was saved.` });
+      } else {
+        const created = await createFeeType(organizationId, input);
+        setFeeTypes((prev) => [created, ...prev]);
+        toast({ title: "Fee type added", description: `${name} (${code}) is now available.` });
+      }
+      setIsDialogOpen(false);
+      setEditingId(null);
+      setForm({ ...BLANK, defaultAmount: "" });
+    } catch (error) {
+      failed("Could not save the fee type", error);
+    } finally {
+      setSaving(false);
     }
-    setIsDialogOpen(false);
-    setEditingId(null);
-    setForm({ ...BLANK, defaultAmount: "" });
   };
 
-  const duplicate = (fee: FeeType) => {
-    const name = `${fee.name} (Copy)`;
-    const copy: FeeType = { ...fee, id: `${Date.now().toString(36)}`, name, code: suggestCode(fee.name, feeTypes), status: "inactive" };
-    persistFeeTypes((prev) => [copy, ...prev]);
-    toast({ title: "Fee type duplicated", description: `${name} was created as inactive.` });
+  const duplicate = async (fee: FeeType) => {
+    const name = copyName(fee.name, feeTypes.map((f) => f.name));
+    const { id: _id, ...rest } = fee;
+    try {
+      const copy = await createFeeType(organizationId, { ...rest, name, code: suggestCode(fee.name, feeTypes), status: "inactive" });
+      setFeeTypes((prev) => [copy, ...prev]);
+      toast({ title: "Fee type duplicated", description: `${name} was created as inactive.` });
+    } catch (error) {
+      failed("Could not duplicate the fee type", error);
+    }
   };
 
-  const confirmDelete = () => {
+  const toggleStatus = async (fee: FeeType) => {
+    const status = fee.status === "active" ? ("inactive" as const) : ("active" as const);
+    try {
+      await updateFeeType(fee.id, { status });
+      setFeeTypes((prev) => prev.map((f) => (f.id === fee.id ? { ...f, status } : f)));
+      toast({ title: status === "inactive" ? "Fee type deactivated" : "Fee type activated", description: fee.name });
+    } catch (error) {
+      failed("Could not change the fee type", error);
+    }
+  };
+
+  const confirmDelete = async () => {
     if (!pendingDelete) return;
-    const usedBy = feeGroups.filter((g) => g.feeTypes.includes(pendingDelete.name));
-    persistFeeTypes((prev) => prev.filter((f) => f.id !== pendingDelete.id));
-    toast({
-      title: "Fee type deleted",
-      description: usedBy.length
-        ? `${pendingDelete.name} removed — it was still referenced by ${usedBy.length} fee group(s).`
-        : `${pendingDelete.name} removed.`,
-    });
-    setPendingDelete(null);
+    const target = pendingDelete;
+    const usedBy = feeGroups.filter((g) => groupUses(g, target));
+    try {
+      await deleteFeeType(target.id);
+      setFeeTypes((prev) => prev.filter((f) => f.id !== target.id));
+      toast({
+        title: "Fee type deleted",
+        description: usedBy.length
+          ? `${target.name} removed — it was still referenced by ${usedBy.length} fee group(s).`
+          : `${target.name} removed.`,
+      });
+    } catch (error) {
+      failed("Could not delete the fee type", error);
+    } finally {
+      setPendingDelete(null);
+    }
   };
 
-  const handleActions = (fee: FeeType) => [
-    { label: "Edit Fee Type", onClick: () => openEdit(fee) },
-    { label: "View Usage", onClick: () => setUsage(fee) },
-    { label: "Duplicate", onClick: () => duplicate(fee) },
-    {
-      label: fee.status === "active" ? "Deactivate" : "Activate",
-      onClick: () => {
-        persistFeeTypes((prev) => prev.map((f) => (f.id === fee.id ? { ...f, status: f.status === "active" ? "inactive" : "active" } : f)));
-        toast({ title: fee.status === "active" ? "Fee type deactivated" : "Fee type activated", description: fee.name });
-      },
-    },
-    { label: "Delete", onClick: () => setPendingDelete(fee), destructive: true },
-  ];
+  const handleActions = (fee: FeeType) =>
+    canManage
+      ? [
+          { label: "Edit Fee Type", onClick: () => openEdit(fee) },
+          { label: "View Usage", onClick: () => setUsage(fee) },
+          { label: "Duplicate", onClick: () => duplicate(fee) },
+          { label: fee.status === "active" ? "Deactivate" : "Activate", onClick: () => toggleStatus(fee) },
+          { label: "Delete", onClick: () => setPendingDelete(fee), destructive: true },
+        ]
+      : [{ label: "View Usage", onClick: () => setUsage(fee) }];
 
-  const usageGroups = usage ? feeGroups.filter((g) => g.feeTypes.includes(usage.name)) : [];
-  const usageStudents = usageGroups.reduce((sum, g) => sum + g.studentsCount, 0);
+  const usageGroups = usage ? feeGroups.filter((g) => groupUses(g, usage)) : [];
 
   return (
     <AppLayout>
@@ -250,10 +298,12 @@ export default function FeeTypes() {
           { label: "Fee Types" },
         ]}
         actions={
-          <Button className="gap-2" onClick={openCreate}>
-            <Plus className="h-4 w-4" />
-            Add Fee Type
-          </Button>
+          canManage ? (
+            <Button className="gap-2" onClick={openCreate} disabled={loading || !!loadError}>
+              <Plus className="h-4 w-4" />
+              Add Fee Type
+            </Button>
+          ) : undefined
         }
       />
 
@@ -304,11 +354,21 @@ export default function FeeTypes() {
         </div>
       </div>
 
+      {loadError && (
+        <p role="alert" className="mb-4 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+          {loadError}
+        </p>
+      )}
+      {!canManage && !loadError && (
+        <p className="mb-4 text-sm text-muted-foreground">Only an organisation admin can change fee types.</p>
+      )}
+
       <DataTable
         data={feeTypes}
         columns={columns}
         searchPlaceholder="Search fee types..."
         actions={handleActions}
+        emptyMessage={loading ? "Loading fee types…" : "No fee types yet"}
       />
 
       <Dialog
@@ -361,7 +421,8 @@ export default function FeeTypes() {
                 <Input
                   id="fee-amount"
                   type="number"
-                  min={0}
+                  min={0.01}
+                  step="0.01"
                   placeholder="e.g., 5000"
                   value={String(form.defaultAmount)}
                   onChange={(e) => set("defaultAmount", e.target.value)}
@@ -409,7 +470,7 @@ export default function FeeTypes() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-            <Button onClick={save}>{editingId ? "Save changes" : "Add Fee Type"}</Button>
+            <Button onClick={save} disabled={saving}>{editingId ? "Save changes" : "Add Fee Type"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -420,7 +481,7 @@ export default function FeeTypes() {
             <DialogTitle>{usage?.name} usage</DialogTitle>
             <DialogDescription>
               {usageGroups.length
-                ? `Included in ${usageGroups.length} fee group(s) covering ${usageStudents} students.`
+                ? `Included in ${usageGroups.length} fee group(s).`
                 : "This fee type is not part of any fee group yet."}
             </DialogDescription>
           </DialogHeader>
@@ -432,7 +493,7 @@ export default function FeeTypes() {
                     <p className="font-medium">{group.name}</p>
                     <p className="text-xs text-muted-foreground">{group.courses.join(", ")}</p>
                   </div>
-                  <Badge variant="secondary">{group.studentsCount} students</Badge>
+                  <Badge variant="secondary">₹{group.totalAmount.toLocaleString()}</Badge>
                 </li>
               ))}
             </ul>
@@ -449,7 +510,7 @@ export default function FeeTypes() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete {pendingDelete?.name}?</AlertDialogTitle>
             <AlertDialogDescription>
-              {pendingDelete && feeGroups.some((g) => g.feeTypes.includes(pendingDelete.name))
+              {pendingDelete && feeGroups.some((g) => groupUses(g, pendingDelete))
                 ? "This fee type is still referenced by one or more fee groups. Those groups keep their totals but will no longer be able to re-add it."
                 : "This removes the fee type from the catalogue."}
             </AlertDialogDescription>

@@ -112,7 +112,10 @@ const expiringSoon = (notices: Notice[]) => {
 
 export default function BranchNoticeBoard() {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, view, branchId: ownBranch } = useAuth();
+  // Only the head office may post to every centre (tighten-rls.sql); a centre's
+  // notice always goes to its own branch.
+  const centreLogin = view === "franchise" && !!ownBranch;
   const [items, setItems] = useState<Notice[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -227,7 +230,7 @@ export default function BranchNoticeBoard() {
     const payload = {
       ...draft,
       // null is what makes the notice visible to every branch on read.
-      branchId: draft.branchId === ALL_BRANCHES ? null : draft.branchId,
+      branchId: centreLogin ? ownBranch : draft.branchId === ALL_BRANCHES ? null : draft.branchId,
       meetingLink: link || null,
       meetingTime: draft.meetingTime ? new Date(draft.meetingTime).toISOString() : null,
     };
@@ -425,7 +428,7 @@ export default function BranchNoticeBoard() {
                       <SelectValue placeholder="Select branch" />
                     </SelectTrigger>
                     <SelectContent searchable searchPlaceholder="Search centre…">
-                      <SelectItem value={ALL_BRANCHES}>All branches</SelectItem>
+                      {!centreLogin && <SelectItem value={ALL_BRANCHES}>All branches</SelectItem>}
                       {branches.map((branch) => (
                         <SelectItem key={branch.id} value={branch.id}>{branch.name}</SelectItem>
                       ))}

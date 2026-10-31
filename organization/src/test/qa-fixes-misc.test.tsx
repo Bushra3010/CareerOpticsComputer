@@ -11,7 +11,7 @@ import { MemoryRouter } from "react-router-dom";
  */
 
 const toast = vi.fn();
-const auth: Record<string, unknown> = { view: "admin", branchId: null, organizationId: "org1", permissions: {}, user: { organizationId: "org1" } };
+const auth: Record<string, unknown> = { view: "admin", branchId: null, organizationId: "org1", permissions: {}, user: { organizationId: "org1", role: "ORGANIZATION_ADMIN" } };
 vi.mock("@/hooks/use-toast", () => ({ useToast: () => ({ toast }) }));
 vi.mock("@/components/layout/AppLayout", () => ({
   AppLayout: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -53,6 +53,13 @@ vi.mock("@/lib/supabase/studentFee", async () => {
   return { ...actual, listFeeGroupInvoices: () => feeInvoices() };
 });
 
+const feeCatalog = vi.fn();
+const deleteFeeGroup = vi.fn();
+vi.mock("@/lib/supabase/feeStructures", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/supabase/feeStructures")>("@/lib/supabase/feeStructures");
+  return { ...actual, loadFeeCatalog: () => feeCatalog(), deleteFeeGroup: (id: string) => deleteFeeGroup(id) };
+});
+
 const ticketReplies = vi.fn();
 vi.mock("@/lib/supabase/ticketReplies", async () => {
   const actual = await vi.importActual<typeof import("@/lib/supabase/ticketReplies")>("@/lib/supabase/ticketReplies");
@@ -84,7 +91,6 @@ const { feeGroupUsage, studentsOnFeeGroups } = await vi.importActual<typeof impo
 const { buildThread, cleanMessage, postTicketReply } = await vi.importActual<
   typeof import("@/lib/supabase/ticketReplies")
 >("@/lib/supabase/ticketReplies");
-const { FEE_GROUPS_KEY } = await import("@/data/fee-catalog");
 const FeeGroups = (await import("@/pages/fee/FeeGroups")).default;
 const CentreTickets = (await import("@/pages/centre/CentreTickets")).default;
 
@@ -92,6 +98,8 @@ beforeEach(() => {
   toast.mockClear();
   writes.length = 0;
   feeInvoices.mockReset();
+  feeCatalog.mockReset();
+  deleteFeeGroup.mockReset().mockResolvedValue(undefined);
   ticketReplies.mockReset();
   localStorage.clear();
 });
@@ -131,12 +139,13 @@ describe("Fee Groups page", () => {
     id,
     name,
     description: "Package",
-    feeTypes: ["Tuition Fee"],
+    items: [{ feeTypeId: "t1", name: "Tuition Fee", amount: 5000 }],
     totalAmount: 5000,
     courses: ["All Courses"],
-    studentsCount: 0,
-    status: "active",
+    status: "active" as const,
   });
+  const catalog = (...groups: ReturnType<typeof group>[]) =>
+    feeCatalog.mockResolvedValue({ types: [], groups, imported: null, importError: null });
 
   const openDelete = async (row: string) => {
     // The table renders a card list for phones as well; the row is the one in <tr>.
@@ -148,7 +157,7 @@ describe("Fee Groups page", () => {
   };
 
   it("reads its student count from the invoices and will not delete a group they use", async () => {
-    localStorage.setItem(FEE_GROUPS_KEY, JSON.stringify([group("g1", "Standard Package"), group("g2", "Unused Package")]));
+    catalog(group("g1", "Standard Package"), group("g2", "Unused Package"));
     feeInvoices.mockResolvedValue([
       { id: "i1", studentId: "s1", feeGroupId: "g1", status: "DUE" },
       { id: "i2", studentId: "s2", feeGroupId: "g1", status: "PAID" },
@@ -163,11 +172,11 @@ describe("Fee Groups page", () => {
     expect(await screen.findByText(/2 invoices for 2 students use this group/)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Delete" })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Close" }));
-    expect(JSON.parse(localStorage.getItem(FEE_GROUPS_KEY) || "[]")).toHaveLength(2);
+    expect(deleteFeeGroup).not.toHaveBeenCalled();
   });
 
   it("still deletes a group no invoice uses", async () => {
-    localStorage.setItem(FEE_GROUPS_KEY, JSON.stringify([group("g2", "Unused Package")]));
+    catalog(group("g2", "Unused Package"));
     feeInvoices.mockResolvedValue([]);
     render(<MemoryRouter><FeeGroups /></MemoryRouter>);
     await screen.findAllByText("Unused Package");
@@ -177,7 +186,8 @@ describe("Fee Groups page", () => {
 
     await openDelete("Unused Package");
     fireEvent.click(await screen.findByRole("button", { name: "Delete" }));
-    expect(JSON.parse(localStorage.getItem(FEE_GROUPS_KEY) || "[]")).toHaveLength(0);
+    await waitFor(() => expect(deleteFeeGroup).toHaveBeenCalledWith("g2"));
+    await waitFor(() => expect(screen.queryAllByText("Unused Package")).toHaveLength(0));
   });
 });
 

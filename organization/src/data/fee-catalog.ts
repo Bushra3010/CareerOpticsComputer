@@ -1,7 +1,7 @@
 /**
- * The fee catalogue shared by /fee/types and /fee/groups: a group is built out
- * of fee types, so both screens have to read the same persisted lists or a fee
- * type added on one page is invisible on the other.
+ * The fee catalogue's shapes as browsers stored them in localStorage, before
+ * fee types and groups moved to the database (src/lib/supabase/feeStructures.ts).
+ * The keys stay so that module can import, then clear, a browser's old lists.
  */
 
 export interface FeeType {
