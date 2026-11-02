@@ -111,6 +111,16 @@ body{margin:0;font-family:Poppins,system-ui,sans-serif;color:#0f172a;background:
 .ab-facts div{background:#f4f7fc;border-left:4px solid #f97316;border-radius:8px;padding:10px 14px}
 .ab-facts small{display:block;color:#5b6b88;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
 .ab-facts b{color:#0b2350;font-size:14.5px}
+.ab-founder{display:grid;grid-template-columns:.75fr 1.25fr;gap:44px;align-items:center}
+.ab-photo{position:relative}
+.ab-photo img{width:100%;border-radius:18px;box-shadow:0 24px 50px rgba(11,35,80,.22);display:block;aspect-ratio:4/5;object-fit:cover;object-position:center top}
+.ab-photo .ab-name{position:absolute;left:16px;right:16px;bottom:16px;background:rgba(11,35,80,.92);color:#fff;border-radius:12px;padding:12px 16px}
+.ab-photo .ab-name b{display:block;font-size:16px}
+.ab-photo .ab-name span{font-size:12.5px;color:#fdba74}
+.ab-quote{position:relative;margin:18px 0 0;padding:18px 22px 18px 26px;background:#fff4ec;border-left:5px solid #f97316;border-radius:10px;color:#0b2350;font-size:18px;font-weight:700;line-height:1.6}
+.ab-msg p{color:#475569;line-height:1.9;margin:14px 0 0;font-size:15.5px}
+.ab-sign{margin-top:20px;color:#0b2350;font-weight:800}
+.ab-sign small{display:block;color:#5b6b88;font-weight:600;margin-top:2px}
 .ab-mv{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:36px}
 .ab-card{background:#fff;border:1px solid #e7ecf5;border-radius:16px;padding:28px;box-shadow:0 12px 28px rgba(11,35,80,.06)}
 .ab-card .ab-ic{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;background:#0b2350;color:#fff}
@@ -149,7 +159,7 @@ body{margin:0;font-family:Poppins,system-ui,sans-serif;color:#0f172a;background:
 .ab-cta h2{margin:0;font-size:clamp(24px,3.2vw,34px)}
 .ab-cta p{color:#d6e0fa;margin:10px 0 24px}
 @media (max-width:980px){.ab-grid4{grid-template-columns:repeat(2,1fr)}.ab-appr{grid-template-columns:1fr}}
-@media (max-width:820px){.ab-intro,.ab-mv,.ab-why,.ab-contact{grid-template-columns:1fr}.ab-tag{left:10px}}
+@media (max-width:820px){.ab-intro,.ab-mv,.ab-why,.ab-contact,.ab-founder{grid-template-columns:1fr}.ab-photo{max-width:420px;margin:0 auto}.ab-tag{left:10px}}
 @media (max-width:560px){.ab-grid4,.ab-facts{grid-template-columns:1fr}.ab-sec{padding:48px 0}.ab-ap dl div{grid-template-columns:1fr;gap:2px}}
 `;
 
@@ -227,7 +237,52 @@ export default function About() {
           </div>
         </section>
 
-        <section className="ab-sec ab-alt" id="mission-vision">
+        <section className="ab-sec ab-alt" id="founder-message">
+          <div className="ab-wrap ab-founder">
+            <div className="ab-photo">
+              <img src="/image/founder.jpg" alt={`Founder & Director, ${BRAND.name}`} loading="lazy" />
+              <div className="ab-name">
+                <b>Founder &amp; Director</b>
+                <span>{BRAND.name}</span>
+              </div>
+            </div>
+            <div className="ab-msg">
+              <span className="ab-k">Message from the founder</span>
+              <h2 className="ab-h2">
+                A word from our <span>Founder &amp; Director</span>
+              </h2>
+              <blockquote className="ab-quote">
+                “A certificate opens a door. Skill, confidence and the right guidance are what carry you through it.”
+              </blockquote>
+              <p>
+                Dear students and parents, I started {BRAND.name} with one simple belief — that a young person in
+                Ara or any small town of Bihar deserves the same quality of computer education as a student in a big
+                city. Talent is everywhere; what is often missing is the right teaching, a good computer to practise
+                on, and someone to show the way.
+              </p>
+              <p>
+                That is why every course here is taught hands-on, every fee is receipted, and every certificate we
+                issue can be verified online. We registered the academy with the Ministry of Corporate Affairs, got it
+                certified to ISO 9001:2015 and registered it under MSME — not for the paperwork, but so that you can
+                trust what you are paying for.
+              </p>
+              <p lang="hi">
+                मेरा सपना है कि हमारे यहाँ से निकलने वाला हर विद्यार्थी आत्मविश्वास के साथ नौकरी पाए, आगे की पढ़ाई करे या अपना
+                काम शुरू करे। आप मेहनत कीजिए — सही मार्गदर्शन और साथ देने की ज़िम्मेदारी हमारी है।
+              </p>
+              <p>
+                Come and visit us, sit in a demo class, and see for yourself. I look forward to welcoming you to the
+                {" "}{BRAND.short} family.
+              </p>
+              <div className="ab-sign">
+                Founder &amp; Director
+                <small>{BRAND.name} · {BRAND.company}</small>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="ab-sec" id="mission-vision">
           <div className="ab-wrap">
             <div className="ab-center">
               <span className="ab-k">What drives us</span>
@@ -266,7 +321,7 @@ export default function About() {
           </div>
         </section>
 
-        <section className="ab-sec">
+        <section className="ab-sec ab-alt">
           <div className="ab-wrap">
             <div className="ab-center">
               <span className="ab-k">Our values</span>
