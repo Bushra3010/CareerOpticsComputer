@@ -183,6 +183,79 @@ export function admissionPdf(s: StudentDocument) {
    Everything naming an authority is data (see `awarding` on StudentDocument),
    so the generator lays out a marksheet rather than asserting who awarded it. */
 
+/* ---------- the institute's print identity ---------- */
+
+const BRAND_NAVY = "#0b2350";
+const BRAND_GOLD = "#c9a227";
+const BRAND_GOLD_DARK = "#8a6d14";
+
+/**
+ * A faint mark behind the page. Drawn inside its own graphics state so the
+ * transparency never leaks onto the text laid over it; a mark that will not
+ * decode is simply left out.
+ */
+const watermark = (doc: jsPDF, data: string | null | undefined, x: number, y: number, size: number) => {
+  if (!data || !data.startsWith("data:image")) return;
+  const g = doc as unknown as { GState: new (o: { opacity: number }) => unknown; setGState: (s: unknown) => void };
+  try {
+    doc.saveGraphicsState();
+    g.setGState(new g.GState({ opacity: 0.06 }));
+    doc.addImage(data, x, y, size, size);
+  } catch {
+    /* no mark */
+  }
+  try {
+    doc.restoreGraphicsState();
+  } catch {
+    /* nothing was saved */
+  }
+};
+
+/** Nested triangles in one corner, outermost first: the classic certificate corner. */
+const corner = (doc: jsPDF, x: number, y: number, dx: number, dy: number, layers: Array<[number, string]>) => {
+  for (const [size, color] of layers) {
+    doc.setFillColor(color);
+    doc.triangle(x, y, x + dx * size, y, x, y + dy * size, "F");
+  }
+};
+
+/**
+ * The double rule every certificate-grade document carries: a navy line with
+ * a gold one inside it, and ornamental corners that sit over both. `scale`
+ * shrinks the corners for a portrait sheet that has less room to give them.
+ */
+const frame = (doc: jsPDF, w: number, h: number, scale = 1) => {
+  doc.setDrawColor(BRAND_NAVY);
+  doc.setLineWidth(1.1);
+  doc.rect(7, 7, w - 14, h - 14);
+  doc.setDrawColor(BRAND_GOLD);
+  doc.setLineWidth(0.35);
+  doc.rect(10, 10, w - 20, h - 20);
+  const navy: Array<[number, string]> = [[30 * scale, BRAND_NAVY], [24 * scale, BRAND_GOLD], [18 * scale, BRAND_NAVY]];
+  const gold: Array<[number, string]> = [[20 * scale, BRAND_GOLD], [15 * scale, "#ffffff"], [10 * scale, BRAND_GOLD]];
+  corner(doc, 0, 0, 1, 1, navy);
+  corner(doc, w, h, -1, -1, navy);
+  corner(doc, w, 0, -1, 1, gold);
+  corner(doc, 0, h, 1, -1, gold);
+};
+
+/** The institute's seal: two gold rings around its mark. */
+const seal = (doc: jsPDF, cx: number, cy: number, r: number, logo: string | null | undefined) => {
+  doc.setFillColor("#fffaf0");
+  doc.setDrawColor(BRAND_GOLD);
+  doc.setLineWidth(0.9);
+  doc.circle(cx, cy, r, "FD");
+  doc.setLineWidth(0.3);
+  doc.circle(cx, cy, r - 1.8);
+  const inner = (r - 3.5) * 2;
+  if (!tryImage(doc, logo, cx - inner / 2, cy - inner / 2, inner, inner)) {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(6);
+    doc.setTextColor(BRAND_GOLD_DARK);
+    doc.text("SEAL", cx, cy + 2, { align: "center" });
+  }
+};
+
 const MARKSHEET = {
   /** A4 portrait, in mm: the sheet an institute files and hands over. */
   width: 210,
@@ -311,14 +384,14 @@ function outOf(maxes: number[]): number | null {
 function marksheetTableHeader(doc: jsPDF, y: number, outs: Array<number | null>): number {
   const [c0, c1, c2, c3, c4, c5] = MARK_COLUMNS;
   const h = 13;
-  doc.setFillColor(244, 244, 245);
+  doc.setFillColor(BRAND_NAVY);
   doc.rect(c0, y, c5 - c0, h, "F");
-  doc.setDrawColor(60);
+  doc.setDrawColor(BRAND_NAVY);
   doc.setLineWidth(0.3);
   doc.rect(c0, y, c5 - c0, h);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
-  doc.setTextColor(20);
+  doc.setTextColor(255, 255, 255);
   doc.text("S.No.", (c0 + c1) / 2, y + 8, { align: "center" });
   doc.text("Subject", c1 + 4, y + 8);
   const heads: Array<[string, number, number]> = [["Theory Marks", c2, c3], ["Practical Marks", c3, c4], ["Total Marks", c4, c5]];
@@ -333,7 +406,9 @@ function marksheetTableHeader(doc: jsPDF, y: number, outs: Array<number | null>)
       doc.text(`(Out of ${shownMarks(out)})`, (from + to) / 2, y + 10.4, { align: "center" });
     }
   });
+  doc.setDrawColor(255, 255, 255);
   for (const x of [c1, c2, c3, c4]) doc.line(x, y, x, y + h);
+  doc.setTextColor(20);
   return y + h;
 }
 
@@ -362,24 +437,42 @@ async function drawMarksheet(doc: jsPDF, s: StudentDocument) {
   const roll = s.rollNo || s.enrollmentNo || s.applicationNo || "-";
   const award = { session: s.session, examMonthYear: s.examinationDate ? new Date(s.examinationDate).toLocaleDateString("en-IN", { month: "short", year: "numeric" }) : undefined, ...s.awarding };
 
-  /* ---- header band: photograph, issuing block, verification code ---- */
-  doc.setDrawColor(120);
-  doc.setLineWidth(0.3);
-  doc.rect(margin, 10, 26, 32);
-  if (!tryImage(doc, s.photo, margin, 10, 26, 32)) {
+  /* ---- frame and header band: the institute's mark, its name, the title ---- */
+  doc.setFillColor(255, 255, 255);
+  doc.rect(0, 0, width, height, "F");
+  frame(doc, width, height, 0.6);
+  const bandTop = 14;
+  const bandH = 26;
+  doc.setFillColor(BRAND_NAVY);
+  doc.rect(margin, bandTop, right - margin, bandH, "F");
+  doc.setFillColor(255, 255, 255);
+  doc.roundedRect(margin + 4, bandTop + 3, 20, 20, 3, 3, "F");
+  const mark = s.branch.logo || instituteLogo();
+  tryImage(doc, mark, margin + 5.5, bandTop + 4.5, 17, 17);
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13.5);
+  const body = award.body || s.branch.organization.name || s.branch.name;
+  doc.text((doc.splitTextToSize(body.toUpperCase(), 120) as string[])[0] || "-", centre + 6, bandTop + 11, { align: "center" });
+  doc.setFontSize(8.5);
+  doc.setTextColor(BRAND_GOLD);
+  doc.text("STATEMENT OF MARKS", centre + 6, bandTop + 19.5, { align: "center", charSpace: 1.6 });
+
+  /* ---- photograph, the issuing block, verification code ---- */
+  const top = bandTop + bandH + 6;
+  doc.setDrawColor(BRAND_GOLD);
+  doc.setLineWidth(0.4);
+  doc.rect(margin, top, 26, 32);
+  if (!tryImage(doc, s.photo, margin + 0.3, top + 0.3, 25.4, 31.4)) {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7);
     doc.setTextColor(150);
-    doc.text("Photograph", margin + 13, 27, { align: "center" });
+    doc.text("Photograph", margin + 13, top + 17, { align: "center" });
   }
-  // Under the photograph: on a portrait sheet the space beside it belongs to
-  // the centred title block.
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
   doc.setTextColor(20);
-  doc.text(`Roll No.: ${roll}`, margin, 47);
-
-  tryImage(doc, s.branch.logo, centre - 9, 8, 18, 18);
+  doc.text(`Roll No.: ${roll}`, margin, top + 37);
   // The QR proves the sheet against the institute's own record; without a
   // verifiable number there is nothing to encode, so nothing is drawn.
   if (s.enrollmentNo) {
@@ -387,33 +480,32 @@ async function drawMarksheet(doc: jsPDF, s: StudentDocument) {
       `${s.branch.organization.name || s.branch.name} | ${name} | ${s.enrollmentNo}`,
       { width: 320, margin: 0, errorCorrectionLevel: "M" },
     ).catch(() => "");
-    tryImage(doc, qr, right - 26, 10, 26, 26);
+    tryImage(doc, qr, right - 26, top, 26, 26);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6.5);
+    doc.setTextColor(110);
+    doc.text("Scan to verify", right - 13, top + 30, { align: "center" });
   }
 
-  let y = s.branch.logo ? 32 : 20;
+  let y = top + 2;
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.text("STATEMENT OF MARKS", centre, y, { align: "center" });
   doc.setFontSize(9.5);
+  doc.setTextColor(BRAND_NAVY);
   // Unset lines close the gap rather than leaving a hole in the block.
-  for (const heading of [
-    award.body || s.branch.organization.name || s.branch.name,
-    award.scheme,
-    award.session,
-    award.examination,
-  ]) {
+  for (const heading of [award.scheme, award.session, award.examination]) {
     if (!heading) continue;
     y += 5.5;
     doc.text(heading, centre, y, { align: "center" });
   }
+  const photoBottom = top + 37;
 
   /* ---- the candidate's particulars ---- */
   const colWidth = (right - margin) / 2 - 6;
   const colTwo = centre + 6;
-  // Floored below the photograph box, which ends at 42. An institute that has
-  // configured none of the heading lines leaves the title block short, and the
-  // particulars were being drawn straight through the photograph.
-  y = Math.max(y + 10, 56);
+  // Floored below the photograph box: an institute that has configured none of
+  // the heading lines leaves the title block short, and the particulars were
+  // once drawn straight through the photograph.
+  y = Math.max(y + 10, photoBottom + 8);
   particular(doc, "Name:", name, margin, y, colWidth);
   particular(doc, "Registration/Roll No.:", roll, colTwo, y, colWidth);
   y += 8;
@@ -464,9 +556,14 @@ async function drawMarksheet(doc: jsPDF, s: StudentDocument) {
     // the bottom edge of the first.
     if (y > height - 45) {
       doc.addPage();
+      frame(doc, width, height, 0.6);
       y = header(20);
     }
-    doc.setDrawColor(60);
+    if (index % 2) {
+      doc.setFillColor(248, 250, 252);
+      doc.rect(c0, y, c5 - c0, rowHeight, "F");
+    }
+    doc.setDrawColor(160);
     doc.rect(c0, y, c5 - c0, rowHeight);
     for (const x of [c1, c2, c3, c4]) doc.line(x, y, x, y + rowHeight);
     doc.setFont("helvetica", "bold");
@@ -490,11 +587,12 @@ async function drawMarksheet(doc: jsPDF, s: StudentDocument) {
   // The totals, the result strip and the signature stay together on one sheet.
   if (y > height - 62) {
     doc.addPage();
+    frame(doc, width, height, 0.6);
     y = header(20);
   }
-  doc.setFillColor(244, 244, 245);
+  doc.setFillColor(255, 247, 230);
   doc.rect(c0, y, c5 - c0, 10, "F");
-  doc.setDrawColor(60);
+  doc.setDrawColor(160);
   doc.rect(c0, y, c5 - c0, 10);
   for (const x of [c2, c3, c4]) doc.line(x, y, x, y + 10);
   doc.setFont("helvetica", "bold");
@@ -515,7 +613,7 @@ async function drawMarksheet(doc: jsPDF, s: StudentDocument) {
     ["Full Marks", shownMarks(summary.max)],
   ];
   const cellWidth = (c5 - c0) / facts.length;
-  doc.setDrawColor(60);
+  doc.setDrawColor(160);
   facts.forEach(([label, value], i) => {
     const x = c0 + i * cellWidth;
     doc.rect(x, y, cellWidth, 12);
@@ -525,9 +623,11 @@ async function drawMarksheet(doc: jsPDF, s: StudentDocument) {
     doc.text(label.toUpperCase(), x + cellWidth / 2, y + 4.5, { align: "center" });
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
-    doc.setTextColor(20);
+    // The verdict in its own colour, which is what the eye looks for first.
+    doc.setTextColor(label === "Result" ? (value === "Pass" ? "#15803d" : value === "Fail" ? "#b91c1c" : "#334155") : BRAND_NAVY);
     doc.text(value, x + cellWidth / 2, y + 9.8, { align: "center" });
   });
+  doc.setTextColor(20);
   y += 12;
 
   const notes = award.notes?.filter(Boolean) ?? [];
@@ -547,21 +647,25 @@ async function drawMarksheet(doc: jsPDF, s: StudentDocument) {
   // Below the notes rather than pinned to the foot of the page: anchoring it to
   // the bottom left a hand's width of blank paper between the two on a short
   // marksheet, and the sheet read as unfinished.
-  const signY = Math.min(y + 22, MARKSHEET.height - 18);
-  doc.setDrawColor(60);
-  doc.setLineWidth(0.3);
+  const signY = Math.min(y + 30, MARKSHEET.height - 24);
+  seal(doc, centre, signY - 4, 11, mark);
+  doc.setDrawColor(BRAND_NAVY);
+  doc.setLineWidth(0.4);
   doc.line(right - 55, signY, right, signY);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
+  doc.setTextColor(BRAND_NAVY);
   doc.text(award.signatory || "Signature of Competent Authority", right - 27.5, signY + 5, {
     align: "center",
   });
-
   if (s.issueDate) doc.text(`Issue date: ${new Date(s.issueDate).toLocaleDateString("en-IN")}`, margin, signY + 5);
+  doc.setFontSize(6.5);
+  doc.setTextColor(110);
+  doc.text("This statement is issued from the institute's records and can be verified by scanning the code above.", centre, MARKSHEET.height - 13, { align: "center" });
 }
 
 export async function certificatePdf(s: StudentDocument) {
-  const doc = new jsPDF({ orientation: "portrait", format: "a4" });
+  const doc = new jsPDF({ orientation: "landscape", format: "a4" });
   await drawCertificate(doc, s);
   save(doc, `certificate-${s.enrollmentNo || s.applicationNo || s.firstName}.pdf`);
 }
@@ -569,7 +673,7 @@ export async function certificatePdf(s: StudentDocument) {
 /** Several students' certificates in one file, a page each, for one print run. */
 export async function certificatesPdf(students: StudentDocument[], fileName = "certificates") {
   if (!students.length) return;
-  const doc = new jsPDF({ orientation: "portrait", format: "a4" });
+  const doc = new jsPDF({ orientation: "landscape", format: "a4" });
   for (const [i, s] of students.entries()) {
     if (i) doc.addPage();
     await drawCertificate(doc, s);
@@ -577,63 +681,182 @@ export async function certificatesPdf(students: StudentDocument[], fileName = "c
   save(doc, `${fileName}.pdf`);
 }
 
+/**
+ * The course-completion certificate, on a landscape sheet: the institute's
+ * frame and seal, the student's name over a gold rule, the course and its
+ * result, a code that opens the verification page, and two signatures.
+ */
 async function drawCertificate(doc: jsPDF, s: StudentDocument) {
-  const navy = "#173653";
-  const gold = "#a77a32";
-  const name = [s.firstName, s.lastName].filter(Boolean).join(" ");
+  const W = 297;
+  const H = 210;
+  const cx = W / 2;
+  const name = [s.firstName, s.lastName].filter(Boolean).join(" ") || "-";
   const reference = s.enrollmentNo || s.applicationNo || "";
   const summary = marksheetSummary(s.examResults);
-  doc.setFillColor("#fffdf8"); doc.rect(0, 0, 210, 297, "F");
-  doc.setDrawColor(navy); doc.setLineWidth(1); doc.rect(10, 10, 190, 277);
-  doc.setDrawColor(gold); doc.setLineWidth(0.35); doc.rect(13, 13, 184, 271);
-  if (s.branch.logo) {
-    try { doc.addImage(s.branch.logo, 92, 20, 26, 26); } catch { /* optional logo */ }
+  const logo = s.branch.logo || instituteLogo();
+  const org = (s.branch.organization.name || instituteName()).toUpperCase();
+
+  doc.setFillColor(255, 255, 255);
+  doc.rect(0, 0, W, H, "F");
+  doc.setFillColor("#fffdf7");
+  doc.rect(10, 10, W - 20, H - 20, "F");
+  watermark(doc, logo, cx - 55, H / 2 - 55, 110);
+  frame(doc, W, H);
+
+  /* ---- head: mark, institute, centre, photograph ---- */
+  tryImage(doc, logo, 22, 17, 26, 26);
+  if (s.photo) {
+    doc.setDrawColor(BRAND_GOLD);
+    doc.setLineWidth(0.4);
+    doc.rect(251, 17, 24, 30);
+    tryImage(doc, s.photo, 251.3, 17.3, 23.4, 29.4);
   }
-  doc.setTextColor(navy); doc.setFont("helvetica", "bold"); doc.setFontSize(20);
-  const heading = doc.splitTextToSize((s.branch.organization.name || instituteName()).toUpperCase(), 170);
-  doc.text(heading, 105, s.branch.logo ? 48 : 37, { align: "center" });
-  const headingY = (s.branch.logo ? 48 : 37) + (heading.length - 1) * 8;
-  doc.setFont("helvetica", "normal"); doc.setFontSize(9);
-  doc.text(s.branch.name, 105, headingY + 9, { align: "center", maxWidth: 170 });
-  doc.setDrawColor(gold); doc.line(30, headingY + 16, 180, headingY + 16);
-  doc.setFont("times", "bold"); doc.setFontSize(28); doc.setTextColor(gold);
-  const titleY = headingY + 25;
-  doc.text("Certificate", 105, titleY, { align: "center" });
-  doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(navy);
-  doc.text("OF COURSE COMPLETION", 105, titleY + 8, { align: "center" });
-  let y = titleY + 22;
-  const fields = [["ENROLLMENT NO.", reference || "-"], ["ROLL NO.", s.rollNo || "-"], ["SESSION", s.session || "-"]];
-  fields.forEach(([label, value], i) => {
-    const x = 23 + i * 55;
-    doc.setDrawColor("#d9d0bf"); doc.rect(x, y, 55, 17);
-    doc.setFontSize(7); doc.setFont("helvetica", "normal"); doc.text(label, x + 3, y + 5);
-    doc.setFontSize(9); doc.setFont("helvetica", "bold"); doc.text(value, x + 3, y + 12, { maxWidth: 49 });
-  });
-  y += 31;
-  if (s.photo) { try { doc.addImage(s.photo, 91, y, 28, 32); y += 38; } catch { /* optional photograph */ } }
-  doc.setFont("times", "italic"); doc.setFontSize(14); doc.text("This is to certify that", 105, y, { align: "center" });
+  doc.setTextColor(BRAND_NAVY);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(19);
+  const heading = doc.splitTextToSize(org, 170) as string[];
+  doc.text(heading, cx, 27, { align: "center" });
+  let y = 27 + (heading.length - 1) * 8;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9.5);
+  doc.setTextColor("#475569");
+  doc.text(s.branch.name, cx, y + 7, { align: "center", maxWidth: 170 });
   y += 13;
-  doc.setFont("times", "bold"); doc.setFontSize(23);
-  const names = doc.splitTextToSize(name, 160); doc.text(names, 105, y, { align: "center" }); y += names.length * 9;
-  doc.setFont("helvetica", "normal"); doc.setFontSize(10);
-  if (s.fatherName) { doc.text(`${s.parentage || "Father / Guardian:"} ${s.fatherName}`, 105, y, { align: "center", maxWidth: 160 }); y += 9; }
-  doc.text("has successfully completed the prescribed course in", 105, y, { align: "center" }); y += 11;
-  doc.setFont("helvetica", "bold"); doc.setFontSize(13);
-  const course = doc.splitTextToSize(s.course?.name || "", 160); doc.text(course, 105, y, { align: "center" }); y += course.length * 6 + 6;
-  doc.setFont("helvetica", "normal"); doc.setFontSize(9);
-  if (s.course?.duration) { doc.text(`Course duration: ${s.course.duration}`, 105, y, { align: "center" }); y += 7; }
-  if (summary.max) { doc.text(`Marks: ${summary.total} / ${summary.max}   |   Percentage: ${(summary.total / summary.max * 100).toFixed(2)}%`, 105, y, { align: "center" }); y += 7; }
-  if (s.examinationDate) doc.text(`Examination conducted: ${new Date(s.examinationDate).toLocaleDateString("en-IN")}`, 105, y, { align: "center" });
-  const issued = new Date(s.issueDate || Date.now()).toLocaleDateString("en-IN");
-  doc.setFontSize(9); doc.text(`Issued: ${issued}`, 25, 258);
-  doc.setDrawColor(navy); doc.line(137, 253, 184, 253);
-  doc.setFontSize(8); doc.text("AUTHORIZED SIGNATORY", 160.5, 258, { align: "center" });
-  if (reference) {
-    const qr = await QRCode.toDataURL(`enrollment:${reference}`, { margin: 1, width: 128 });
-    doc.addImage(qr, "PNG", 94, 249, 22, 22);
+  doc.setDrawColor(BRAND_GOLD);
+  doc.setLineWidth(0.5);
+  doc.line(cx - 60, y, cx - 4, y);
+  doc.line(cx + 4, y, cx + 60, y);
+  doc.setFillColor(BRAND_GOLD);
+  doc.triangle(cx, y - 2, cx + 2, y, cx, y + 2, "F");
+  doc.triangle(cx, y - 2, cx - 2, y, cx, y + 2, "F");
+
+  /* ---- title ---- */
+  doc.setFont("times", "bold");
+  doc.setFontSize(38);
+  doc.setTextColor(BRAND_GOLD_DARK);
+  doc.text("CERTIFICATE", cx, y + 16, { align: "center", charSpace: 2 });
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(BRAND_NAVY);
+  doc.text("OF COURSE COMPLETION", cx, y + 24, { align: "center", charSpace: 1.8 });
+  y += 38;
+
+  /* ---- the award ---- */
+  doc.setFont("times", "italic");
+  doc.setFontSize(13);
+  doc.setTextColor("#334155");
+  doc.text("This is to certify that", cx, y, { align: "center" });
+  y += 13;
+  doc.setFont("times", "bold");
+  doc.setFontSize(27);
+  doc.setTextColor(BRAND_NAVY);
+  const names = doc.splitTextToSize(name, 200) as string[];
+  doc.text(names, cx, y, { align: "center" });
+  const rule = Math.min(200, Math.max(80, doc.getTextWidth(names[0]) + 24));
+  y += (names.length - 1) * 11 + 3;
+  doc.setDrawColor(BRAND_GOLD);
+  doc.setLineWidth(0.5);
+  doc.line(cx - rule / 2, y, cx + rule / 2, y);
+  y += 8;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10.5);
+  doc.setTextColor("#334155");
+  // Half of it is not enough to print a line: "Son of" with no name reads as a
+  // mistake on a certificate somebody keeps.
+  if (s.fatherName) {
+    doc.text(`${s.parentage || "Son/Daughter of"} ${s.fatherName}`, cx, y, { align: "center" });
+    y += 8;
   }
-  doc.setFontSize(7); doc.setTextColor("#6b7280");
-  doc.text(`Student record reference: ${reference || "-"}`, 105, 278, { align: "center" });
+  doc.text("has successfully completed the course of", cx, y, { align: "center" });
+  y += 10;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(16);
+  doc.setTextColor(BRAND_NAVY);
+  const course = doc.splitTextToSize(s.course?.name || "-", 220) as string[];
+  doc.text(course, cx, y, { align: "center" });
+  y += (course.length - 1) * 7 + 8;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9.5);
+  doc.setTextColor("#475569");
+  const facts = [
+    s.course?.duration ? `Duration: ${s.course.duration}` : "",
+    s.session ? `Session: ${s.session}` : "",
+    s.examinationDate
+      ? `Examination held: ${new Date(s.examinationDate).toLocaleDateString("en-IN", { month: "long", year: "numeric" })}`
+      : "",
+  ].filter(Boolean);
+  if (facts.length) {
+    doc.text(facts.join("   \u2022   "), cx, y, { align: "center" });
+    y += 9;
+  }
+
+  /* ---- result, when there is one ---- */
+  if (summary.max) {
+    const pct = (summary.total / summary.max) * 100;
+    const boxes: Array<[string, string]> = [
+      ["GRADE", marksheetGrade(pct, summary.result === "Pass")],
+      ["PERCENTAGE", `${pct.toFixed(2)}%`],
+      ["MARKS OBTAINED", `${shownMarks(summary.total)} / ${shownMarks(summary.max)}`],
+    ];
+    const bw = 46;
+    const gap = 6;
+    let bx = cx - (boxes.length * bw + (boxes.length - 1) * gap) / 2;
+    for (const [label, value] of boxes) {
+      doc.setFillColor(255, 255, 255);
+      doc.setDrawColor(BRAND_GOLD);
+      doc.setLineWidth(0.4);
+      doc.roundedRect(bx, y, bw, 14, 2, 2, "FD");
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(6.5);
+      doc.setTextColor("#64748b");
+      doc.text(label, bx + bw / 2, y + 5, { align: "center", charSpace: 0.6 });
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(BRAND_NAVY);
+      doc.text(value, bx + bw / 2, y + 11, { align: "center" });
+      bx += bw + gap;
+    }
+  }
+
+  /* ---- foot: verification code, signatures, seal, issue ---- */
+  const footY = 176;
+  if (reference) {
+    // The code opens the public verification page for this number, so a
+    // phone camera settles whether the paper is genuine.
+    const origin = typeof window !== "undefined" && window.location ? window.location.origin : "";
+    const qr = await QRCode.toDataURL(`${origin}/verification.html?no=${encodeURIComponent(reference)}#certificate`, {
+      margin: 1,
+      width: 160,
+    }).catch(() => "");
+    tryImage(doc, qr, 24, footY - 18, 22, 22);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6.5);
+    doc.setTextColor("#64748b");
+    doc.text("Scan to verify", 35, footY + 8, { align: "center" });
+  }
+  doc.setDrawColor(BRAND_NAVY);
+  doc.setLineWidth(0.4);
+  doc.line(80, footY, 128, footY);
+  doc.line(169, footY, 217, footY);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(BRAND_NAVY);
+  doc.text("Centre Head", 104, footY + 5, { align: "center" });
+  doc.text(s.awarding?.signatory || "Director / Authorised Signatory", 193, footY + 5, { align: "center" });
+  seal(doc, cx, footY - 4, 13, logo);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(6.5);
+  doc.setTextColor(BRAND_GOLD_DARK);
+  doc.text("ISO 9001:2015 CERTIFIED", cx, footY + 13, { align: "center", charSpace: 0.5 });
+  const issued = new Date(s.issueDate || Date.now()).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" });
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor("#334155");
+  doc.text(`Date of issue: ${issued}`, 275, footY + 5, { align: "right" });
+  doc.setFontSize(7.5);
+  doc.setTextColor("#6b7280");
+  const ids = [reference ? `Enrollment No. ${reference}` : "", s.rollNo ? `Roll No. ${s.rollNo}` : ""].filter(Boolean);
+  if (ids.length) doc.text(ids.join("   \u2022   "), cx, 192, { align: "center" });
 }
 
 export function feeStatementPdf(record: {
