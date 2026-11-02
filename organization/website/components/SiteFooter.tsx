@@ -4,6 +4,9 @@ const CSS = `
 .co-foot{background:#0b2350;color:#c7d2ec;font:400 14px/1.7 Poppins,system-ui,sans-serif}
 .co-foot .co-wrap{max-width:1240px;margin:0 auto;padding:0 16px}
 .co-foot-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1.3fr;gap:36px;padding:56px 0 40px}
+/* Long company names and registration numbers wrap instead of widening a phone screen. */
+.co-foot-grid>div{min-width:0}
+.co-foot-reg,.co-foot-brand b,.co-foot-contact span,.co-foot-contact a{overflow-wrap:anywhere}
 .co-foot h3{color:#fff;font-size:17px;font-weight:700;margin:0 0 16px;position:relative;padding-bottom:10px}
 .co-foot h3::after{content:"";position:absolute;left:0;bottom:0;width:42px;height:3px;border-radius:2px;background:#f97316}
 .co-foot a{color:#c7d2ec;text-decoration:none}.co-foot a:hover{color:#fb923c}
