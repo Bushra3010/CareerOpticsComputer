@@ -1,17 +1,158 @@
-import DivBlock from "../components/DivBlock";
 import SiteFooter from "../components/SiteFooter";
 import SiteHeader from "../components/SiteHeader";
-import StyleBlock from "../components/StyleBlock";
-import StyleBlock2 from "../components/StyleBlock2";
 import WhatsappWidget from "../components/WhatsappWidget";
-import css_32f7cc4c from "../styles/32f7cc4c.css?raw";
-import js_0023a4f0 from "../behaviour/0023a4f0.js?raw";
-import js_54b08411 from "../behaviour/54b08411.js?raw";
-import js_73893071 from "../behaviour/73893071.js?raw";
+import { BRAND } from "../components/brand";
 import js_c1268ab4 from "../behaviour/c1268ab4.js?raw";
-import js_ea05b2d5 from "../behaviour/ea05b2d5.js?raw";
 
-/** about.html */
+/**
+ * about.html — who the academy is, what it stands for, and every government
+ * registration it holds.
+ *
+ * Every registration figure below is copied from the certificate it names
+ * (the scans are on certification.html). Nothing is claimed here that a
+ * certificate does not show.
+ */
+
+const APPROVALS = [
+  {
+    icon: "landmark",
+    title: "Certificate of Incorporation",
+    authority: "Ministry of Corporate Affairs, Government of India",
+    rows: [
+      ["Company", "Career Optics Education Service Private Limited"],
+      ["CIN", "U85500BR2026PTC085770"],
+      ["Incorporated on", "19 June 2026"],
+      ["Under", "Companies Act, 2013 — company limited by shares"],
+      ["Issued by", "Registrar of Companies, Central Registration Centre"],
+    ],
+  },
+  {
+    icon: "badge-check",
+    title: "ISO 9001:2015 Certified",
+    authority: "Quality Management System",
+    rows: [
+      ["Certificate No.", "INQ/AN-23100/1/0726"],
+      ["Registered on", "29 July 2026"],
+      ["Valid until", "28 July 2029"],
+      ["Scope", "Admission guidance and counselling in diploma, bachelor and master degree courses, and computer training & placement centre"],
+      ["Certified by", "UKAFC — United Kingdom Accreditation Forum Certification (Ocean Standard Certification)"],
+    ],
+  },
+  {
+    icon: "factory",
+    title: "MSME Udyam Registration",
+    authority: "Ministry of Micro, Small & Medium Enterprises, Government of India",
+    rows: [
+      ["Udyam No.", "UDYAM-BR-08-0043839"],
+      ["Enterprise type", "Micro — Services"],
+      ["Activity", "Educational support services (NIC 85500)"],
+      ["Units", "Career Optics Education Service Pvt Ltd · Career Optics Computer Academy"],
+      ["Registered on", "27 July 2026 · District Industries Centre, Bhojpur"],
+    ],
+  },
+  {
+    icon: "receipt-indian-rupee",
+    title: "Income Tax Registrations",
+    authority: "Income Tax Department, Government of India",
+    rows: [
+      ["PAN", "AANCC9435F"],
+      ["TAN", "PTNC05722D"],
+      ["TAN allotted on", "19 June 2026"],
+    ],
+  },
+];
+
+const VALUES = [
+  { icon: "target", title: "Practical first", text: "Every course is taught on the computer, with projects and practice — not only theory." },
+  { icon: "shield-check", title: "Honest and transparent", text: "Clear fees, written receipts, and certificates anyone can verify online." },
+  { icon: "users", title: "Every learner counts", text: "Small batches and personal attention, whether you are a school student or a working adult." },
+  { icon: "trending-up", title: "Career outcomes", text: "Guidance on higher studies, jobs and self-employment, and support until you are placed." },
+];
+
+const OFFER = [
+  { icon: "monitor", title: "Computer courses", text: "DCA, ADCA, Basic Computer, Tally Prime with GST, Hindi & English typing, graphic design, programming, web development and AI tools." },
+  { icon: "graduation-cap", title: "Admission guidance", text: "Counselling and admission support for diploma, bachelor and master degree courses." },
+  { icon: "briefcase", title: "Placement support", text: "Preparation for interviews and help connecting trained students with employers." },
+  { icon: "handshake", title: "Franchise programme", text: "Centres across Bihar can run our courses with a complete online panel for admissions, fees, exams and certificates." },
+];
+
+const WHY = [
+  "Company registered with the Ministry of Corporate Affairs, Government of India",
+  "ISO 9001:2015 certified quality management system",
+  "MSME (Udyam) registered enterprise",
+  "Certificates and marksheets carry a QR code for online verification",
+  "Online admission, student login, online exams, results and admit cards",
+  "Modern computer lab and trained faculty",
+  "Affordable fees with written receipts for every payment",
+  "Admission guidance for higher studies and placement support",
+];
+
+const CSS = `
+*{box-sizing:border-box}
+body{margin:0;font-family:Poppins,system-ui,sans-serif;color:#0f172a;background:#fff}
+.ab-wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+.ab-sec{padding:64px 0}
+.ab-alt{background:#f4f7fc}
+.ab-k{display:inline-block;color:#f97316;font-weight:700;letter-spacing:.16em;text-transform:uppercase;font-size:12.5px}
+.ab-h2{margin:8px 0 0;font-size:clamp(24px,3.2vw,34px);font-weight:800;color:#0b2350;line-height:1.25}
+.ab-h2 span{color:#f97316}
+.ab-lead{color:#5b6b88;line-height:1.85;margin:14px 0 0;font-size:15.5px}
+.ab-center{text-align:center}.ab-center .ab-lead{max-width:780px;margin-left:auto;margin-right:auto}
+.ab-hero{background:linear-gradient(120deg,#0b2350,#1d4ed8);color:#fff;padding:56px 16px;text-align:center}
+.ab-hero h1{margin:0;font-size:clamp(28px,4vw,44px);font-weight:800}
+.ab-hero p{margin:12px auto 0;max-width:760px;color:#d6e0fa;line-height:1.7}
+.ab-crumb{margin-top:14px;font-size:14px;color:#fdba74}.ab-crumb a{color:#fff;text-decoration:none}
+.ab-intro{display:grid;grid-template-columns:.8fr 1.2fr;gap:44px;align-items:center}
+.ab-logo{background:#f4f7fc;border-radius:20px;padding:28px;display:flex;justify-content:center;position:relative}
+.ab-logo img{width:100%;max-width:360px}
+.ab-tag{position:absolute;left:-8px;bottom:22px;background:#f97316;color:#fff;padding:12px 16px;border-radius:12px;font-weight:700;box-shadow:0 12px 24px rgba(249,115,22,.35);line-height:1.3}
+.ab-tag b{display:block;font-size:20px}
+.ab-facts{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:22px}
+.ab-facts div{background:#f4f7fc;border-left:4px solid #f97316;border-radius:8px;padding:10px 14px}
+.ab-facts small{display:block;color:#5b6b88;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.ab-facts b{color:#0b2350;font-size:14.5px}
+.ab-mv{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:36px}
+.ab-card{background:#fff;border:1px solid #e7ecf5;border-radius:16px;padding:28px;box-shadow:0 12px 28px rgba(11,35,80,.06)}
+.ab-card .ab-ic{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;background:#0b2350;color:#fff}
+.ab-card .ab-ic.o{background:#f97316}
+.ab-card .ab-ic svg,.ab-card .ab-ic i{width:26px;height:26px}
+.ab-card h3{margin:16px 0 8px;color:#0b2350;font-size:21px;font-weight:800}
+.ab-card p{margin:0;color:#5b6b88;line-height:1.8}
+.ab-card ul{margin:12px 0 0;padding-left:18px;color:#5b6b88;line-height:1.8}
+.ab-grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:36px}
+.ab-mini{background:#fff;border:1px solid #e7ecf5;border-radius:14px;padding:22px}
+.ab-mini svg,.ab-mini i{width:34px;height:34px;color:#f97316}
+.ab-mini h4{margin:12px 0 6px;color:#0b2350;font-size:16.5px}
+.ab-mini p{margin:0;color:#5b6b88;font-size:14px;line-height:1.7}
+.ab-appr{display:grid;grid-template-columns:repeat(2,1fr);gap:22px;margin-top:36px}
+.ab-ap{background:#fff;border:1px solid #e7ecf5;border-radius:16px;overflow:hidden;box-shadow:0 12px 28px rgba(11,35,80,.06)}
+.ab-ap header{display:flex;gap:14px;align-items:center;padding:18px 22px;background:#0b2350;color:#fff}
+.ab-ap header svg,.ab-ap header i{width:30px;height:30px;color:#fbbf24;flex-shrink:0}
+.ab-ap header h3{margin:0;font-size:17px}
+.ab-ap header p{margin:2px 0 0;font-size:12.5px;color:#c7d2ec}
+.ab-ap dl{margin:0;padding:16px 22px 20px}
+.ab-ap dl div{display:grid;grid-template-columns:140px 1fr;gap:12px;padding:8px 0;border-bottom:1px dashed #e7ecf5}
+.ab-ap dl div:last-child{border-bottom:0}
+.ab-ap dt{color:#5b6b88;font-size:13px;font-weight:600}
+.ab-ap dd{margin:0;color:#0b2350;font-weight:600;font-size:14px;word-break:break-word}
+.ab-why{display:grid;grid-template-columns:repeat(2,1fr);gap:12px 26px;margin-top:30px}
+.ab-why div{display:flex;gap:12px;align-items:flex-start;background:#fff;border:1px solid #e7ecf5;border-radius:10px;padding:14px 16px;font-weight:600;color:#0b2350}
+.ab-why svg,.ab-why i{width:22px;height:22px;color:#16a34a;flex-shrink:0}
+.ab-contact{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:30px}
+.ab-contact div{background:#f4f7fc;border-radius:12px;padding:20px}
+.ab-contact h4{margin:0 0 6px;color:#0b2350}
+.ab-contact p,.ab-contact a{margin:0;color:#5b6b88;text-decoration:none;line-height:1.6;word-break:break-word}
+.ab-btn{display:inline-flex;align-items:center;gap:8px;background:#f97316;color:#fff;font-weight:700;padding:13px 24px;border-radius:8px;text-decoration:none}
+.ab-btn.ab-ghost{background:#0b2350}
+.ab-btn svg,.ab-btn i{width:18px;height:18px}
+.ab-cta{background:linear-gradient(120deg,#0b2350,#1d4ed8);color:#fff;text-align:center;padding:56px 16px}
+.ab-cta h2{margin:0;font-size:clamp(24px,3.2vw,34px)}
+.ab-cta p{color:#d6e0fa;margin:10px 0 24px}
+@media (max-width:980px){.ab-grid4{grid-template-columns:repeat(2,1fr)}.ab-appr{grid-template-columns:1fr}}
+@media (max-width:820px){.ab-intro,.ab-mv,.ab-why,.ab-contact{grid-template-columns:1fr}.ab-tag{left:10px}}
+@media (max-width:560px){.ab-grid4,.ab-facts{grid-template-columns:1fr}.ab-sec{padding:48px 0}.ab-ap dl div{grid-template-columns:1fr;gap:2px}}
+`;
+
 export default function About() {
   return (
     <html lang="en">
@@ -20,523 +161,245 @@ export default function About() {
         <script src="/cms.js" defer></script>
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>
-          Career Optics Computer Academy | Education • Software • Skill Development
-        </title>
-        <link rel="stylesheet" href="style.css" />
-        <script src="https://cdn.tailwindcss.com"></script>
+        <title>{`About Us | ${BRAND.name}`}</title>
+        <meta
+          name="description"
+          content={`${BRAND.name}, run by ${BRAND.company} — MCA registered (CIN U85500BR2026PTC085770), ISO 9001:2015 certified and MSME Udyam registered computer academy in Ara, Bhojpur, Bihar.`}
+        />
+        <link rel="icon" href="/logo.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link href={"https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap"} rel="stylesheet" />
+        <link href={"https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"} rel="stylesheet" />
+        <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://unpkg.com/lucide@latest"></script>
-        <script dangerouslySetInnerHTML={{ __html: js_0023a4f0 }} />
-        <style dangerouslySetInnerHTML={{ __html: css_32f7cc4c }} />
+        <style dangerouslySetInnerHTML={{ __html: CSS }} />
       </head>
       <body>
         <SiteHeader />
-        <script dangerouslySetInnerHTML={{ __html: js_73893071 }} />
-        <StyleBlock />
-        <section id="why-join-us" className="relative overflow-hidden bg-slate-50 py-20">
-          <div className="pointer-events-none absolute -left-32 top-20 h-72 w-72 rounded-full bg-blue-100/60 blur-3xl"></div>
-          <div className="pointer-events-none absolute -right-32 bottom-0 h-80 w-80 rounded-full bg-indigo-100/60 blur-3xl"></div>
-          <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mx-auto mb-14 max-w-3xl text-center">
-              <span className="mb-3 inline-flex items-center gap-2 rounded-full bg-blue-50 px-4 py-2 text-xs font-bold uppercase tracking-wider text-blue-600">
-                <i data-lucide="sparkles" className="h-4 w-4"></i>
-                Why Choose Career Optics Computer Academy
-              </span>
-              <h2 className="text-3xl font-black leading-tight text-slate-900 sm:text-4xl lg:text-5xl">
-                Why{" "}
-                <span className="text-blue-600">
-                  Join Us?
-                </span>
+
+        <section className="ab-hero">
+          <h1>About {BRAND.name}</h1>
+          <p>
+            A government-registered, ISO 9001:2015 certified computer academy in Ara, Bhojpur — teaching practical
+            computer skills and guiding students towards higher studies and careers.
+          </p>
+          <div className="ab-crumb">
+            <a href="index.html">Home</a> / About Us
+          </div>
+        </section>
+
+        <section className="ab-sec">
+          <div className="ab-wrap ab-intro">
+            <div className="ab-logo">
+              <img src="/logo.png" alt={BRAND.name} />
+              <div className="ab-tag">
+                <b>ISO 9001:2015</b>
+                Certified Academy
+              </div>
+            </div>
+            <div>
+              <span className="ab-k">Who we are</span>
+              <h2 className="ab-h2">
+                {BRAND.short} <span>Computer Academy</span>
               </h2>
-              <p className="mt-5 text-sm leading-7 text-slate-600 sm:text-base">
-                Career Optics Computer Academy is committed to providing practical, career-focused education that helps students develop digital skills, build confidence and prepare for real-world opportunities.
+              <p className="ab-lead">
+                <b>{BRAND.name}</b> is run by <b>{BRAND.company}</b>, a company incorporated on 19 June 2026 under the
+                Companies Act, 2013 with the Ministry of Corporate Affairs, Government of India. The academy began
+                its educational services on 1 July 2026 from Hariom Gupta Building, Bandhan Tola, Nawada, Ara
+                (Bhojpur), Bihar.
+              </p>
+              <p className="ab-lead">
+                We teach computer skills the way they are used at work — DCA, ADCA, Tally Prime with GST, typing,
+                graphic design, programming, web development and AI tools — and we guide students on admission to
+                diploma, bachelor and master degree courses. Our quality management system is certified to
+                ISO 9001:2015, and every certificate we issue can be verified online.
+              </p>
+              <p className="ab-lead" lang="hi">
+                हमारा उद्देश्य है कि आरा और आसपास के हर विद्यार्थी को सस्ती, व्यावहारिक और भरोसेमंद कंप्यूटर शिक्षा मिले — ताकि वह आत्मविश्वास के साथ नौकरी, आगे की पढ़ाई या अपना काम शुरू कर सके।
+              </p>
+              <div className="ab-facts">
+                <div><small>Company</small><b>{BRAND.company}</b></div>
+                <div><small>CIN</small><b>U85500BR2026PTC085770</b></div>
+                <div><small>ISO 9001:2015</small><b>INQ/AN-23100/1/0726</b></div>
+                <div><small>MSME Udyam</small><b>UDYAM-BR-08-0043839</b></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="ab-sec ab-alt" id="mission-vision">
+          <div className="ab-wrap">
+            <div className="ab-center">
+              <span className="ab-k">What drives us</span>
+              <h2 className="ab-h2">Our Mission <span>&amp; Vision</span></h2>
+            </div>
+            <div className="ab-mv">
+              <div className="ab-card">
+                <div className="ab-ic"><i data-lucide="target"></i></div>
+                <h3>Our Mission</h3>
+                <p>
+                  To give every learner in Bhojpur and across Bihar practical, affordable and job-ready computer
+                  education — and the right guidance to turn those skills into a career.
+                </p>
+                <ul>
+                  <li>Teach hands-on, on the computer, with real projects</li>
+                  <li>Keep fees fair and every payment receipted</li>
+                  <li>Issue certificates that anyone can verify online</li>
+                  <li>Guide students on higher studies, jobs and self-employment</li>
+                </ul>
+              </div>
+              <div className="ab-card">
+                <div className="ab-ic o"><i data-lucide="eye"></i></div>
+                <h3>Our Vision</h3>
+                <p>
+                  To become Bihar's most trusted name in computer education — an academy where no student is left
+                  behind in the digital world, and a network of centres that brings the same quality to every town.
+                </p>
+                <ul>
+                  <li>Digital literacy for every household we reach</li>
+                  <li>Skills that match what employers need today</li>
+                  <li>Quality held to ISO 9001:2015 at every centre</li>
+                  <li>Learn • Grow • Succeed — Skill Today, Success Tomorrow</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="ab-sec">
+          <div className="ab-wrap">
+            <div className="ab-center">
+              <span className="ab-k">Our values</span>
+              <h2 className="ab-h2">What we <span>stand for</span></h2>
+            </div>
+            <div className="ab-grid4">
+              {VALUES.map((v) => (
+                <div className="ab-mini" key={v.title}>
+                  <i data-lucide={v.icon}></i>
+                  <h4>{v.title}</h4>
+                  <p>{v.text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="ab-sec ab-alt" id="approvals">
+          <div className="ab-wrap">
+            <div className="ab-center">
+              <span className="ab-k">Government registered</span>
+              <h2 className="ab-h2">Registrations <span>&amp; Approvals</span></h2>
+              <p className="ab-lead">
+                {BRAND.company} holds the following registrations with the Government of India and is certified for
+                quality management. The original certificates are on our{" "}
+                <a href="certification.html" style={{ color: "#f97316", fontWeight: 700 }}>Certification</a> page.
               </p>
             </div>
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-2 hover:border-blue-200 hover:shadow-xl">
-                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600 transition duration-300 group-hover:bg-blue-600 group-hover:text-white">
-                  <i data-lucide="graduation-cap" className="h-6 w-6"></i>
-                </div>
-                <h3 className="text-lg font-bold text-slate-900">
-                  Industry-Focused Learning
-                </h3>
-                <p className="mt-3 text-sm leading-6 text-slate-600">
-                  Learn practical and job-oriented skills designed according to current industry requirements.
-                </p>
-              </div>
-              <div className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-2 hover:border-blue-200 hover:shadow-xl">
-                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 transition duration-300 group-hover:bg-indigo-600 group-hover:text-white">
-                  <i data-lucide="laptop-2" className="h-6 w-6"></i>
-                </div>
-                <h3 className="text-lg font-bold text-slate-900">
-                  Practical Training
-                </h3>
-                <p className="mt-3 text-sm leading-6 text-slate-600">
-                  Work on practical projects, assignments and real-world activities to strengthen your skills.
-                </p>
-              </div>
-              <div className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-2 hover:border-blue-200 hover:shadow-xl">
-                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-purple-50 text-purple-600 transition duration-300 group-hover:bg-purple-600 group-hover:text-white">
-                  <i data-lucide="briefcase-business" className="h-6 w-6"></i>
-                </div>
-                <h3 className="text-lg font-bold text-slate-900">
-                  Career Development
-                </h3>
-                <p className="mt-3 text-sm leading-6 text-slate-600">
-                  Develop professional skills, communication and confidence needed to move towards better career opportunities.
-                </p>
-              </div>
-              <div className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-2 hover:border-blue-200 hover:shadow-xl">
-                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 transition duration-300 group-hover:bg-emerald-600 group-hover:text-white">
-                  <i data-lucide="users" className="h-6 w-6"></i>
-                </div>
-                <h3 className="text-lg font-bold text-slate-900">
-                  Expert Guidance
-                </h3>
-                <p className="mt-3 text-sm leading-6 text-slate-600">
-                  Get continuous guidance and support from trainers throughout your learning journey.
-                </p>
-              </div>
-            </div>
-            <section id="roadmap" className="py-24">
-              <div className="max-w-6xl mx-auto px-4">
-                <div className="text-center reveal">
-                  <div className="text-cyan-400 font-black uppercase tracking-[3px] text-sm">
-                    Learning Roadmap
-                  </div>
-                  <h2 className="text-4xl md:text-5xl font-black mt-4">
-                    From Beginner To{" "}
-                    <span className="text-gradient">
-                      {" "}AI Professional{" "}
-                    </span>
-                  </h2>
-                </div>
-                <div className="relative mt-16">
-                  <div className="hidden md:block absolute top-12 left-0 right-0 h-px bg-gradient-to-r from-purple-500 via-cyan-400 to-pink-500"></div>
-                  <div className="grid md:grid-cols-4 gap-6">
-                    <div className="relative reveal">
-                      <div className="w-24 h-24 mx-auto rounded-full glass border-purple-500/30 flex items-center justify-center text-3xl font-black text-purple-300">
-                        01
-                      </div>
-                      <div className="text-center mt-6">
-                        <h3 className="font-black text-xl">
-                          Computer Foundation
-                        </h3>
-                        <p className="text-gray-500 mt-3">
-                          Computer basics, internet, office tools और digital literacy।
-                        </p>
-                      </div>
-                    </div>
-                    <div className="relative reveal">
-                      <div className="w-24 h-24 mx-auto rounded-full glass flex items-center justify-center text-3xl font-black text-cyan-300">
-                        02
-                      </div>
-                      <div className="text-center mt-6">
-                        <h3 className="font-black text-xl">
-                          Digital Skills
-                        </h3>
-                        <p className="text-gray-500 mt-3">
-                          Design, web, marketing, productivity और online tools।
-                        </p>
-                      </div>
-                    </div>
-                    <div className="relative reveal">
-                      <div className="w-24 h-24 mx-auto rounded-full glass flex items-center justify-center text-3xl font-black text-pink-300">
-                        03
-                      </div>
-                      <div className="text-center mt-6">
-                        <h3 className="font-black text-xl">
-                          AI Skills
-                        </h3>
-                        <p className="text-gray-500 mt-3">
-                          Prompt engineering, GenAI, automation और AI workflows।
-                        </p>
-                      </div>
-                    </div>
-                    <div className="relative reveal">
-                      <div className="w-24 h-24 mx-auto rounded-full glass flex items-center justify-center text-3xl font-black text-green-300">
-                        04
-                      </div>
-                      <div className="text-center mt-6">
-                        <h3 className="font-black text-xl">
-                          Career Projects
-                        </h3>
-                        <p className="text-gray-500 mt-3">
-                          Real projects, portfolio, freelancing और career preparation।
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-            <section id="founder-message" className="relative overflow-hidden bg-white py-20">
-              <div className="absolute left-0 top-0 h-72 w-72 rounded-full bg-blue-50 blur-3xl"></div>
-              <div className="absolute bottom-0 right-0 h-72 w-72 rounded-full bg-indigo-50 blur-3xl"></div>
-              <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-                <div className="mx-auto mb-12 max-w-2xl text-center">
-                  <span className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-4 py-2 text-xs font-bold uppercase tracking-wider text-blue-600">
-                    <i data-lucide="message-circle" className="h-4 w-4"></i>
-                    Leadership Message
-                  </span>
-                  <h2 className="mt-4 text-3xl font-black text-slate-900 sm:text-4xl">
-                    Our Founder & Director{" "}
-                    <span className="text-blue-600">
-                      Says
-                    </span>
-                  </h2>
-                  <p className="mt-4 text-sm leading-7 text-slate-600 sm:text-base">
-                    A message from the leadership team of Career Optics Computer Academy for every learner who dreams of building a successful future.
-                  </p>
-                </div>
-                <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-slate-50 shadow-xl">
-                  <div className="grid items-center lg:grid-cols-5">
-                    <div className="relative flex min-h-[360px] items-center justify-center overflow-hidden bg-slate-900 p-8 lg:col-span-2 lg:min-h-[480px]">
-                      <div className="absolute -left-20 -top-20 h-56 w-56 rounded-full bg-blue-600/20"></div>
-                      <div className="absolute -bottom-24 -right-20 h-64 w-64 rounded-full bg-indigo-500/20"></div>
-                      <div className="relative z-10">
-                        <div className="mx-auto h-56 w-56 overflow-hidden rounded-full border-8 border-white/10 shadow-2xl sm:h-64 sm:w-64">
-                          <img src={"https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=700&q=85"} alt={"Founder & Director"} className="h-full w-full object-cover" />
-                        </div>
-                        <div className="absolute -bottom-5 left-1/2 w-max -translate-x-1/2 rounded-2xl bg-white px-6 py-3 text-center shadow-xl">
-                          <h3 className="text-base font-black text-slate-900">
-                            Founder & Director
-                          </h3>
-                          <p className="mt-1 text-xs font-semibold text-blue-600">
-                            Career Optics Computer Academy
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="p-8 sm:p-10 lg:col-span-3 lg:p-14">
-                      <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 text-white shadow-lg shadow-blue-600/20">
-                        <i data-lucide="quote" className="h-6 w-6"></i>
-                      </div>
-                      <blockquote className="text-lg font-semibold leading-8 text-slate-800 sm:text-xl">
-                        “Education is not just about getting a certificate; it is about gaining the right skills, confidence and mindset to create a better future.”
-                      </blockquote>
-                      <p className="mt-6 text-sm leading-7 text-slate-600 sm:text-base">
-                        At Career Optics Computer Academy, our goal is to make quality digital education accessible to every learner. We believe that practical knowledge, continuous learning and the right guidance can transform careers and lives.
-                      </p>
-                      <p className="mt-4 text-sm leading-7 text-slate-600 sm:text-base">
-                        We are committed to helping our students become job-ready, digitally skilled and confident enough to explore opportunities in employment, freelancing, entrepreneurship and the growing digital economy.
-                      </p>
-                      <div className="mt-8 flex items-center gap-4">
-                        <div className="h-px w-12 bg-blue-600"></div>
-                        <div>
-                          <h4 className="text-base font-black text-slate-900">
-                            Founder & Director
-                          </h4>
-                          <p className="text-xs font-medium text-slate-500">
-                            Career Optics Computer Academy
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-            <script src="https://unpkg.com/lucide@latest"></script>
-            <script dangerouslySetInnerHTML={{ __html: js_54b08411 }} />
-            <section id="founder-director" className="relative overflow-hidden bg-slate-50 py-20 sm:py-24">
-              <div className="pointer-events-none absolute -left-32 top-10 h-72 w-72 rounded-full bg-blue-100 blur-3xl opacity-70"></div>
-              <div className="pointer-events-none absolute -right-32 bottom-0 h-80 w-80 rounded-full bg-indigo-100 blur-3xl opacity-70"></div>
-              <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <div className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-xl">
-                  <div className="grid items-center lg:grid-cols-5">
-                    <div className="relative order-2 p-8 sm:p-10 lg:order-1 lg:col-span-3 lg:p-14 xl:p-16">
-                      <div className="pointer-events-none absolute right-8 top-8 opacity-[0.06]">
-                        <i data-lucide="quote" className="h-32 w-32 text-blue-600"></i>
-                      </div>
-                      <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-blue-50 px-4 py-2 text-xs font-bold uppercase tracking-wider text-blue-600">
-                        <i data-lucide="message-square-quote" className="h-4 w-4"></i>
-                        Leadership Message
-                      </div>
-                      <h2 className="max-w-2xl text-3xl font-black leading-tight text-slate-900 sm:text-4xl">
-                        Our Founder & Director{" "}
-                        <span className="text-blue-600">
-                          {" "}Says{" "}
-                        </span>
-                      </h2>
-                      <div className="mt-5 flex items-center gap-3">
-                        <div className="h-1 w-12 rounded-full bg-blue-600"></div>
-                        <div className="h-1 w-5 rounded-full bg-blue-200"></div>
-                      </div>
-                      <div className="relative mt-8">
-                        <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 text-white shadow-lg shadow-blue-600/20">
-                          <i data-lucide="quote" className="h-6 w-6"></i>
-                        </div>
-                        <blockquote className="max-w-3xl text-xl font-bold leading-9 text-slate-800 sm:text-2xl lg:text-[27px] lg:leading-[1.5]">
-                          “Education is not just about getting a certificate; it is about gaining the right skills, confidence and mindset to create a better future.”
-                        </blockquote>
-                      </div>
-                      <div className="mt-7 max-w-2xl space-y-4 text-sm leading-7 text-slate-600 sm:text-base">
-                        <p>
-                          At{" "}
-                          <strong className="font-bold text-slate-900">
-                            {" "}Career Optics Computer Academy{" "}
-                          </strong>
-                          , our vision is to provide practical and career-oriented education that prepares learners for the opportunities of the digital world.
-                        </p>
-                        <p>
-                          We believe that every student has the potential to grow. With the right skills, guidance and continuous learning, anyone can build a confident and successful career.
-                        </p>
-                      </div>
-                      <div className="mt-8 grid gap-3 sm:grid-cols-3">
-                        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                          <i data-lucide="graduation-cap" className="mb-2 h-5 w-5 text-blue-600"></i>
-                          <h4 className="text-sm font-bold text-slate-900">
-                            Quality Education
-                          </h4>
-                          <p className="mt-1 text-xs leading-5 text-slate-500">
-                            Practical learning for everyone.
-                          </p>
-                        </div>
-                        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                          <i data-lucide="rocket" className="mb-2 h-5 w-5 text-blue-600"></i>
-                          <h4 className="text-sm font-bold text-slate-900">
-                            Career Growth
-                          </h4>
-                          <p className="mt-1 text-xs leading-5 text-slate-500">
-                            Skills for a better future.
-                          </p>
-                        </div>
-                        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                          <i data-lucide="handshake" className="mb-2 h-5 w-5 text-blue-600"></i>
-                          <h4 className="text-sm font-bold text-slate-900">
-                            Student Support
-                          </h4>
-                          <p className="mt-1 text-xs leading-5 text-slate-500">
-                            Guidance at every step.
-                          </p>
-                        </div>
-                      </div>
-                      <div className="mt-9 flex items-end justify-between gap-5 border-t border-slate-200 pt-7"></div>
-                    </div>
-                    <div className="relative order-1 min-h-[400px] overflow-hidden bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-900 sm:min-h-[500px] lg:order-2 lg:col-span-2 lg:min-h-[620px]">
-                      <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full border border-white/10"></div>
-                      <div className="absolute -bottom-28 -left-28 h-80 w-80 rounded-full border border-white/10"></div>
-                      <div className="absolute left-1/2 top-1/2 h-80 w-80 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/10 blur-3xl"></div>
-                      <div className="relative z-10 flex h-full min-h-[400px] items-center justify-center p-8 sm:min-h-[500px] lg:min-h-[620px]">
-                        <div className="relative">
-                          <div className="absolute -inset-5 rounded-[2rem] border border-white/20"></div>
-                          <div className="absolute -inset-10 rounded-[2.5rem] border border-white/10"></div>
-                          <div className="relative h-[330px] w-[270px] overflow-hidden rounded-[2rem] border-8 border-white/20 bg-slate-900 shadow-2xl sm:h-[400px] sm:w-[320px] lg:h-[440px] lg:w-[350px]">
-                            <img src={"https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=800&q=90"} alt="Founder and Director Career Optics Computer Academy" className="h-full w-full object-cover transition duration-700 hover:scale-105" />
-                          </div>
-                          <div className="absolute -right-5 top-10 flex h-16 w-16 items-center justify-center rounded-2xl border-4 border-white bg-white text-blue-600 shadow-2xl">
-                            <i data-lucide="quote" className="h-7 w-7"></i>
-                          </div>
-                          <div className="absolute -bottom-7 left-1/2 w-[85%] -translate-x-1/2 rounded-2xl border border-white/20 bg-white p-4 text-center shadow-2xl">
-                            <h3 className="text-base font-black text-slate-900">
-                              Your Name
-                            </h3>
-                            <p className="mt-1 text-xs font-bold text-blue-600">
-                              Founder & Director
-                            </p>
-                            <p className="mt-1 text-[11px] text-slate-400">
-                              Career Optics Computer Academy
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-            <section id="career" className="py-24">
-              <div className="max-w-7xl mx-auto px-4">
-                <div className="glass rounded-[35px] p-8 md:p-14 relative overflow-hidden">
-                  <div className="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-purple-600/20 blur-[90px]"></div>
-                  <div className="grid lg:grid-cols-2 gap-12 relative z-10">
+            <div className="ab-appr">
+              {APPROVALS.map((a) => (
+                <article className="ab-ap" key={a.title}>
+                  <header>
+                    <i data-lucide={a.icon}></i>
                     <div>
-                      <div className="text-green-400 font-black uppercase tracking-[3px] text-sm">
-                        Career Ready
-                      </div>
-                      <h2 className="text-4xl md:text-5xl font-black mt-4">
-                        Turn Your Skills Into{" "}
-                        <span className="text-gradient">
-                          {" "}Opportunities{" "}
-                        </span>
-                      </h2>
-                      <p className="text-gray-500 leading-8 mt-6">
-                        AI और computer skills का उपयोग job, freelancing, business और personal productivity में करें।
-                      </p>
+                      <h3>{a.title}</h3>
+                      <p>{a.authority}</p>
                     </div>
-                    <div className="grid sm:grid-cols-2 gap-4">
-                      <div className="glass rounded-2xl p-6">
-                        <i data-lucide="briefcase" className="text-cyan-400"></i>
-                        <h3 className="font-black mt-4">
-                          Jobs
-                        </h3>
-                        <p className="text-gray-500 text-sm mt-2">
-                          Career-focused skills.
-                        </p>
+                  </header>
+                  <dl>
+                    {a.rows.map(([k, v]) => (
+                      <div key={k}>
+                        <dt>{k}</dt>
+                        <dd>{v}</dd>
                       </div>
-                      <div className="glass rounded-2xl p-6">
-                        <i data-lucide="laptop" className="text-purple-400"></i>
-                        <h3 className="font-black mt-4">
-                          Freelancing
-                        </h3>
-                        <p className="text-gray-500 text-sm mt-2">
-                          Work from anywhere.
-                        </p>
-                      </div>
-                      <div className="glass rounded-2xl p-6">
-                        <i data-lucide="store" className="text-pink-400"></i>
-                        <h3 className="font-black mt-4">
-                          Business
-                        </h3>
-                        <p className="text-gray-500 text-sm mt-2">
-                          Build digital businesses.
-                        </p>
-                      </div>
-                      <div className="glass rounded-2xl p-6">
-                        <i data-lucide="rocket" className="text-green-400"></i>
-                        <h3 className="font-black mt-4">
-                          Startups
-                        </h3>
-                        <p className="text-gray-500 text-sm mt-2">
-                          Build technology products.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
+                    ))}
+                  </dl>
+                </article>
+              ))}
+            </div>
+            <div className="ab-center" style={{ marginTop: 28 }}>
+              <a className="ab-btn ab-ghost" href="certification.html">
+                <i data-lucide="file-badge"></i>View all certificates
+              </a>
+            </div>
+            <p className="ab-lead ab-center" style={{ fontSize: 13.5 }}>
+              Verify independently: company details on the Ministry of Corporate Affairs portal (mca.gov.in) using CIN
+              U85500BR2026PTC085770, and the Udyam registration on udyamregistration.gov.in using UDYAM-BR-08-0043839.
+            </p>
           </div>
         </section>
-        <section id="benefits" className="py-20 bg-slate-50">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="text-center max-w-3xl mx-auto">
-              <span className="text-blue-600 font-bold text-sm uppercase tracking-widest">
-                {" "}Student Benefits{" "}
-              </span>
-              <h2 className="text-3xl sm:text-4xl font-black mt-3">
-                Benefits That Help You Grow
-              </h2>
+
+        <section className="ab-sec">
+          <div className="ab-wrap">
+            <div className="ab-center">
+              <span className="ab-k">What we do</span>
+              <h2 className="ab-h2">What we <span>offer</span></h2>
             </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
-              <div className="bg-white border rounded-3xl p-7 text-center">
-                <div className="mx-auto w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
-                  <i data-lucide="trending-up" className="w-7 h-7"></i>
+            <div className="ab-grid4">
+              {OFFER.map((o) => (
+                <div className="ab-mini" key={o.title}>
+                  <i data-lucide={o.icon}></i>
+                  <h4>{o.title}</h4>
+                  <p>{o.text}</p>
                 </div>
-                <h3 className="font-black text-lg mt-5">
-                  Growth
-                </h3>
-                <p className="text-sm text-slate-500 leading-6 mt-2">
-                  Opportunities to take on new responsibilities.
-                </p>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="ab-sec ab-alt">
+          <div className="ab-wrap">
+            <div className="ab-center">
+              <span className="ab-k">Why choose us</span>
+              <h2 className="ab-h2">Why students <span>choose us</span></h2>
+            </div>
+            <div className="ab-why">
+              {WHY.map((w) => (
+                <div key={w}>
+                  <i data-lucide="circle-check"></i>
+                  {w}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="ab-sec" id="contact">
+          <div className="ab-wrap">
+            <div className="ab-center">
+              <span className="ab-k">Visit us</span>
+              <h2 className="ab-h2">Registered <span>office</span></h2>
+            </div>
+            <div className="ab-contact">
+              <div>
+                <h4>Address</h4>
+                <p>{BRAND.address}</p>
               </div>
-              <div className="bg-white border rounded-3xl p-7 text-center">
-                <div className="mx-auto w-14 h-14 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center">
-                  <i data-lucide="book-open" className="w-7 h-7"></i>
-                </div>
-                <h3 className="font-black text-lg mt-5">
-                  Learning
-                </h3>
-                <p className="text-sm text-slate-500 leading-6 mt-2">
-                  Continuous skill development and learning.
-                </p>
+              <div>
+                <h4>Phone</h4>
+                <a href={`tel:+${BRAND.phoneIntl}`}>+91 {BRAND.phone}</a>
+                <br />
+                <a href={`tel:+91${BRAND.altPhone}`}>+91 {BRAND.altPhone}</a>
               </div>
-              <div className="bg-white border rounded-3xl p-7 text-center">
-                <div className="mx-auto w-14 h-14 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center">
-                  <i data-lucide="users-round" className="w-7 h-7"></i>
-                </div>
-                <h3 className="font-black text-lg mt-5">
-                  Teamwork
-                </h3>
-                <p className="text-sm text-slate-500 leading-6 mt-2">
-                  Collaborative and supportive work environment.
-                </p>
-              </div>
-              <div className="bg-white border rounded-3xl p-7 text-center">
-                <div className="mx-auto w-14 h-14 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center">
-                  <i data-lucide="award" className="w-7 h-7"></i>
-                </div>
-                <h3 className="font-black text-lg mt-5">
-                  Recognition
-                </h3>
-                <p className="text-sm text-slate-500 leading-6 mt-2">
-                  Recognition for strong work and contribution.
-                </p>
+              <div>
+                <h4>Email</h4>
+                <a href={`mailto:${BRAND.email}`}>{BRAND.email}</a>
               </div>
             </div>
           </div>
         </section>
-        <section id="process" className="py-20 bg-white">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="text-center">
-              <span className="text-blue-600 font-bold text-sm uppercase tracking-widest">
-                {" "}Hiring Process{" "}
-              </span>
-              <h2 className="text-3xl sm:text-4xl font-black mt-3">
-                How We Hire
-              </h2>
-            </div>
-            <div className="grid md:grid-cols-4 gap-7 mt-14">
-              <div className="text-center">
-                <div className="mx-auto w-16 h-16 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-xl font-black">
-                  01
-                </div>
-                <h3 className="font-black mt-5">
-                  Apply
-                </h3>
-                <p className="text-sm text-slate-500 mt-2">
-                  Submit your application for a suitable position.
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="mx-auto w-16 h-16 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-xl font-black">
-                  02
-                </div>
-                <h3 className="font-black mt-5">
-                  Screening
-                </h3>
-                <p className="text-sm text-slate-500 mt-2">
-                  Our team reviews your profile and experience.
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="mx-auto w-16 h-16 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-xl font-black">
-                  03
-                </div>
-                <h3 className="font-black mt-5">
-                  Interview
-                </h3>
-                <p className="text-sm text-slate-500 mt-2">
-                  Discuss your skills, experience and role.
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="mx-auto w-16 h-16 rounded-2xl bg-green-600 text-white flex items-center justify-center text-xl font-black">
-                  04
-                </div>
-                <h3 className="font-black mt-5">
-                  Selection
-                </h3>
-                <p className="text-sm text-slate-500 mt-2">
-                  Selected candidates receive the next steps.
-                </p>
-              </div>
-            </div>
-          </div>
+
+        <section className="ab-cta">
+          <h2>Start learning with {BRAND.short}</h2>
+          <p>Admission open — visit the academy or apply online today.</p>
+          <a className="ab-btn" href="/computercentre/apply">
+            Apply Online <i data-lucide="arrow-right"></i>
+          </a>
         </section>
+
         <SiteFooter />
         <WhatsappWidget />
         <script dangerouslySetInnerHTML={{ __html: js_c1268ab4 }} />
-        <StyleBlock2 />
-        <DivBlock />
-        <script dangerouslySetInnerHTML={{ __html: js_ea05b2d5 }} />
-        <script src="https://unpkg.com/typed.js@2.0.16/dist/typed.umd.js"></script>
-        <script src="js/script.js"></script>
-        <script src="https://cdn.tailwindcss.com"></script>
+        <script dangerouslySetInnerHTML={{ __html: `document.addEventListener("DOMContentLoaded",function(){if(window.lucide)lucide.createIcons()});` }} />
       </body>
     </html>
   );
