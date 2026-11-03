@@ -53,12 +53,12 @@ describe("document designer", () => {
   it("keeps the element selected while its text is being edited", async () => {
     renderAt("/certificate/template");
 
-    fireEvent.pointerDown(screen.getByText("CERTIFICATE OF ACHIEVEMENT"));
-    await waitFor(() => expect(textBox()).toHaveValue("CERTIFICATE OF ACHIEVEMENT"));
+    fireEvent.pointerDown(screen.getByText("OF COURSE COMPLETION"));
+    await waitFor(() => expect(textBox()).toHaveValue("OF COURSE COMPLETION"));
 
     // One edit at a time: the panel used to close after the first, because every
     // design change also cleared the selection.
-    for (const value of ["CERTIFICATE OF ACHIEVEMENT!", "CERTIFICATE OF EXCELLENCE"]) {
+    for (const value of ["OF COURSE COMPLETION!", "CERTIFICATE OF EXCELLENCE"]) {
       fireEvent.change(textBox()!, { target: { value } });
       expect(textBox()).toHaveValue(value);
     }
@@ -80,12 +80,12 @@ describe("document designer", () => {
 
   it("follows the route when the document type changes", () => {
     const view = renderAt("/certificate/template");
-    expect(screen.getByText("CERTIFICATE OF ACHIEVEMENT")).toBeInTheDocument();
+    expect(screen.getByText("OF COURSE COMPLETION")).toBeInTheDocument();
 
     view.unmount();
     renderAt("/marksheet/template");
     expect(screen.getByText("STATEMENT OF MARKS")).toBeInTheDocument();
-    expect(screen.queryByText("CERTIFICATE OF ACHIEVEMENT")).not.toBeInTheDocument();
+    expect(screen.queryByText("OF COURSE COMPLETION")).not.toBeInTheDocument();
   });
 
   it("leaves no placeholder label on a starter shape", async () => {
@@ -104,7 +104,7 @@ describe("document designer", () => {
   it.each([
     ["student-award", "STUDENT AWARD"],
     ["branch-award", "BRANCH AWARD"],
-    ["centre-certificate", "CERTIFICATE OF AUTHORISATION"],
+    ["centre-certificate", "OF AUTHORISATION"],
   ])("opens %s with a layout of its own", async (kind, heading) => {
     renderAt(`/documents/designer?type=${kind}`);
     await waitFor(() => expect(screen.getByText(heading)).toBeInTheDocument());
@@ -121,7 +121,7 @@ describe("document designer", () => {
      editor does. */
   it("resizes by dragging a grip, without anyone typing a width", async () => {
     renderAt("/certificate/template");
-    const heading = screen.getByText("CERTIFICATE OF ACHIEVEMENT");
+    const heading = screen.getByText("OF COURSE COMPLETION");
     fireEvent.pointerDown(heading);
     await waitFor(() => expect(textBox()).toBeTruthy());
 
@@ -143,22 +143,22 @@ describe("document designer", () => {
 
   it("takes the element off the canvas from its own cross", async () => {
     renderAt("/certificate/template");
-    fireEvent.pointerDown(screen.getByText("CERTIFICATE OF ACHIEVEMENT"));
+    fireEvent.pointerDown(screen.getByText("OF COURSE COMPLETION"));
     await waitFor(() => expect(textBox()).toBeTruthy());
 
     fireEvent.click(screen.getByLabelText("Delete element"));
-    expect(screen.queryByText("CERTIFICATE OF ACHIEVEMENT")).toBeNull();
+    expect(screen.queryByText("OF COURSE COMPLETION")).toBeNull();
 
     // And it is an ordinary edit, so it can be taken back.
     fireEvent.click(screen.getByRole("button", { name: /undo/i }));
-    expect(onCanvas("CERTIFICATE OF ACHIEVEMENT")).toBeInTheDocument();
+    expect(onCanvas("OF COURSE COMPLETION")).toBeInTheDocument();
   });
 
   it("shows the grips on the chosen element alone", async () => {
     renderAt("/certificate/template");
     expect(screen.queryByLabelText("Resize se")).toBeNull();
 
-    fireEvent.pointerDown(screen.getByText("CERTIFICATE OF ACHIEVEMENT"));
+    fireEvent.pointerDown(screen.getByText("OF COURSE COMPLETION"));
     await waitFor(() => expect(screen.getAllByLabelText(/^Resize /)).toHaveLength(8));
   });
 
@@ -170,12 +170,12 @@ describe("document designer", () => {
   it("undoes an edit without disturbing the other document types", async () => {
     renderAt("/certificate/template");
 
-    fireEvent.pointerDown(screen.getByText("CERTIFICATE OF ACHIEVEMENT"));
+    fireEvent.pointerDown(screen.getByText("OF COURSE COMPLETION"));
     await waitFor(() => expect(textBox()).toBeTruthy());
     fireEvent.change(textBox()!, { target: { value: "Gone" } });
     expect(onCanvas("Gone")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /undo/i }));
-    expect(onCanvas("CERTIFICATE OF ACHIEVEMENT")).toBeInTheDocument();
+    expect(onCanvas("OF COURSE COMPLETION")).toBeInTheDocument();
   });
 });

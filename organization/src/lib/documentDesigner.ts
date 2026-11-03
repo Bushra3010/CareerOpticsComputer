@@ -242,36 +242,153 @@ function border(color: string, width = 4) {
   return `${width}px solid ${color}`;
 }
 
+/* ---------- the institute's print identity, as designer elements ---------- */
+
+const NAVY = "#0b2350";
+const GOLD = "#c9a227";
+const GOLD_DARK = "#8a6d14";
+const INK = "#334155";
+const MUTED = "#475569";
+
+/** The institute's mark, served beside the app; the same file the PDFs print. */
+const LOGO = `${import.meta.env.BASE_URL}career-optics-logo.png`;
+
+/**
+ * An L-shaped bracket in a corner: two bars meeting at the page's edge. sx/sy
+ * say which way the bars run from the corner (+1 inward from the left/top,
+ * -1 inward from the right/bottom).
+ */
+function cornerBracket(cx: number, cy: number, sx: number, sy: number, len: number, thick: number, color: string): DocElement[] {
+  const x = sx > 0 ? cx : cx - len;
+  const y = sy > 0 ? cy : cy - thick;
+  const vx = sx > 0 ? cx : cx - thick;
+  const vy = sy > 0 ? cy : cy - len;
+  return [
+    element("shape", { x, y, width: len, height: thick, background: color, z: 1 }),
+    element("shape", { x: vx, y: vy, width: thick, height: len, background: color, z: 1 }),
+  ];
+}
+
+/** The double rule and the four corners every certificate-grade sheet carries. */
+function frameElements(w: number, h: number, scale = 1): DocElement[] {
+  const corners: Array<[number, number, number, number]> = [[0, 0, 1, 1], [w, 0, -1, 1], [0, h, 1, -1], [w, h, -1, -1]];
+  return [
+    element("shape", { x: 0, y: 0, width: w, height: h, background: "#fffdf7", z: 0 }),
+    element("shape", { x: 24, y: 24, width: w - 48, height: h - 48, border: border(NAVY, 4), z: 1 }),
+    element("shape", { x: 34, y: 34, width: w - 68, height: h - 68, border: border(GOLD, 1.5), z: 1 }),
+    ...corners.flatMap(([cx, cy, sx, sy]) => [
+      ...cornerBracket(cx, cy, sx, sy, 150 * scale, 14 * scale, NAVY),
+      ...cornerBracket(cx + sx * 18 * scale, cy + sy * 18 * scale, sx, sy, 110 * scale, 5 * scale, GOLD),
+    ]),
+    // the institute's mark, faint behind everything the sheet says
+    element("image", { x: w / 2 - 190 * scale, y: h / 2 - 190 * scale, width: 380 * scale, height: 380 * scale, src: LOGO, opacity: 0.045, z: 1 }),
+  ];
+}
+
+/** The institute's seal: two gold rings around its mark, centred on (cx, cy). */
+function sealElements(cx: number, cy: number, r: number): DocElement[] {
+  return [
+    element("shape", { x: cx - r, y: cy - r, width: r * 2, height: r * 2, radius: r, border: border(GOLD, 3), background: "#fffaf0", z: 3 }),
+    element("shape", { x: cx - r + 6, y: cy - r + 6, width: (r - 6) * 2, height: (r - 6) * 2, radius: r - 6, border: border(GOLD, 1), z: 3 }),
+    element("image", { x: cx - r + 13, y: cy - r + 13, width: (r - 13) * 2, height: (r - 13) * 2, src: LOGO, z: 4 }),
+  ];
+}
+
+/** Label over value, in a gold-ruled box: the grade, the percentage, the marks. */
+function figureBox(x: number, y: number, w: number, label: string, value: string): DocElement[] {
+  return [
+    element("shape", { x, y, width: w, height: 48, border: border(GOLD, 1.5), background: "#ffffff", radius: 6, z: 2 }),
+    element("text", { x, y: y + 4, width: w, height: 18, text: label, fontSize: 11, color: "#64748b", z: 3 }),
+    element("text", { x, y: y + 20, width: w, height: 26, text: value, fontSize: 19, fontWeight: "700", color: NAVY, z: 3 }),
+  ];
+}
+
+/** The landscape sheet's head: mark, institute, centre, a gold rule with a diamond. */
+function landscapeHead(): DocElement[] {
+  return [
+    element("image", { x: 70, y: 56, width: 90, height: 90, src: LOGO, z: 2 }),
+    element("text", { x: 190, y: 62, width: 620, height: 46, text: "{{institute}}", fontSize: 30, fontWeight: "700", color: NAVY }),
+    element("text", { x: 230, y: 108, width: 540, height: 28, text: "{{branch_name}}", fontSize: 15, color: MUTED }),
+    element("shape", { x: 300, y: 145, width: 188, height: 2, background: GOLD, z: 2 }),
+    element("shape", { x: 512, y: 145, width: 188, height: 2, background: GOLD, z: 2 }),
+    element("shape", { x: 494, y: 140, width: 12, height: 12, rotate: 45, background: GOLD, z: 2 }),
+  ];
+}
+
+/** The landscape sheet's foot: verification code, two signatures, the seal, the date. */
+function landscapeFoot(): DocElement[] {
+  return [
+    element("qr", { x: 70, y: 560, width: 80, height: 80 }),
+    element("text", { x: 50, y: 642, width: 120, height: 18, text: "Scan to verify", fontSize: 11, color: "#64748b" }),
+    element("shape", { x: 270, y: 614, width: 160, height: 2, background: NAVY, z: 2 }),
+    element("text", { x: 250, y: 618, width: 200, height: 20, text: "Centre Head", fontSize: 13, color: NAVY }),
+    element("shape", { x: 570, y: 614, width: 160, height: 2, background: NAVY, z: 2 }),
+    element("text", { x: 540, y: 618, width: 220, height: 20, text: "Director / Authorised Signatory", fontSize: 13, color: NAVY }),
+    ...sealElements(500, 601, 45),
+    element("text", { x: 400, y: 646, width: 200, height: 14, text: "ISO 9001:2015 CERTIFIED", fontSize: 10, fontWeight: "700", color: GOLD_DARK }),
+    element("text", { x: 740, y: 618, width: 200, height: 20, text: "Date of issue: {{issue_date}}", fontSize: 13, color: INK, align: "right" }),
+  ];
+}
+
 function certificate(): DocElement[] {
   return [
-    element("shape", { x: 30, y: 30, width: 940, height: 647, border: border("#b45309", 8), radius: 5, z: 1 }),
-    element("text", { x: 180, y: 85, width: 640, height: 60, text: "CERTIFICATE OF ACHIEVEMENT", fontSize: 38, fontWeight: "800", color: "#7c2d12" }),
-    element("text", { x: 300, y: 175, width: 400, height: 40, text: "This certificate is proudly presented to", fontSize: 20 }),
-    element("text", { x: 200, y: 225, width: 600, height: 70, text: "{{student_name}}", fontSize: 46, fontWeight: "800", color: "#1e3a8a" }),
-    element("text", { x: 250, y: 320, width: 500, height: 40, text: "For successfully completing", fontSize: 20 }),
-    element("text", { x: 200, y: 365, width: 600, height: 55, text: "{{course_name}}", fontSize: 30, fontWeight: "700" }),
-    element("text", { x: 80, y: 550, width: 280, height: 30, text: "Certificate ID: {{certificate_id}}", fontSize: 15, align: "left" }),
-    element("text", { x: 380, y: 550, width: 280, height: 30, text: "{{institute}}", fontSize: 17, fontWeight: "700" }),
-    element("text", { x: 380, y: 585, width: 280, height: 30, text: "Issued {{issue_date}}", fontSize: 14, color: "#475569" }),
-    element("qr", { x: 800, y: 510, width: 100, height: 100 }),
+    ...frameElements(1000, 707),
+    ...landscapeHead(),
+    element("text", { x: 150, y: 158, width: 700, height: 74, text: "C E R T I F I C A T E", fontSize: 58, fontWeight: "700", color: GOLD_DARK }),
+    element("text", { x: 300, y: 228, width: 400, height: 24, text: "OF COURSE COMPLETION", fontSize: 15, fontWeight: "700", color: NAVY }),
+    element("text", { x: 300, y: 262, width: 400, height: 28, text: "This is to certify that", fontSize: 19, color: INK }),
+    element("text", { x: 150, y: 292, width: 700, height: 62, text: "{{student_name}}", fontSize: 46, fontWeight: "700", color: NAVY }),
+    element("shape", { x: 320, y: 356, width: 360, height: 2, background: GOLD, z: 2 }),
+    element("text", { x: 250, y: 366, width: 500, height: 26, text: "Son/Daughter of {{father_name}}", fontSize: 17, color: INK }),
+    element("text", { x: 250, y: 392, width: 500, height: 26, text: "has successfully completed the course of", fontSize: 17, color: INK }),
+    element("text", { x: 150, y: 420, width: 700, height: 42, text: "{{course_name}}", fontSize: 28, fontWeight: "700", color: NAVY }),
+    element("text", { x: 150, y: 464, width: 700, height: 24, text: "Duration: {{course_duration}}   •   Session: {{academic_year}}   •   Examination: {{exam_date}}", fontSize: 15, color: MUTED }),
+    ...figureBox(255, 498, 150, "GRADE", "{{grade}}"),
+    ...figureBox(425, 498, 150, "PERCENTAGE", "{{percentage}}"),
+    ...figureBox(595, 498, 150, "MARKS OBTAINED", "{{total_marks}} / {{maximum_marks}}"),
+    ...landscapeFoot(),
+    element("text", { x: 200, y: 658, width: 600, height: 16, text: "Enrollment No. {{enrollment_no}}   •   Certificate No. {{certificate_id}}", fontSize: 11, color: "#6b7280" }),
+  ];
+}
+
+/** A labelled particular with a hairline under it, the way a filled form reads. */
+function particular(x: number, y: number, w: number, text: string): DocElement[] {
+  return [
+    element("text", { x, y, width: w, height: 26, text, fontSize: 15, align: "left", color: "#0f172a" }),
+    element("shape", { x, y: y + 27, width: w, height: 1, background: "#cbd5e1", z: 2 }),
   ];
 }
 
 function marksheet(): DocElement[] {
   return [
-    element("shape", { x: 20, y: 20, width: 760, height: 1060, border: border("#1e3a8a", 5), z: 1 }),
-    element("text", { x: 100, y: 60, width: 600, height: 60, text: "{{institute}}", fontSize: 34, fontWeight: "800", color: "#1e3a8a" }),
-    element("text", { x: 100, y: 130, width: 600, height: 50, text: "STATEMENT OF MARKS", fontSize: 28, fontWeight: "800" }),
-    element("text", { x: 70, y: 220, width: 650, height: 40, text: "Student Name: {{student_name}}", fontSize: 20, align: "left" }),
-    element("text", { x: 70, y: 265, width: 650, height: 40, text: "Enrollment No: {{enrollment_no}}", fontSize: 18, align: "left" }),
-    element("text", { x: 70, y: 310, width: 650, height: 40, text: "Course: {{course_name}}", fontSize: 18, align: "left" }),
-    element("text", { x: 70, y: 355, width: 650, height: 40, text: "Batch: {{batch_name}}", fontSize: 18, align: "left" }),
-    element("marks-table", { x: 70, y: 420, width: 650, height: 320, fontSize: 16, border: "1px solid #94a3b8" }),
-    element("text", { x: 70, y: 740, width: 650, height: 35, text: "Total: {{total_marks}} / {{maximum_marks}} · Result: {{result}}", fontSize: 18, align: "left" }),
-    element("text", { x: 70, y: 780, width: 320, height: 40, text: "Percentage: {{percentage}}", fontSize: 20, fontWeight: "700", align: "left" }),
-    element("text", { x: 400, y: 780, width: 320, height: 40, text: "Grade: {{grade}}", fontSize: 20, fontWeight: "700", align: "left" }),
-    element("text", { x: 70, y: 950, width: 300, height: 30, text: "Issued {{issue_date}}", fontSize: 15, align: "left" }),
-    element("qr", { x: 600, y: 900, width: 100, height: 100 }),
+    ...frameElements(800, 1100, 0.6),
+    element("shape", { x: 44, y: 50, width: 712, height: 92, background: NAVY, z: 1 }),
+    element("shape", { x: 58, y: 60, width: 72, height: 72, background: "#ffffff", radius: 10, z: 2 }),
+    element("image", { x: 62, y: 64, width: 64, height: 64, src: LOGO, z: 3 }),
+    element("text", { x: 150, y: 62, width: 560, height: 40, text: "{{institute}}", fontSize: 26, fontWeight: "700", color: "#ffffff" }),
+    element("text", { x: 150, y: 104, width: 560, height: 28, text: "STATEMENT OF MARKS", fontSize: 16, fontWeight: "700", color: GOLD }),
+    element("photo", { x: 44, y: 160, width: 96, height: 118, border: border(GOLD, 1.5), text: "Photograph", fontSize: 11, color: "#94a3b8" }),
+    element("text", { x: 150, y: 170, width: 500, height: 28, text: "{{academic_year}}", fontSize: 16, fontWeight: "700", color: NAVY }),
+    element("text", { x: 150, y: 198, width: 500, height: 26, text: "{{exam_name}}", fontSize: 14, color: INK }),
+    element("qr", { x: 660, y: 160, width: 96, height: 96 }),
+    element("text", { x: 640, y: 258, width: 136, height: 18, text: "Scan to verify", fontSize: 11, color: "#64748b" }),
+    ...particular(44, 300, 340, "Name: {{student_name}}"),
+    ...particular(416, 300, 340, "Roll No.: {{roll_no}}"),
+    ...particular(44, 336, 340, "Father's Name: {{father_name}}"),
+    ...particular(416, 336, 340, "Date of Birth: {{dob}}"),
+    ...particular(44, 372, 340, "Course: {{course_name}}"),
+    ...particular(416, 372, 340, "Exam Month-Year: {{exam_date}}"),
+    ...particular(44, 408, 712, "Institute: {{branch_name}}"),
+    element("marks-table", { x: 44, y: 456, width: 712, height: 290, fontSize: 15, border: "1px solid #94a3b8" }),
+    ...figureBox(44, 770, 168, "RESULT", "{{result}}"),
+    ...figureBox(226, 770, 168, "PERCENTAGE", "{{percentage}}"),
+    ...figureBox(408, 770, 168, "GRADE", "{{grade}}"),
+    ...figureBox(590, 770, 166, "MARKS OBTAINED", "{{total_marks}} / {{maximum_marks}}"),
+    ...sealElements(400, 905, 42),
+    element("shape", { x: 536, y: 930, width: 220, height: 2, background: NAVY, z: 2 }),
+    element("text", { x: 516, y: 934, width: 260, height: 20, text: "Signature of Competent Authority", fontSize: 12, color: NAVY }),
+    element("text", { x: 44, y: 934, width: 300, height: 20, text: "Issue date: {{issue_date}}", fontSize: 13, align: "left", color: INK }),
+    element("text", { x: 44, y: 1040, width: 712, height: 18, text: "This statement is issued from the institute's records and can be verified by scanning the code above.", fontSize: 11, color: "#6b7280" }),
   ];
 }
 
@@ -369,21 +486,23 @@ function branchAward(): DocElement[] {
 }
 
 /** What a franchised centre puts on its wall: that it is authorised to run the
- *  institute's courses, for a stated period. */
+ *  institute's courses, for a stated period. The same sheet as the course
+ *  certificate; the middle names the centre rather than a student. */
 function centreCertificate(): DocElement[] {
   return [
-    element("shape", { x: 30, y: 30, width: 940, height: 647, border: border("#7c2d12", 8), radius: 5, z: 1 }),
-    element("text", { x: 180, y: 75, width: 640, height: 50, text: "{{institute}}", fontSize: 26, fontWeight: "700", color: "#7c2d12" }),
-    element("text", { x: 130, y: 130, width: 740, height: 55, text: "CERTIFICATE OF AUTHORISATION", fontSize: 32, fontWeight: "800", color: "#7c2d12" }),
-    element("text", { x: 230, y: 200, width: 540, height: 36, text: "This is to certify that the centre", fontSize: 19 }),
-    element("text", { x: 180, y: 240, width: 640, height: 65, text: "{{branch_name}}", fontSize: 40, fontWeight: "800", color: "#1e3a8a" }),
-    element("text", { x: 180, y: 315, width: 640, height: 36, text: "{{address}}", fontSize: 16, color: "#475569" }),
-    element("text", { x: 180, y: 360, width: 640, height: 70, text: "is an authorised centre of {{institute}} and may conduct its courses and examinations for the academic year {{academic_year}}.", fontSize: 17, color: "#334155" }),
-    element("text", { x: 180, y: 445, width: 640, height: 36, text: "Centre code {{centre_code}} · Valid until {{valid_until}}", fontSize: 16, fontWeight: "700" }),
-    element("text", { x: 80, y: 550, width: 280, height: 30, text: "Certificate ID: {{certificate_id}}", fontSize: 15, align: "left" }),
-    element("text", { x: 380, y: 550, width: 280, height: 30, text: "{{centre_head}}", fontSize: 17, fontWeight: "700" }),
-    element("text", { x: 380, y: 585, width: 280, height: 30, text: "Issued {{issue_date}}", fontSize: 14, color: "#475569" }),
-    element("qr", { x: 790, y: 480, width: 100, height: 100 }),
+    ...frameElements(1000, 707),
+    ...landscapeHead(),
+    element("text", { x: 150, y: 158, width: 700, height: 74, text: "C E R T I F I C A T E", fontSize: 58, fontWeight: "700", color: GOLD_DARK }),
+    element("text", { x: 300, y: 228, width: 400, height: 24, text: "OF AUTHORISATION", fontSize: 15, fontWeight: "700", color: NAVY }),
+    element("text", { x: 300, y: 262, width: 400, height: 28, text: "This is to certify that the centre", fontSize: 19, color: INK }),
+    element("text", { x: 100, y: 296, width: 800, height: 56, text: "{{branch_name}}", fontSize: 34, fontWeight: "700", color: NAVY }),
+    element("shape", { x: 320, y: 356, width: 360, height: 2, background: GOLD, z: 2 }),
+    element("text", { x: 150, y: 366, width: 700, height: 26, text: "{{address}}", fontSize: 15, color: MUTED }),
+    element("text", { x: 150, y: 396, width: 700, height: 62, text: "is an authorised study centre of {{institute}} and may conduct its courses and examinations for the academic year {{academic_year}}.", fontSize: 17, color: INK }),
+    ...figureBox(330, 468, 160, "CENTRE CODE", "{{centre_code}}"),
+    ...figureBox(510, 468, 160, "VALID UNTIL", "{{valid_until}}"),
+    ...landscapeFoot(),
+    element("text", { x: 200, y: 658, width: 600, height: 16, text: "Certificate No. {{certificate_id}}", fontSize: 11, color: "#6b7280" }),
   ];
 }
 
