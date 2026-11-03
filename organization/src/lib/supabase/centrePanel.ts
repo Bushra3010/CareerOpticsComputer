@@ -113,7 +113,7 @@ export const TICKET_TOPICS: Record<string, string[]> = {
   Certificate: ["Certificate not generated", "Correction in certificate", "Marksheet", "Certificate dispatch"],
   "Wallet/Payment": ["Recharge not credited", "Wrong deduction", "Refund", "Payment proof"],
   "Login/Technical": ["Cannot log in", "Password reset", "Page not loading", "Other technical issue"],
-  Franchise: ["Renewal", "Authorization letter", "Centre details change", "New course request"],
+  Franchise: ["Renewal", "Authorization letter", "Centre details change", "New course request", "Website domain"],
   Other: ["General query", "Feedback", "Complaint"],
 };
 

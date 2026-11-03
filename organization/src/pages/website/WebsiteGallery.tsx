@@ -4,6 +4,8 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { DceButton, DceInput, DcePanel, DceSelect, DceBadge } from "@/components/dce/Dce";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { getBranchSettings } from "@/lib/supabase/data";
+import { siteLink } from "@/lib/branchSite";
 import {
   GALLERY_CATEGORIES,
   createGalleryItem,
@@ -18,7 +20,11 @@ import {
   type GalleryPatch,
 } from "@/lib/supabase/gallery";
 
-/** The website's gallery is the organisation's; a branch account only looks. */
+/**
+ * The organisation admin keeps the head-office website's gallery; a centre
+ * keeps its own, shown on its own site (/c/<slug>). Each sees and edits only
+ * its own photos -- RLS holds the same line.
+ */
 const ADMIN_ROLES = ["SUPER_ADMIN", "ORGANIZATION_ADMIN"];
 const ALL = "__all__";
 
@@ -32,6 +38,24 @@ export default function WebsiteGallery() {
   // Working as a centre is the centre's view, not the organisation's.
   const isAdmin = ADMIN_ROLES.includes(String(user?.role || "").toUpperCase()) && !actingAs;
   const orgId = organizationId || user?.organizationId || null;
+  // null: the organisation's photos. A centre's id: that centre's.
+  const branchId = isAdmin ? null : user?.branchId || null;
+  const canEdit = isAdmin || !!branchId;
+  const [siteUrl, setSiteUrl] = useState(isAdmin ? "/gallery.html" : "");
+
+  useEffect(() => {
+    if (!branchId) return;
+    let cancelled = false;
+    getBranchSettings(branchId)
+      .then((result) => {
+        const slug = (result.data as { slug?: string } | null)?.slug;
+        if (!cancelled && slug) setSiteUrl(siteLink(slug));
+      })
+      .catch(() => { /* the link is a convenience; the gallery works without it */ });
+    return () => {
+      cancelled = true;
+    };
+  }, [branchId]);
 
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,14 +65,14 @@ export default function WebsiteGallery() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      setItems(await listGalleryItems({ organizationId: orgId, includeUnpublished: isAdmin }));
+      setItems(await listGalleryItems({ organizationId: orgId, includeUnpublished: canEdit, branchId }));
       setLoadError("");
     } catch (error) {
       setLoadError(errorText(error));
     } finally {
       setLoading(false);
     }
-  }, [orgId, isAdmin]);
+  }, [orgId, canEdit, branchId]);
 
   useEffect(() => {
     load();
@@ -105,9 +129,10 @@ export default function WebsiteGallery() {
   return (
     <AppLayout>
       <div className="space-y-5">
-        {isAdmin && (
+        {canEdit && (
           <UploadPanel
             orgId={orgId}
+            branchId={branchId}
             // New photos go in front of everything already there.
             firstOrder={items.length ? Math.min(...items.map((i) => i.sortOrder)) : 0}
             categories={categories}
@@ -116,20 +141,22 @@ export default function WebsiteGallery() {
         )}
 
         <DcePanel
-          title={`WEBSITE GALLERY${items.length ? ` (${items.length})` : ""}`}
+          title={`${branchId ? "MY WEBSITE GALLERY" : "WEBSITE GALLERY"}${items.length ? ` (${items.length})` : ""}`}
           actions={
-            <a
-              href="/gallery.html"
-              target="_blank"
-              rel="noopener"
-              className="inline-flex items-center gap-1.5 rounded bg-[#38c3be] px-3.5 py-2 text-[13px] font-medium text-white hover:bg-[#2fa9a5]"
-            >
-              <ExternalLink className="h-4 w-4" />
-              View on website
-            </a>
+            siteUrl ? (
+              <a
+                href={siteUrl}
+                target="_blank"
+                rel="noopener"
+                className="inline-flex items-center gap-1.5 rounded bg-[#38c3be] px-3.5 py-2 text-[13px] font-medium text-white hover:bg-[#2fa9a5]"
+              >
+                <ExternalLink className="h-4 w-4" />
+                View on website
+              </a>
+            ) : null
           }
         >
-          {!isAdmin && (
+          {!canEdit && (
             <p className="mb-4 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-[13px] text-amber-800">
               Only the organisation admin can add or change gallery photos. You are viewing the published gallery.
             </p>
@@ -166,9 +193,11 @@ export default function WebsiteGallery() {
               <ImagePlus className="h-10 w-10 text-slate-300" />
               <p className="text-[14px] font-semibold text-slate-700">No photos in the gallery yet</p>
               <p className="max-w-sm text-[12.5px] text-slate-500">
-                {isAdmin
-                  ? "Upload photos of classrooms, the computer lab, events and students above. They appear on the website's Gallery page and home page."
-                  : "Photos added by the organisation admin will appear here."}
+                {branchId
+                  ? "Upload photos of your classrooms, computer lab, events and students above. They appear on your centre's website; until then it shows the head office's photos."
+                  : isAdmin
+                    ? "Upload photos of classrooms, the computer lab, events and students above. They appear on the website's Gallery page and home page."
+                    : "Photos added by the organisation admin will appear here."}
               </p>
             </div>
           ) : (
@@ -177,7 +206,7 @@ export default function WebsiteGallery() {
                 <PhotoCard
                   key={item.id}
                   item={item}
-                  canEdit={isAdmin}
+                  canEdit={canEdit}
                   categories={categories}
                   first={index === 0}
                   last={index === visible.length - 1}
@@ -208,11 +237,13 @@ function CategoryList({ id, extra }: { id: string; extra: string[] }) {
 
 function UploadPanel({
   orgId,
+  branchId,
   firstOrder,
   categories,
   onUploaded,
 }: {
   orgId: string | null;
+  branchId: string | null;
   firstOrder: number;
   categories: string[];
   onUploaded: (items: GalleryItem[]) => void;
@@ -264,10 +295,11 @@ function UploadPanel({
     // One at a time: a classroom's uplink is often a phone hotspot.
     for (const [index, p] of queue.entries()) {
       try {
-        const imageUrl = await uploadGalleryImage(p.file);
+        const imageUrl = await uploadGalleryImage(p.file, branchId);
         created.push(
           await createGalleryItem({
             organizationId: orgId,
+            branchId,
             imageUrl,
             title: p.title,
             category,

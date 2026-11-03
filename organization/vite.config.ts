@@ -25,9 +25,13 @@ function cmsConfig(env: Record<string, string>) {
 /** The website's React renderer: website/render.tsx. */
 type WebsiteRenderer = { pageNames: string[]; renderPage: (name: string) => string | null };
 
-/** Every page of the website, named for the ERP's page picker. */
+/**
+ * Every page of the website, named for the ERP's page picker. Not the centre
+ * sites' page (site.html): it is filled in the browser per centre, and
+ * edited from each centre's My Website, not from Website Content.
+ */
 function websitePages(site: WebsiteRenderer) {
-  return site.pageNames.map((name) => {
+  return site.pageNames.filter((name) => name !== "site").map((name) => {
     const html = site.renderPage(name) ?? "";
     const h1 = /<h1[^>]*>([\s\S]*?)<\/h1>/i.exec(html)?.[1] ?? "";
     const heading = h1.replace(/<[^>]+>/g, " ").replace(/&amp;/g, "&").replace(/&[a-z#0-9]+;/gi, " ").replace(/\s+/g, " ").trim();
@@ -102,7 +106,8 @@ function website(env: Record<string, string>): Plugin {
             res.setHeader("Content-Type", "application/json");
             return res.end(JSON.stringify(websitePages(await devRenderer(server))));
           }
-          const page = url === "/" ? "index" : /^\/([^/]+)\.(html|php)$/.exec(url)?.[1];
+          // /c/<slug> is a centre's site, as vercel.json rewrites it on the deploy.
+          const page = url === "/" ? "index" : /^\/c\/[^/]+\/?$/.test(url) ? "site" : /^\/([^/]+)\.(html|php)$/.exec(url)?.[1];
           if (page) {
             const html = (await devRenderer(server)).renderPage(page);
             if (html !== null) {
@@ -139,6 +144,7 @@ function website(env: Record<string, string>): Plugin {
         `${APP_BASE.slice(0, -1)}  ${APP_BASE}  301`,
         `${APP_BASE}*  ${APP_BASE}index.html  200`,
         ...site.pageNames.map((p) => `/${p}.php  /${p}.html  301`),
+        "/c/*  /site.html  200",
       ];
       fs.writeFileSync(path.join(distDir, "_redirects"), redirects.join("\n") + "\n");
     },

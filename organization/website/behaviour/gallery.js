@@ -35,7 +35,14 @@
     var cfg = window.CMS_CONFIG || {};
     if (!cfg.url || !cfg.key) return Promise.reject(new Error("not configured"));
     var url = cfg.url + "/rest/v1/gallery_items?" + SELECT + (limit ? "&limit=" + limit : "");
-    return fetch(url, { headers: { apikey: cfg.key, Authorization: "Bearer " + cfg.key } })
+    var get = function (u) {
+      return fetch(u, { headers: { apikey: cfg.key, Authorization: "Bearer " + cfg.key } });
+    };
+    // The organisation's own photos only: a centre's photos (branchId set)
+    // belong on that centre's site. A database without the branchId column
+    // yet (branch-sites.sql not run) answers 400, and has only these anyway.
+    return get(url + "&branchId=is.null")
+      .then(function (r) { return r.status === 400 ? get(url) : r; })
       .then(function (r) {
         if (!r.ok) throw new Error("HTTP " + r.status);
         return r.json();

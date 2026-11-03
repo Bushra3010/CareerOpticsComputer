@@ -5,12 +5,18 @@
  *
  * The images go to the public `website` bucket under gallery/, the same
  * bucket Website Content uploads to, so the website shows them by plain URL.
+ *
+ * A row with no branchId is the organisation's (the head-office website); a
+ * centre's own photos carry its branchId and show on its site, /c/<slug>
+ * (supabase/schema/branch-sites.sql). A centre's files go under
+ * gallery/branches/<branchId>/, the only folder its login may write.
  */
 import { supabase } from "@/lib/supabase/client";
 
 export type GalleryItem = {
   id: string;
   organizationId: string;
+  branchId?: string | null;
   title: string | null;
   category: string | null;
   imageUrl: string;
@@ -101,11 +107,12 @@ export async function compressImage(file: File): Promise<Blob> {
 const EXT: Record<string, string> = { "image/webp": "webp", "image/jpeg": "jpg", "image/png": "png" };
 
 /** Checks, compresses and uploads one photo; returns its public URL. */
-export async function uploadGalleryImage(file: File): Promise<string> {
+export async function uploadGalleryImage(file: File, branchId?: string | null): Promise<string> {
   validateImageFile(file);
   const blob = await compressImage(file);
   const type = blob.type || file.type;
-  const path = `gallery/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${EXT[type] || "jpg"}`;
+  const folder = branchId ? `gallery/branches/${branchId}` : "gallery";
+  const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${EXT[type] || "jpg"}`;
   const { error } = await supabase.storage.from(BUCKET).upload(path, blob, { contentType: type, upsert: false, cacheControl: "31536000" });
   if (error) throw new Error(describe(error));
   return supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
@@ -121,22 +128,38 @@ export function storagePathOf(imageUrl: string): string | null {
 const byDisplayOrder = (a: GalleryItem, b: GalleryItem) =>
   a.sortOrder - b.sortOrder || b.createdAt.localeCompare(a.createdAt);
 
+/** branch-sites.sql adds gallery_items.branchId; until it runs, there are only organisation photos. */
+const noBranchColumn = (error: { code?: string; message: string }) =>
+  (error.code === "42703" || error.code === "PGRST204" || /column/i.test(error.message)) && /branchId/.test(error.message);
+
 /**
  * The gallery in display order -- the order the website uses. An admin also
  * gets hidden photos, which RLS returns only for their own organisation; the
  * organisation filter keeps another organisation's published photos out.
+ *
+ * `branchId`: null for the organisation's own photos, a branch's id for that
+ * centre's, left out for both.
  */
-export async function listGalleryItems(opts: { organizationId?: string | null; includeUnpublished?: boolean } = {}): Promise<GalleryItem[]> {
-  let query = supabase.from("gallery_items").select("*");
-  if (opts.organizationId) query = query.eq("organizationId", opts.organizationId);
-  if (!opts.includeUnpublished) query = query.eq("isPublished", true);
-  const { data, error } = await query.order("sortOrder", { ascending: true }).order("createdAt", { ascending: false });
-  if (error) throw new Error(describe(error));
+export async function listGalleryItems(
+  opts: { organizationId?: string | null; includeUnpublished?: boolean; branchId?: string | null } = {},
+): Promise<GalleryItem[]> {
+  const run = (scoped: boolean) => {
+    let query = supabase.from("gallery_items").select("*");
+    if (opts.organizationId) query = query.eq("organizationId", opts.organizationId);
+    if (!opts.includeUnpublished) query = query.eq("isPublished", true);
+    if (scoped && opts.branchId === null) query = query.is("branchId", null);
+    if (scoped && opts.branchId) query = query.eq("branchId", opts.branchId);
+    return query.order("sortOrder", { ascending: true }).order("createdAt", { ascending: false });
+  };
+  let { data, error } = await run(opts.branchId !== undefined);
+  if (error && opts.branchId === null && noBranchColumn(error)) ({ data, error } = await run(false));
+  if (error) throw new Error(noBranchColumn(error) ? "Centre photos need supabase/schema/branch-sites.sql. Run it in the Supabase SQL editor." : describe(error));
   return ((data ?? []) as GalleryItem[]).slice().sort(byDisplayOrder);
 }
 
 export async function createGalleryItem(item: {
   organizationId: string;
+  branchId?: string | null;
   imageUrl: string;
   title?: string | null;
   category?: string | null;
@@ -147,6 +170,9 @@ export async function createGalleryItem(item: {
     .from("gallery_items")
     .insert({
       organizationId: item.organizationId,
+      // Only sent for a centre's photo, so an organisation upload still works
+      // before branch-sites.sql adds the column.
+      ...(item.branchId ? { branchId: item.branchId } : {}),
       imageUrl: item.imageUrl,
       title: item.title?.trim() || null,
       category: item.category?.trim() || null,

@@ -2990,6 +2990,13 @@ export interface BranchWebsiteRow {
   renewalDate: string;
   phone: string;
   whatsapp: string;
+  /** The free link's name, /c/<slug>; empty until branch-sites.sql runs. */
+  slug: string;
+  /** The centre's own domain, and where connecting it on Vercel stands. */
+  customDomain: string;
+  domainStatus: "NONE" | "PENDING" | "LIVE" | "ERROR";
+  domainMessage: string;
+  siteEnabled: boolean;
 }
 
 /** `https://` and any trailing slash stripped, so the column reads as a host. */
@@ -3013,15 +3020,16 @@ export async function getBranchWebsites(organizationId: string | null) {
   if (!rows.length) return { success: true as const, data: [] as BranchWebsiteRow[] };
 
   const ids = rows.map((b) => String(b.id));
-  // The date and domain columns arrive with add-website-settings-fields.sql;
-  // without them the register still lists every branch and its numbers.
-  const settingsSelect = async () => {
-    const wanted = await supabase
-      .from("branch_settings")
-      .select("branchId, siteName, primaryDomain, subdomain, registrationDate, expiryDate, renewalDate")
-      .in("branchId", ids);
-    if (!wanted.error) return wanted;
-    return supabase.from("branch_settings").select("branchId").in("branchId", ids);
+  // The date and domain columns arrive with add-website-settings-fields.sql,
+  // the centre-site ones with branch-sites.sql; without them the register
+  // still lists every branch and its numbers.
+  const settingsSelect = async (): Promise<{ data: Record<string, unknown>[] }> => {
+    const base = "branchId, siteName, primaryDomain, subdomain, registrationDate, expiryDate, renewalDate";
+    for (const columns of [`${base}, slug, customDomain, domainStatus, domainMessage, siteEnabled`, base, "branchId"]) {
+      const result = await supabase.from("branch_settings").select(columns).in("branchId", ids);
+      if (!result.error) return { data: (result.data ?? []) as unknown as Record<string, unknown>[] };
+    }
+    return { data: [] };
   };
   const { data: settings } = await settingsSelect();
 
@@ -3047,6 +3055,13 @@ export async function getBranchWebsites(organizationId: string | null) {
         renewalDate: String(setting.renewalDate ?? ""),
         phone: String(b.phone ?? ""),
         whatsapp: String(b.whatsappNumber ?? b.phone ?? ""),
+        slug: String(setting.slug ?? ""),
+        customDomain: String(setting.customDomain ?? ""),
+        domainStatus: (["PENDING", "LIVE", "ERROR"].includes(String(setting.domainStatus))
+          ? setting.domainStatus
+          : "NONE") as BranchWebsiteRow["domainStatus"],
+        domainMessage: String(setting.domainMessage ?? ""),
+        siteEnabled: setting.siteEnabled !== false,
       };
     }),
   };
@@ -3074,7 +3089,9 @@ export async function updateBranchSettings(branchId: string | null, input: Recor
   const dropped: string[] = [];
 
   for (let attempt = 0; attempt < Object.keys(input).length + 1; attempt++) {
-    const { data, error } = await supabase.from("branch_settings").upsert(payload).select("*").single();
+    // Matched on branchId, the row's natural key: the form never sends the
+    // row's own id, so a match on the primary key would try a second insert.
+    const { data, error } = await supabase.from("branch_settings").upsert(payload, { onConflict: "branchId" }).select("*").single();
     if (!error) return { success: true, data, droppedColumns: dropped };
 
     const missing =

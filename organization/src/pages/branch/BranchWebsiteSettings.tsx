@@ -14,6 +14,9 @@ import { pickImage } from "@/lib/export";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { getBranchSettings, updateBranchSettings } from "@/lib/supabase/data";
+import { MyWebsitePanel } from "@/components/branch/MyWebsitePanel";
+import { slugError } from "@/lib/branchSite";
+import { siteError } from "@/lib/supabase/branchSites";
 
 /**
  * Every field the form edits, not just the seven that used to be here - the rest
@@ -55,6 +58,13 @@ const DEFAULTS = {
   linkedin: "",
   youtube: "",
   whatsapp: "",
+
+  // The centre's own site (supabase/schema/branch-sites.sql), edited in My
+  // Website above the tabs. The domain and on/off switch are not here: the
+  // head office sets those, and the database keeps a centre's hands off them.
+  slug: "",
+  aboutText: "",
+  highlights: "",
 };
 
 const STORAGE_KEY = "erp-website-settings";
@@ -86,13 +96,15 @@ export default function BranchWebsiteSettings() {
     return () => { cancelled = true; };
   }, [toast, user?.branchId]);
 
-  const persist = (next: Record<string, any>) => {
-    setForm(next);
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch { /* quota */ }
-  };
+  // Functional, so two fields set in one go (a domain and its status) both land.
+  const setField = (key: string, value: unknown) =>
+    setForm((prev) => {
+      const next = { ...prev, [key]: value };
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch { /* quota */ }
+      return next;
+    });
 
-  const set = <K extends keyof typeof DEFAULTS>(key: K, value: (typeof DEFAULTS)[K]) =>
-    persist({ ...form, [key]: value });
+  const set = <K extends keyof typeof DEFAULTS>(key: K, value: (typeof DEFAULTS)[K]) => setField(key, value);
 
   const upload = async (field: "logo" | "favicon" | "banner", accept: string) => {
     const picked = await pickImage(accept);
@@ -110,6 +122,11 @@ export default function BranchWebsiteSettings() {
       toast({ title: "Website name required", description: "Give the site a name before saving.", variant: "destructive" });
       return;
     }
+    const slugProblem = form.slug ? slugError(form.slug) : null;
+    if (slugProblem) {
+      toast({ title: "Check the website link", description: slugProblem, variant: "destructive" });
+      return;
+    }
     try {
       // Send the whole form. This used to send only seven fields, so contact
       // details, social links, banner copy, the portal toggles and the domain
@@ -121,7 +138,7 @@ export default function BranchWebsiteSettings() {
       if (result.droppedColumns?.length) {
         toast({
           title: "Some fields could not be saved",
-          description: `${result.droppedColumns.join(", ")} - run supabase/schema/add-website-settings-fields.sql.`,
+          description: `${result.droppedColumns.join(", ")} - run supabase/schema/add-website-settings-fields.sql and branch-sites.sql.`,
           variant: "destructive",
         });
       }
@@ -129,7 +146,7 @@ export default function BranchWebsiteSettings() {
     } catch (error) {
       toast({
         title: "Failed to save settings",
-        description: error instanceof Error ? error.message : undefined,
+        description: siteError(error).message,
         variant: "destructive",
       });
     }
@@ -171,6 +188,8 @@ export default function BranchWebsiteSettings() {
           </Button>
         }
       />
+
+      {user?.branchId ? <MyWebsitePanel branchId={user.branchId} form={form} set={setField} /> : null}
 
       <Tabs defaultValue="general" className="space-y-6">
         <TabsList className="grid w-full max-w-xl grid-cols-3">

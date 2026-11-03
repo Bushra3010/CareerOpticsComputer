@@ -3,6 +3,14 @@
         {
             "source": "/computercentre/:path*",
             "destination": "/computercentre/index.html"
+        },
+        {
+            "source": "/c/:slug",
+            "destination": "/site.html"
+        },
+        {
+            "source": "/c/:slug/",
+            "destination": "/site.html"
         }
     ],
     "redirects": [

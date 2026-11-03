@@ -13,9 +13,11 @@ vi.mock("@/hooks/use-toast", () => ({ useToast: () => ({ toast }) }));
 vi.mock("@/components/layout/AppLayout", () => ({
   AppLayout: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
-vi.mock("@/contexts/AuthContext", () => ({
-  useAuth: () => ({ user: { id: "u1", role: "ORGANIZATION_ADMIN", organizationId: "org1" }, organizationId: "org1", actingAs: null }),
-}));
+const ADMIN = { user: { id: "u1", role: "ORGANIZATION_ADMIN", organizationId: "org1" }, organizationId: "org1", actingAs: null };
+const auth = { current: ADMIN as Record<string, unknown> };
+vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => auth.current }));
+// A centre's page looks up its own site's link; nothing else from here is used.
+vi.mock("@/lib/supabase/data", () => ({ getBranchSettings: async () => ({ success: true, data: { slug: "ara-main" } }) }));
 
 // Only the read is faked; everything else is the module itself.
 const listGalleryItems = vi.fn();
@@ -84,6 +86,10 @@ describe("gallery module", () => {
 });
 
 describe("Website Gallery page", () => {
+  beforeEach(() => {
+    auth.current = ADMIN;
+  });
+
   async function renderPage(items: GalleryItem[]) {
     listGalleryItems.mockReset().mockResolvedValue(items);
     render(<MemoryRouter><WebsiteGallery /></MemoryRouter>);
@@ -92,7 +98,7 @@ describe("Website Gallery page", () => {
   it("shows the empty state when there are no photos", async () => {
     await renderPage([]);
     expect(await screen.findByText("No photos in the gallery yet")).toBeInTheDocument();
-    expect(listGalleryItems).toHaveBeenCalledWith({ organizationId: "org1", includeUnpublished: true });
+    expect(listGalleryItems).toHaveBeenCalledWith({ organizationId: "org1", includeUnpublished: true, branchId: null });
     expect(screen.getByText("ADD PHOTOS")).toBeInTheDocument();
   });
 
@@ -107,5 +113,17 @@ describe("Website Gallery page", () => {
     expect(screen.getByRole("option", { name: "Computer Lab" })).toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: "Move up" })[0]).toBeDisabled();
     expect(screen.getByText("WEBSITE GALLERY (2)")).toBeInTheDocument();
+  });
+
+  it("lets a centre manage its own photos, and links to its own site", async () => {
+    auth.current = { user: { id: "c1", role: "BRANCH_ADMIN", organizationId: "org1", branchId: "b1" }, organizationId: "org1", actingAs: null };
+    await renderPage([]);
+    expect(await screen.findByText("No photos in the gallery yet")).toBeInTheDocument();
+    expect(listGalleryItems).toHaveBeenCalledWith({ organizationId: "org1", includeUnpublished: true, branchId: "b1" });
+    expect(screen.getByText("ADD PHOTOS")).toBeInTheDocument();
+    expect(await screen.findByRole("link", { name: /view on website/i })).toHaveAttribute(
+      "href",
+      "https://career-optics-computer.vercel.app/c/ara-main",
+    );
   });
 });

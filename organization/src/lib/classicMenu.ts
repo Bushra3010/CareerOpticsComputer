@@ -107,7 +107,12 @@ const FRANCHISE_PLAN: Plan = [
   {
     title: "My Centre",
     icon: Store,
-    urls: ["/centre/profile", "/branch/notice-board", "/branch/website-settings"],
+    urls: [
+      "/centre/profile",
+      "/branch/notice-board",
+      ["/branch/website-settings", "My Website"],
+      ["/website/gallery", "Website Gallery"],
+    ],
   },
 ];
 

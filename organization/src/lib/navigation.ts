@@ -363,6 +363,9 @@ const franchiseMenu: MenuItem[] = [
     "/branch/notice-board",
     "/branch/website-settings",
   ], "My Branch"),
+  // A centre keeps its own website's photos; the gallery page scopes itself
+  // to the centre's branch (and RLS holds it there).
+  ...scope("Main Website", ["/website/gallery"], "My Website"),
   ...scope("Expense Management", [
     "/expense/deposit-voucher",
     "/expense/expense-voucher",
