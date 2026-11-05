@@ -123,7 +123,7 @@ describe("Website Gallery page", () => {
     expect(screen.getByText("ADD PHOTOS")).toBeInTheDocument();
     expect(await screen.findByRole("link", { name: /view on website/i })).toHaveAttribute(
       "href",
-      "https://career-optics-computer.vercel.app/c/ara-main",
+      "https://www.careeropticscomputer.in/c/ara-main",
     );
   });
 });

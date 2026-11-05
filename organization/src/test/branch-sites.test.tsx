@@ -80,7 +80,7 @@ describe("resolveSite", () => {
   });
 
   it("is nothing on the head office's hosts, so the head-office site stays as it is", () => {
-    for (const host of ["career-optics-computer.vercel.app", "localhost", "127.0.0.1", "[::1]", "preview-abc.vercel.app", "app.localhost"]) {
+    for (const host of ["careeropticscomputer.in", "www.careeropticscomputer.in", "WWW.CareerOpticsComputer.in:443", "career-optics-computer.vercel.app", "localhost", "127.0.0.1", "[::1]", "preview-abc.vercel.app", "app.localhost"]) {
       expect(isHeadOfficeHost(host)).toBe(true);
       expect(resolveSite("/", host)).toBeNull();
       expect(resolveSite("/about.html", host)).toBeNull();
@@ -182,7 +182,7 @@ describe("My Website (centre)", () => {
     render(<BranchWebsiteSettings />);
     const link = await screen.findByTestId("site-link");
     expect(link).toHaveTextContent(siteLink("ara-main"));
-    expect(link).toHaveAttribute("href", "https://career-optics-computer.vercel.app/c/ara-main");
+    expect(link).toHaveAttribute("href", "https://www.careeropticscomputer.in/c/ara-main");
     expect(screen.getByRole("button", { name: /copy/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /^open$/i })).toHaveAttribute("href", siteLink("ara-main"));
     expect(screen.getByRole("link", { name: /share on whatsapp/i }).getAttribute("href")).toContain(encodeURIComponent(siteLink("ara-main")));

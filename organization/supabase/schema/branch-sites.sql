@@ -1,7 +1,7 @@
 -- =====================================================================
 -- A website for every franchise centre.
 --
---   * Free link:   https://career-optics-computer.vercel.app/c/<slug>
+--   * Free link:   https://www.careeropticscomputer.in/c/<slug>
 --   * Own domain:  the centre's domain, pointed at Vercel and added to the
 --                  project by the head office (Edge Function manage-domain).
 --

@@ -9,14 +9,23 @@
  */
 
 /** Where the head-office website and every centre's free link live. */
-export const MAIN_SITE_HOST = "career-optics-computer.vercel.app";
+export const MAIN_SITE_HOST = "www.careeropticscomputer.in";
 export const MAIN_SITE_ORIGIN = `https://${MAIN_SITE_HOST}`;
 
 /**
  * Hosts that serve the head-office website rather than a centre's. Add the
  * organisation's own domain here (and in site.js) when it gets one.
  */
-export const HEAD_OFFICE_HOSTS = [MAIN_SITE_HOST, "localhost", "127.0.0.1", "[::1]", "::1"];
+export const HEAD_OFFICE_HOSTS = [
+  // Compared after normaliseHost, which drops "www." -- so this covers both
+  // careeropticscomputer.in and www.careeropticscomputer.in.
+  "careeropticscomputer.in",
+  "career-optics-computer.vercel.app",
+  "localhost",
+  "127.0.0.1",
+  "[::1]",
+  "::1",
+];
 
 /** What a centre points its domain at, as Vercel asks. */
 export const DNS_A_RECORD = "76.76.21.21";

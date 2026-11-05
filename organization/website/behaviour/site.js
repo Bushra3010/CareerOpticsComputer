@@ -19,13 +19,13 @@
   "use strict";
 
   var CFG = window.SITE_CONFIG || {};
-  var MAIN = CFG.mainOrigin || "https://career-optics-computer.vercel.app";
+  var MAIN = CFG.mainOrigin || "https://www.careeropticscomputer.in";
   var BRAND = CFG.brand || "Career Optics Computer Academy";
   var ICON = CFG.icons || {};
 
   /* ---------- which centre (mirrors src/lib/branchSite.ts) ---------- */
 
-  var HOSTS = CFG.hosts || ["career-optics-computer.vercel.app", "localhost", "127.0.0.1", "[::1]", "::1"];
+  var HOSTS = CFG.hosts || ["careeropticscomputer.in", "career-optics-computer.vercel.app", "localhost", "127.0.0.1", "[::1]", "::1"];
 
   function normaliseHost(input) {
     return String(input || "")

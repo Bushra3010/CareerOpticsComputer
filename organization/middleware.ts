@@ -9,7 +9,8 @@
  * keeps what the visitor typed.
  *
  * Left alone:
- *  - the head office's hosts (career-optics-computer.vercel.app, preview
+ *  - the head office's hosts (careeropticscomputer.in with or without www,
+ *    career-optics-computer.vercel.app, preview
  *    deployments, localhost): they serve the website exactly as before;
  *  - the ERP (/computercentre), images, assets and /c/<slug> (vercel.json
  *    already sends that to /site.html), and any file with an extension other
@@ -27,7 +28,7 @@ export const config = {
 };
 
 /** Hosts that serve the head-office website rather than a centre's. */
-const HEAD_OFFICE_HOSTS = ["career-optics-computer.vercel.app", "localhost", "127.0.0.1", "[::1]", "::1"];
+const HEAD_OFFICE_HOSTS = ["careeropticscomputer.in", "career-optics-computer.vercel.app", "localhost", "127.0.0.1", "[::1]", "::1"];
 
 /** Lowercase, no port, trailing dot or leading `www.`. */
 function normaliseHost(input: string): string {
