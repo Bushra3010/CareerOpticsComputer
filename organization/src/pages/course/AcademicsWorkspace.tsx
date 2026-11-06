@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { BookOpen, Calendar, Download, Pencil, Plus, Trash2, Upload, X } from "lucide-react";
+import { BookOpen, Calendar, Download, ImagePlus, Loader2, Pencil, Plus, Trash2, Upload, X } from "lucide-react";
+import { uploadWebsiteImage } from "@/lib/supabase/gallery";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -54,6 +55,10 @@ type Course = {
   durationMonths: number;
   baseFee?: number;
   isActive: boolean;
+  /** The website's card photo, its on/off switch and its own page (website-courses.sql). */
+  image?: string | null;
+  showOnWebsite?: boolean;
+  websitePage?: string | null;
 };
 
 type Batch = {
@@ -141,6 +146,9 @@ export default function AcademicsWorkspace() {
       durationMonths: String(c.durationMonths ?? ""),
       baseFee: c.baseFee === undefined || c.baseFee === null ? "" : String(c.baseFee),
       isActive: c.isActive ? "yes" : "no",
+      image: c.image || "",
+      showOnWebsite: c.showOnWebsite === false ? "no" : "yes",
+      websitePage: c.websitePage || "",
     });
   };
 
@@ -375,8 +383,24 @@ export default function AcademicsWorkspace() {
           durationMonths: Number(d.durationMonths) || 1,
           baseFee: Number(d.baseFee) || 0,
           isActive: d.isActive !== "no",
+          image: d.image?.trim() || null,
+          showOnWebsite: d.showOnWebsite !== "no",
+          websitePage: d.websitePage?.trim().toLowerCase() || null,
         };
-        await (editingId ? updateCourse(editingId, payload) : createCourse(orgId, payload));
+        const page = payload.websitePage;
+        if (page && !/^[a-z0-9_-]+\.html$/.test(page)) {
+          toast({ title: "Check the website page", description: "Give just the page's file name, like tally-prime.html — or leave it empty.", variant: "destructive" });
+          setSaving(false);
+          return;
+        }
+        const saved = await (editingId ? updateCourse(editingId, payload) : createCourse(orgId, payload));
+        if (saved.droppedColumns?.length) {
+          toast({
+            title: "Saved without the website details",
+            description: "Run supabase/schema/website-courses.sql in Supabase to keep the photo and website settings.",
+            variant: "destructive",
+          });
+        }
       } else {
         const payload = {
           courseId: d.courseId,
@@ -610,9 +634,32 @@ export default function AcademicsWorkspace() {
                   <Field l="Description">
                     <Input
                       value={d.description || ""}
+                      placeholder="One line for the website card"
                       onChange={(e) => setD((p) => ({ ...p, description: e.target.value }))}
                     />
                   </Field>
+                  <Field l="Show on website">
+                    <Select
+                      value={d.showOnWebsite === "no" ? "no" : "yes"}
+                      onValueChange={(v) => setD((p) => ({ ...p, showOnWebsite: v }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="yes">Yes — list it on the courses page</SelectItem>
+                        <SelectItem value="no">No — ERP only</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                  <Field l="Website page (optional)">
+                    <Input
+                      value={d.websitePage || ""}
+                      placeholder="e.g. tally-prime.html"
+                      onChange={(e) => setD((p) => ({ ...p, websitePage: e.target.value }))}
+                    />
+                  </Field>
+                  <CoursePhoto value={d.image || ""} onChange={(url) => setD((p) => ({ ...p, image: url }))} />
                 </>
               ) : (
                 <>
@@ -782,6 +829,60 @@ export default function AcademicsWorkspace() {
         </AlertDialogContent>
       </AlertDialog>
     </AppLayout>
+  );
+}
+
+/**
+ * The course card's photo on the website: uploaded to the public `website`
+ * bucket under courses/, previewed here, and saved with the course.
+ */
+function CoursePhoto({ value, onChange }: { value: string; onChange: (url: string) => void }) {
+  const { toast } = useToast();
+  const [busy, setBusy] = useState(false);
+  const input = useRef<HTMLInputElement>(null);
+  const upload = async (file: File | undefined) => {
+    if (input.current) input.current.value = ""; // the same file can be picked again
+    if (!file) return;
+    setBusy(true);
+    try {
+      onChange(await uploadWebsiteImage(file, "courses"));
+    } catch (e) {
+      toast({ title: "Photo not uploaded", description: e instanceof Error ? e.message : undefined, variant: "destructive" });
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="space-y-2 md:col-span-3">
+      <Label>Website photo</Label>
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex h-20 w-32 items-center justify-center overflow-hidden rounded-lg border bg-muted">
+          {value ? (
+            <img src={value} alt="Course photo" className="h-full w-full object-cover" />
+          ) : (
+            <ImagePlus className="h-6 w-6 text-muted-foreground" />
+          )}
+        </div>
+        <input
+          ref={input}
+          type="file"
+          accept="image/png,image/jpeg,image/webp"
+          className="hidden"
+          aria-label="Course photo file"
+          onChange={(e) => upload(e.target.files?.[0])}
+        />
+        <Button type="button" variant="outline" className="gap-2" onClick={() => input.current?.click()} disabled={busy}>
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+          {value ? "Change photo" : "Upload photo"}
+        </Button>
+        {value ? (
+          <Button type="button" variant="ghost" className="text-destructive" onClick={() => onChange("")}>
+            Remove
+          </Button>
+        ) : null}
+        <p className="w-full text-xs text-muted-foreground">Shown on the website's course card. A wide photo, about 800×500, looks best.</p>
+      </div>
+    </div>
   );
 }
 

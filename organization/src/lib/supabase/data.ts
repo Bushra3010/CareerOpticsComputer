@@ -724,6 +724,34 @@ function describeCategoryRejection(error: { code?: string; message?: string }): 
   return `"${typed}" is not one of the categories this database accepts yet. Run supabase/schema/course-category-free-text.sql to allow typed categories, or pick one of: ${KNOWN_COURSE_CATEGORIES.join(", ")}.`;
 }
 
+/** The course columns website-courses.sql adds; a database without them still saves the rest. */
+const COURSE_WEBSITE_COLUMNS = ["image", "showOnWebsite", "websitePage"];
+
+/**
+ * Runs a course write, and when the database has not got the website
+ * columns yet, runs it again without them and says which were left out --
+ * so a course still saves before website-courses.sql is run.
+ */
+async function writeCourse(
+  payload: Record<string, unknown>,
+  write: (row: Record<string, unknown>) => PromiseLike<{ data: unknown; error: { message: string; code?: string } | null }>,
+) {
+  let { data, error } = await write(payload);
+  const dropped: string[] = [];
+  if (error && COURSE_WEBSITE_COLUMNS.some((c) => c in payload && error!.message.includes(c))) {
+    const rest = { ...payload };
+    for (const c of COURSE_WEBSITE_COLUMNS) {
+      if (c in rest) {
+        delete rest[c];
+        dropped.push(c);
+      }
+    }
+    ({ data, error } = await write(rest));
+  }
+  if (error) throw new Error(describeCategoryRejection(error));
+  return { data: data as Record<string, unknown>, droppedColumns: dropped };
+}
+
 export async function createCourse(organizationId: string | null, input: Record<string, unknown>) {
   const { durationMonths, ...rest } = input;
   const payload: Record<string, unknown> = { ...rest, organizationId };
@@ -732,9 +760,10 @@ export async function createCourse(organizationId: string | null, input: Record<
     payload.durationValue = Number(durationMonths) || 1;
     payload.durationUnit = "MONTHS";
   }
-  const { data, error } = await supabase.from("courses").insert(payload).select("*").single();
-  if (error) throw new Error(describeCategoryRejection(error));
-  return { success: true, data: mapCourse(data as Record<string, unknown>) };
+  const { data, droppedColumns } = await writeCourse(payload, (row) =>
+    supabase.from("courses").insert(row).select("*").single(),
+  );
+  return { success: true, data: mapCourse(data), droppedColumns };
 }
 
 export async function updateCourse(id: string, input: Record<string, unknown>) {
@@ -744,8 +773,9 @@ export async function updateCourse(id: string, input: Record<string, unknown>) {
     payload.durationValue = Number(durationMonths) || 1;
     payload.durationUnit = "MONTHS";
   }
-  const { data, error } = await supabase.from("courses").update(payload).eq("id", id).select("*").single();
-  if (error) throw new Error(describeCategoryRejection(error));
+  const { data, droppedColumns } = await writeCourse(payload, (row) =>
+    supabase.from("courses").update(row).eq("id", id).select("*").single(),
+  );
   // Switching a course off takes it back from every branch that had it, so
   // making it active again does not quietly hand it back out.
   if (payload.isActive === false) {
@@ -756,7 +786,7 @@ export async function updateCourse(id: string, input: Record<string, unknown>) {
       .eq("isOffered", true);
     if (takeBackError) throw new Error(takeBackError.message);
   }
-  return { success: true, data: mapCourse(data as Record<string, unknown>) };
+  return { success: true, data: mapCourse(data), droppedColumns };
 }
 
 /** Soft delete, matching the `deletedAt is null` filter used when reading. */

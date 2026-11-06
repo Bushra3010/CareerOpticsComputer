@@ -108,10 +108,17 @@ const EXT: Record<string, string> = { "image/webp": "webp", "image/jpeg": "jpg",
 
 /** Checks, compresses and uploads one photo; returns its public URL. */
 export async function uploadGalleryImage(file: File, branchId?: string | null): Promise<string> {
+  return uploadWebsiteImage(file, branchId ? `gallery/branches/${branchId}` : "gallery");
+}
+
+/**
+ * The same, into any folder of the public `website` bucket the signed-in
+ * user may write -- e.g. `courses` for a course card's photo (head office).
+ */
+export async function uploadWebsiteImage(file: File, folder: string): Promise<string> {
   validateImageFile(file);
   const blob = await compressImage(file);
   const type = blob.type || file.type;
-  const folder = branchId ? `gallery/branches/${branchId}` : "gallery";
   const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${EXT[type] || "jpg"}`;
   const { error } = await supabase.storage.from(BUCKET).upload(path, blob, { contentType: type, upsert: false, cacheControl: "31536000" });
   if (error) throw new Error(describe(error));

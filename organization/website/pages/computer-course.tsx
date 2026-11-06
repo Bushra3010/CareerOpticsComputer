@@ -9,8 +9,16 @@ import js_0023a4f0 from "../behaviour/0023a4f0.js?raw";
 import js_73893071 from "../behaviour/73893071.js?raw";
 import js_c1268ab4 from "../behaviour/c1268ab4.js?raw";
 import js_ea05b2d5 from "../behaviour/ea05b2d5.js?raw";
+import js_courses from "../behaviour/courses.js?raw";
 
-/** computer-course.html */
+/**
+ * computer-course.html
+ *
+ * The cards below are what the page shows when the ERP cannot be reached.
+ * behaviour/courses.js replaces them with the courses the head office lists
+ * in Academics (website-courses.sql), so a course added or re-priced there
+ * shows here on the next load.
+ */
 export default function ComputerCourse() {
   return (
     <html lang="en">
@@ -47,7 +55,8 @@ export default function ComputerCourse() {
                 </span>
               </h2>
             </div>
-            <div id="courseGrid" className="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div id="courseFilters" className="mt-8 flex flex-wrap justify-center gap-2" aria-label="Filter courses by category"></div>
+            <div id="courseGrid" data-db-courses="" className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               <div className="course-card course-item bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-soft" data-category="basic">
                 <div className="relative h-48 overflow-hidden">
                   <img src="image/gs.png" className="course-img w-full h-full object-cover" alt="Google Suite" />
@@ -519,6 +528,7 @@ export default function ComputerCourse() {
         <StyleBlock2 />
         <DivBlock />
         <script dangerouslySetInnerHTML={{ __html: js_ea05b2d5 }} />
+        <script dangerouslySetInnerHTML={{ __html: js_courses }} />
         <script src="https://unpkg.com/typed.js@2.0.16/dist/typed.umd.js"></script>
         <script src="js/script.js"></script>
         <script src="https://cdn.tailwindcss.com"></script>
