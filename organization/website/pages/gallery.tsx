@@ -30,6 +30,7 @@ const ACCOUNT = {
 
 const DOCUMENTS = [
   { file: "sample-certificate", title: "Course Completion Certificate", text: "Issued on completing a course, with a QR code anyone can scan to verify it.", tag: "Student" },
+  { file: "sample-enrollment-slip", title: "Enrollment Slip", text: "Handed over at admission: enrolment number, centre code and course, with a QR that confirms the enrolment.", tag: "Student" },
   { file: "sample-marksheet", title: "Statement of Marks", text: "Subject-wise theory and practical marks, grade and result for every exam.", tag: "Student" },
   { file: "sample-typing-certificate", title: "Computer Typing Certificate", text: "Typing speed in English and Hindi with accuracy, issued on completing a typing course.", tag: "Student" },
   { file: "sample-admit-card", title: "Examination Admit Card", text: "Roll number, exam centre and the paper-wise schedule, on the academy's letterhead.", tag: "Student" },

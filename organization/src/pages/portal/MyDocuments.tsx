@@ -18,11 +18,12 @@ import { admissionPdf } from "@/lib/documents";
 import { blankAdmitCardTemplate, type Exam } from "@/data/admit-card-templates";
 import { getPublicAdmitCard, type PublicAdmitCard } from "@/lib/supabase/examWorkflow";
 import { termLabel, termPlan } from "@/lib/examWorkflow";
-import { studentCardsPdf } from "@/lib/brand/brandDocuments";
+import { enrollmentSlipsPdf, studentCardsPdf } from "@/lib/brand/brandDocuments";
 import { admitCardsPdf } from "@/lib/admit-card-pdf";
 import {
   REQUEST_KINDS,
   asAdmitCardStudent,
+  asEnrollmentSlip,
   asIdCardStudent,
   asStudentDocument,
   feeSummary,
@@ -241,7 +242,11 @@ export default function MyDocuments() {
             <CardHeader><CardTitle>Other documents</CardTitle></CardHeader>
             <CardContent className="space-y-2">
               <div className="flex items-center gap-3 rounded-2xl border border-border/70 p-3">
-                <div className="min-w-0 flex-1"><p className="text-sm font-semibold">Admission summary</p><p className="text-xs text-muted-foreground">Course, batch and enrolment as recorded on {profile ? new Date(profile.admissionDate).toLocaleDateString("en-IN") : "—"}</p></div>
+                <div className="min-w-0 flex-1"><p className="text-sm font-semibold">Enrollment slip</p><p className="text-xs text-muted-foreground">Your enrolment as recorded on {profile ? new Date(profile.admissionDate).toLocaleDateString("en-IN") : "—"}, with a QR that confirms it</p></div>
+                <Button size="sm" variant="outline" onClick={async () => { if (!profile) return; try { await enrollmentSlipsPdf([asEnrollmentSlip(profile)], `enrollment-slip-${profile.enrollmentNo || profile.rollNo}`); toast({ title: "Enrollment slip downloaded" }); } catch (err) { toast({ title: "Could not make the slip", description: err instanceof Error ? err.message : undefined, variant: "destructive" }); } }} disabled={!profile}><Download className="mr-1.5 h-3.5 w-3.5" />PDF</Button>
+              </div>
+              <div className="flex items-center gap-3 rounded-2xl border border-border/70 p-3">
+                <div className="min-w-0 flex-1"><p className="text-sm font-semibold">Admission summary</p><p className="text-xs text-muted-foreground">Course, batch, fees and results on one sheet</p></div>
                 <Button size="sm" variant="outline" onClick={() => { if (!profile) return; admissionPdf(asStudentDocument(profile, invoices, results)); toast({ title: "Admission summary downloaded" }); }} disabled={!profile}><Download className="mr-1.5 h-3.5 w-3.5" />PDF</Button>
               </div>
               <div className="flex items-center gap-3 rounded-2xl border border-border/70 p-3">

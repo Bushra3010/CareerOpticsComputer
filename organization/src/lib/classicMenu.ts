@@ -167,7 +167,7 @@ const ADMIN_PLAN: Plan = [
   {
     title: "Certificates",
     icon: Printer,
-    urls: ["/centre/orders", "/certificate/approvals", "/certificate/issue", "/cards/generate-id", "/certificate/generate", ["/certificate/verification-letter", "Verification Letter"], ["/certificate/typing", "Typing Certificate"]],
+    urls: ["/centre/orders", "/certificate/approvals", "/certificate/issue", "/cards/generate-id", "/certificate/generate", ["/certificate/verification-letter", "Verification Letter"], ["/certificate/typing", "Typing Certificate"], ["/students/enrollment-slip", "Enrollment Slip"]],
   },
   { title: "Awards", icon: Trophy, urls: ["/centre/awards"] },
   { title: "Help & Support", icon: Headphones, urls: ["/centre/tickets"] },

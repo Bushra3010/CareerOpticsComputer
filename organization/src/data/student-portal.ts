@@ -4,7 +4,7 @@
  * (getStudentProfile, getStudentAttendance … in lib/supabase/data.ts).
  */
 import type { StudentDocument } from "@/lib/documents";
-import type { StudentCard } from "@/lib/brand/brandDocuments";
+import type { EnrollmentSlip, StudentCard } from "@/lib/brand/brandDocuments";
 import type { AdmitCardStudent } from "@/data/admit-card-templates";
 
 export interface StudentProfile {
@@ -215,6 +215,18 @@ export const asIdCardStudent = (profile: StudentProfile): StudentCard => ({
   mobile: profile.phone || profile.guardianPhone,
   address: profile.address,
   validTill: `${new Date().getFullYear() + 1}-03-31`,
+  photo: profile.photo,
+});
+
+export const asEnrollmentSlip = (profile: StudentProfile): EnrollmentSlip => ({
+  enrollmentNo: profile.enrollmentNo || profile.rollNo,
+  admissionDate: profile.admissionDate,
+  name: profile.name,
+  dateOfBirth: profile.dob,
+  fatherName: profile.guardian,
+  mobile: profile.phone || profile.guardianPhone,
+  course: profile.courseCode ? `${profile.course} (${profile.courseCode})` : profile.course,
+  centreName: profile.branch,
   photo: profile.photo,
 });
 
