@@ -740,94 +740,52 @@ export interface TypingCertificate {
 }
 
 /**
- * The computer typing certificate: a typing-speed course's completion, with
- * the student's speed in English and Hindi, on the academy's letterhead.
+ * The computer typing certificate, on the certificate artwork the licence
+ * uses (typing-certificate.jpg: the same design with the licence's wording
+ * lifted). The student's name sits where the centre name goes, the three
+ * boxes carry the typing speeds, and the QR opens the verification page.
  */
 export async function drawTypingCertificate(doc: jsPDF, t: TypingCertificate) {
   await registerBrandFonts(doc, ["Poppins-Regular", "Poppins-Medium", "Poppins-SemiBold", "Poppins-Bold", "Poppins-ExtraBold", "GreatVibes-Regular"]);
-  await background(doc, "letterhead.jpg", MS.w, MS.h);
-  const left = 45.4;
-  const right = 549.9;
+  await background(doc, "typing-certificate.jpg", LIC.w, LIC.h);
 
-  put(doc, `Certificate No. : ${t.certificateNo}`, { x: right, y: 222, size: 8.5, font: "Poppins-SemiBold", color: NAVY, align: "right" });
-  put(doc, "COMPUTER TYPING CERTIFICATE", { x: MS.w / 2, y: 252, size: 19, font: "Poppins-ExtraBold", color: NAVY, align: "center", charSpace: 2 });
-  put(doc, "This is to certify that", { x: MS.w / 2, y: 274, size: 12, font: "GreatVibes-Regular", color: ORANGE, align: "center" });
+  put(doc, "of Computer Typing Course", { x: lx(0.5), y: ly(0.357), size: 27, font: "GreatVibes-Regular", color: NAVY, align: "center" });
+  put(doc, `Certificate No. : ${t.certificateNo}`, { x: lx(0.5), y: ly(0.378), size: 8, font: "Poppins-SemiBold", color: ORANGE, align: "center", charSpace: 0.3 });
 
-  // Photograph, right
+  // Photograph, right of the name
   doc.setDrawColor(...rgb(ORANGE));
   doc.setLineWidth(pt(1.2));
-  doc.rect(pt(465), pt(286), pt(78), pt(94));
-  if (!picture(doc, t.photo, 466, 287, 76, 92)) put(doc, "Photograph", { x: 504, y: 336, size: 8, font: "Poppins-Regular", color: "#8a8fa5", align: "center" });
+  doc.rect(pt(lx(0.81)), pt(ly(0.386)), pt(lx(0.1)), pt(ly(0.085)));
+  if (!picture(doc, t.photo, lx(0.81) + 1, ly(0.386) + 1, lx(0.1) - 2, ly(0.085) - 2)) put(doc, "Photo", { x: lx(0.86), y: ly(0.432), size: 7.5, font: "Poppins-Regular", color: "#8a8fa5", align: "center" });
 
-  // Particulars, dotted lines as the design's forms have
-  const rows: Array<[string, string]> = [
-    ["Mr. / Ms. / Mrs.", t.name.toUpperCase()],
-    ["Son / Daughter of", (t.fatherName || "").toUpperCase()],
-    ["Registration No.", t.registrationNo],
-    ["Course Name", t.course],
-    ["Course Duration", t.duration],
-    ["Study Centre", t.centre],
-    ["Centre Code", t.centreCode || ""],
-    ["Date of Issue", ddmmyyyy(t.issueDate)],
-  ].filter(([, v]) => v) as Array<[string, string]>;
-  let y = 302;
-  for (const [label, value] of rows) {
-    put(doc, label, { x: left, y, size: 10, font: "Poppins-SemiBold", color: NAVY });
-    put(doc, ":", { x: left + 118, y, size: 10, font: "Poppins-SemiBold", color: NAVY });
-    put(doc, value, { x: left + 128, y, size: 10.5, font: "Poppins-Bold", color: "#1a1a1a", maxWidth: 280 });
-    doc.setDrawColor(205, 212, 230);
-    doc.setLineWidth(pt(0.5));
-    doc.setLineDashPattern([pt(1), pt(1.5)], 0);
-    doc.line(pt(left), pt(y + 5), pt(left + 405), pt(y + 5));
-    doc.setLineDashPattern([], 0);
-    y += 20;
+  put(doc, t.name.toUpperCase(), { x: lx(0.5), y: ly(0.4306), size: 19, font: "Poppins-ExtraBold", color: RED, align: "center", maxWidth: lx(0.58) });
+  const parent = t.fatherName ? `SON / DAUGHTER OF ${t.fatherName.toUpperCase()}` : "";
+  put(doc, [parent, `REG. NO. ${t.registrationNo}`].filter(Boolean).join("   ·   "), { x: lx(0.5), y: ly(0.4564), size: 9.5, font: "Poppins-SemiBold", color: NAVY, align: "center", maxWidth: lx(0.6), charSpace: 0.4 });
+
+  // The statement, centred over three lines where the licence's wording was
+  const statement = `has successfully completed the ${t.course} course of ${t.duration ? `${t.duration} ` : ""}at ${t.centre}${t.centreCode ? ` (Centre Code ${t.centreCode})` : ""} and has attained the computer typing speed recorded below in the assessment conducted by the Academy.`;
+  doc.setFont(fontOn(doc, "Poppins-Medium"), "normal");
+  doc.setFontSize(10.5);
+  const lines = doc.splitTextToSize(statement, pt(lx(0.74))) as string[];
+  lines.slice(0, 4).forEach((line, k) => put(doc, line, { x: lx(0.5), y: ly(0.4875) + k * 16, size: 10.5, font: "Poppins-Medium", color: "#1f2340", align: "center" }));
+
+  put(doc, "TYPING PERFORMANCE", { x: lx(0.5), y: ly(0.6009), size: 15, font: "Poppins-ExtraBold", color: NAVY, align: "center", charSpace: 3 });
+
+  // The three boxes: label on the band row, value below
+  const cell = (label: string, value: string, centre: number) => {
+    put(doc, label, { x: lx(centre), y: ly(0.6415), size: 7.5, font: "Poppins-SemiBold", color: ORANGE, align: "center", charSpace: 1.6 });
+    put(doc, value, { x: lx(centre), y: ly(0.6689), size: 16, font: "Poppins-ExtraBold", color: NAVY, align: "center", maxWidth: lx(0.2) });
+  };
+  const wpm = (v: number | string | undefined) => (v === undefined || v === "" ? "—" : `${v} WPM`);
+  cell("ENGLISH TYPING SPEED", wpm(t.englishWpm), 0.236);
+  cell("HINDI TYPING SPEED", wpm(t.hindiWpm), 0.5);
+  cell("DATE OF ISSUE", ddmmyyyy(t.issueDate).replace(/-/g, "/"), 0.7646);
+  if (t.accuracy !== undefined && t.accuracy !== "") {
+    put(doc, `Accuracy : ${`${t.accuracy}`.replace(/%?$/, "%")}`, { x: lx(0.5), y: ly(0.705), size: 10, font: "Poppins-Bold", color: RED, align: "center" });
   }
 
-  // Performance: a full-width table with a navy header, one language a row.
-  y = Math.max(y + 12, 480);
-  put(doc, "Performance", { x: MS.w / 2, y, size: 24, font: "GreatVibes-Regular", color: NAVY, align: "center" });
-  y += 10;
-  const perf: Array<[string, string, string]> = [];
-  if (t.englishWpm !== undefined && t.englishWpm !== "") perf.push(["Computer Typing Speed in English", `${t.englishWpm}`, "Words Per Minute"]);
-  if (t.hindiWpm !== undefined && t.hindiWpm !== "") perf.push(["Computer Typing Speed in Hindi", `${t.hindiWpm}`, "Words Per Minute"]);
-  if (t.accuracy !== undefined && t.accuracy !== "") perf.push(["Typing Accuracy", `${t.accuracy}`.replace(/%?$/, "%"), "Overall"]);
-  const cols = [left, left + 290, left + 370, right];
-  doc.setFillColor(...rgb("#1f3a99"));
-  doc.rect(pt(cols[0]), pt(y), pt(right - left), pt(20), "F");
-  put(doc, "PARTICULARS", { x: cols[0] + 12, y: y + 13.5, size: 8, font: "Poppins-SemiBold", color: "#ffffff", charSpace: 0.6 });
-  put(doc, "RESULT", { x: (cols[1] + cols[2]) / 2, y: y + 13.5, size: 8, font: "Poppins-SemiBold", color: "#ffffff", align: "center", charSpace: 0.6 });
-  put(doc, "UNIT", { x: (cols[2] + cols[3]) / 2, y: y + 13.5, size: 8, font: "Poppins-SemiBold", color: "#ffffff", align: "center", charSpace: 0.6 });
-  y += 20;
-  perf.forEach(([label, value, unit], i) => {
-    if (i % 2) {
-      doc.setFillColor(238, 241, 249);
-      doc.rect(pt(cols[0]), pt(y), pt(right - left), pt(22), "F");
-    }
-    put(doc, label, { x: cols[0] + 12, y: y + 15, size: 10, font: "Poppins-Medium", color: "#1a1a1a" });
-    put(doc, value, { x: (cols[1] + cols[2]) / 2, y: y + 15.5, size: 14, font: "Poppins-ExtraBold", color: RED, align: "center" });
-    put(doc, unit, { x: (cols[2] + cols[3]) / 2, y: y + 15, size: 9.5, font: "Poppins-SemiBold", color: NAVY, align: "center" });
-    y += 22;
-  });
-  doc.setDrawColor(...rgb("#1f3a99"));
-  doc.setLineWidth(pt(0.8));
-  doc.line(pt(left), pt(y), pt(right), pt(y));
-
-  // The statement, then the verification block beside the QR bottom-left,
-  // level with the letterhead's authorised signatory on the right.
-  y += 20;
-  doc.setFont(fontOn(doc, "Poppins-Regular"), "normal");
-  doc.setFontSize(9.5);
-  const note = `${t.name} has successfully completed the ${t.course} course at ${t.centre} and attained the typing speed recorded above in the academy's assessment. This certificate is issued on the basis of the academy's records.`;
-  const wrapped = doc.splitTextToSize(note, pt(right - left)) as string[];
-  wrapped.slice(0, 3).forEach((w, i) => put(doc, w, { x: left, y: y + i * 12.5, size: 9.5, font: "Poppins-Regular", color: "#333333" }));
-
-  const code = await qr(verifyUrl(t.certificateNo, "certificate"), 300);
-  picture(doc, code, left, 648, 58, 58);
-  put(doc, "Scan to verify", { x: left + 29, y: 715, size: 7, font: "Poppins-SemiBold", color: NAVY, align: "center" });
-  put(doc, "VERIFICATION", { x: left + 70, y: 660, size: 8, font: "Poppins-Bold", color: ORANGE, charSpace: 1 });
-  put(doc, `Certificate No. : ${t.certificateNo}`, { x: left + 70, y: 674, size: 8.5, font: "Poppins-SemiBold", color: NAVY });
-  put(doc, "Verify online at www.careeropticscomputer.in", { x: left + 70, y: 687, size: 8.5, font: "Poppins-Medium", color: "#333333" });
-  put(doc, `Place : Ara, Bhojpur   ·   Date : ${ddmmyyyy(t.issueDate)}`, { x: left + 70, y: 700, size: 8.5, font: "Poppins-Medium", color: "#333333" });
+  const code = await qr(verifyUrl(t.certificateNo, "certificate"));
+  picture(doc, code, lx(0.437), ly(0.7445), lx(0.127), lx(0.127));
 }
 
 export async function typingCertificatesPdf(items: TypingCertificate[], fileName = "typing-certificate") {
