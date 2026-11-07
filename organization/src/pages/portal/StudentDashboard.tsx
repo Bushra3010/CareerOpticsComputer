@@ -114,7 +114,26 @@ export default function StudentDashboard() {
           if (profileRes.success) setProfile(profileRes.data);
           if (attendanceRes.success) setAttendance(attendanceRes.data);
           if (invoicesRes.success) setInvoices(invoicesRes.data);
-          if (resultsRes.success) setResults(resultsRes.data);
+          // getStudentResults answers flat rows (exam and subject as strings);
+          // the dashboard reads the nested shape, so the rows are folded here.
+          if (resultsRes.success) {
+            setResults(
+              (resultsRes.data as Array<Record<string, unknown>>).map((r) => ({
+                id: String(r.id),
+                marks: Number(r.marks || 0),
+                exam:
+                  r.exam && typeof r.exam === "object"
+                    ? (r.exam as PortalResult["exam"])
+                    : {
+                        name: String(r.exam ?? ""),
+                        subject: String(r.subject ?? ""),
+                        examDate: r.examDate ? String(r.examDate) : undefined,
+                        maxMarks: Number(r.maxMarks || 100),
+                        passMarks: Number(r.passMarks || 40),
+                      },
+              })),
+            );
+          }
           if (classesRes.success) setClasses(classesRes.data);
           if (noticesRes.success) setNotices(noticesRes.data);
         }
