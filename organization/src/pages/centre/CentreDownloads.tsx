@@ -5,7 +5,7 @@ import { DceButton, DceLinkButton, DcePanel, DceSelect } from "@/components/dce/
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { printFranchiseLicences, type BranchDetails } from "@/lib/branchTemplateDocument";
-import { staffCardsPdf } from "@/lib/brand/brandDocuments";
+import { admissionFormPdf, staffCardsPdf } from "@/lib/brand/brandDocuments";
 import { loadInstituteLogo } from "@/lib/instituteLogo";
 import { loadInstituteName } from "@/lib/instituteName";
 import { asFile } from "@/lib/studentDocuments";
@@ -263,12 +263,35 @@ export default function CentreDownloads() {
 
   const slug = String(ctx?.branch.code || ctx?.branch.name || "centre").replace(/[^a-z0-9]+/gi, "-");
 
+  const admissionForm = async () => {
+    if (!ctx) return;
+    try {
+      await admissionFormPdf(
+        {
+          centreName: String(ctx.branch.name || ""),
+          centreCode: String(ctx.branch.code || ""),
+          address: addressOf(ctx.branch),
+          phone: String(ctx.branch.phone || ""),
+          logo: asFile("logo", "Centre Logo", (ctx.branch as { branchLogo?: unknown }).branchLogo)?.url ?? null,
+        },
+        `admission-form-${slug}`,
+      );
+    } catch (error) {
+      toast({ title: "Could not make the form", description: (error as Error).message, variant: "destructive" });
+    }
+  };
+
   const cards: Array<{ title: string; text: string; actions: React.ReactNode }> = ctx
     ? [
         {
           title: "Admission Form",
-          text: "A blank admission form with the centre's details, photo box and signature lines.",
-          actions: <DceButton onClick={() => open(admissionFormHtml(ctx))}>Print</DceButton>,
+          text: "A blank admission form on the academy's design, with the centre's details, photo box, acknowledgement slip and signature lines.",
+          actions: (
+            <>
+              <DceButton onClick={() => void admissionForm()}>Download PDF</DceButton>
+              <DceButton tone="light" onClick={() => open(admissionFormHtml(ctx))}>Print (plain)</DceButton>
+            </>
+          ),
         },
         {
           title: "Authorization Letter",

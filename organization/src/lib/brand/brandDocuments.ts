@@ -940,3 +940,222 @@ export async function enrollmentSlipsPdf(slips: EnrollmentSlip[], fileName = "en
   save(doc, `${fileName}.pdf`);
 }
 
+/* ------------------------------------------------------------------ */
+/* Admission form (A4 portrait, blank, for the centre to print)         */
+/* ------------------------------------------------------------------ */
+
+export interface AdmissionFormCentre {
+  centreName: string;
+  centreCode?: string;
+  address?: string;
+  phone?: string;
+  /** The centre's own logo, shown beside the academy's. */
+  logo?: string | null;
+}
+
+/**
+ * The blank admission form a centre prints and the student fills by hand:
+ * the academy's header with the centre named beneath it, character boxes
+ * for the names and address, tick boxes for gender and category, the last
+ * qualification, a declaration and signatures, then the office's
+ * acknowledgement slip below a cut line. On admission-form.jpg, which
+ * carries the watermark, the recognition logos and the footer.
+ */
+export async function drawAdmissionForm(doc: jsPDF, c: AdmissionFormCentre) {
+  await registerBrandFonts(doc, ["Poppins-Regular", "Poppins-Medium", "Poppins-SemiBold", "Poppins-Bold", "Poppins-ExtraBold", "GreatVibes-Regular"]);
+  await background(doc, "admission-form.jpg", MS.w, MS.h);
+  const left = 36;
+  const right = MS.w - 36;
+  const W = right - left;
+  const cx = MS.w / 2;
+  const line = (x1: number, y1: number, x2: number, y2: number) => doc.line(pt(x1), pt(y1), pt(x2), pt(y2));
+  const rect = (x: number, y: number, w: number, h: number, style?: "F" | "FD") => doc.rect(pt(x), pt(y), pt(w), pt(h), style);
+
+  // Header: the academy, then the centre
+  const logo = await documentArtwork("../career-optics-logo.png");
+  if (logo) picture(doc, logo, left, 22, 70, 70);
+  put(doc, "CAREER OPTICS", { x: cx, y: 44, size: 25, font: "Poppins-ExtraBold", color: NAVY, align: "center", charSpace: 1 });
+  doc.setFillColor(...rgb(ORANGE));
+  doc.roundedRect(pt(cx - 100), pt(50), pt(200), pt(14), pt(2), pt(2), "F");
+  put(doc, "COMPUTER ACADEMY", { x: cx, y: 60, size: 9, font: "Poppins-Bold", color: "#ffffff", align: "center", charSpace: 2.4 });
+  put(doc, "Learn · Grow · Succeed", { x: cx, y: 77, size: 14, font: "GreatVibes-Regular", color: GREEN, align: "center" });
+  put(doc, "Run under: Career Optics Education Service Private Limited  |  CIN: U85500BR2026PTC085770", { x: cx, y: 87, size: 6.5, font: "Poppins-SemiBold", color: "#1a1a1a", align: "center" });
+  put(doc, "An ISO 9001:2015 Certified Institute  |  MSME Registered  |  DPIIT Recognised Startup", { x: cx, y: 95, size: 6.5, font: "Poppins-SemiBold", color: RED, align: "center" });
+  if (c.logo) {
+    doc.setDrawColor(...rgb(ORANGE));
+    doc.setLineWidth(pt(0.8));
+    rect(right - 70, 22, 70, 70);
+    picture(doc, c.logo, right - 68, 24, 66, 66);
+  }
+  doc.setDrawColor(...rgb(ORANGE));
+  doc.setLineWidth(pt(1.2));
+  line(left, 103, right, 103);
+  put(doc, c.centreName.toUpperCase(), { x: cx, y: 118, size: 14, font: "Poppins-ExtraBold", color: RED, align: "center", maxWidth: W });
+  put(doc, [c.address, c.phone ? `Ph: ${c.phone}` : ""].filter(Boolean).join("   ·   "), { x: cx, y: 130, size: 8.5, font: "Poppins-Medium", color: NAVY, align: "center", maxWidth: W });
+  put(doc, `AUTHORISED STUDY CENTRE OF CAREER OPTICS COMPUTER ACADEMY${c.centreCode ? `   ·   CENTRE CODE : ${c.centreCode}` : ""}`, { x: cx, y: 142, size: 7.5, font: "Poppins-Bold", color: ORANGE, align: "center", charSpace: 0.8, maxWidth: W });
+
+  // Title and photograph
+  doc.setFillColor(...rgb(NAVY));
+  doc.roundedRect(pt(cx - 70), pt(150), pt(140), pt(17), pt(3), pt(3), "F");
+  put(doc, "ADMISSION FORM", { x: cx, y: 162, size: 10.5, font: "Poppins-ExtraBold", color: "#ffffff", align: "center", charSpace: 2 });
+  doc.setDrawColor(...rgb(NAVY));
+  doc.setLineWidth(pt(0.8));
+  doc.setLineDashPattern([pt(2), pt(1.5)], 0);
+  rect(right - 78, 150, 78, 94);
+  doc.setLineDashPattern([], 0);
+  ["Paste recent", "passport size", "photograph"].forEach((t, i) => put(doc, t, { x: right - 39, y: 190 + i * 10, size: 7, font: "Poppins-Regular", color: "#8a8fa5", align: "center" }));
+
+  // Top lines: course, centre code / reg. no., date / duration
+  const ul = (label: string, x: number, y: number, w: number, value = "") => {
+    put(doc, label, { x, y, size: 9, font: "Poppins-SemiBold", color: NAVY });
+    const lx0 = x + measure(doc, label, "Poppins-SemiBold", 9) + 4;
+    doc.setDrawColor(120, 130, 160);
+    doc.setLineWidth(pt(0.5));
+    line(lx0, y + 2, x + w, y + 2);
+    if (value) put(doc, value, { x: lx0 + 4, y, size: 9, font: "Poppins-Bold", color: "#1a1a1a", maxWidth: x + w - lx0 - 6 });
+  };
+  const formW = W - 90;
+  let y = 182;
+  ul("Course Name :", left, y, formW);
+  y += 20;
+  ul("Centre Code :", left, y, formW / 2 - 6, c.centreCode || "");
+  ul("Reg. No. :", left + formW / 2 + 6, y, formW / 2 - 6);
+  y += 20;
+  ul("Date of Admission :", left, y, formW / 2 - 6);
+  ul("Duration :", left + formW / 2 + 6, y, formW / 2 - 6);
+  y += 18;
+
+  // Character boxes
+  const labelW = 92;
+  const boxes = (label: string, rows: number) => {
+    const n = 26;
+    const bw = (W - labelW) / n;
+    const bh = 17;
+    put(doc, label, { x: left, y: y + 12, size: 9, font: "Poppins-SemiBold", color: NAVY });
+    doc.setDrawColor(...rgb(NAVY));
+    doc.setLineWidth(pt(0.5));
+    for (let r = 0; r < rows; r++) {
+      for (let i = 0; i < n; i++) rect(left + labelW + i * bw, y + r * (bh + 2), bw, bh);
+    }
+    y += rows * (bh + 2) + 7;
+  };
+  boxes("Student's Name :", 1);
+  boxes("Father's Name :", 1);
+  boxes("Mother's Name :", 1);
+
+  // DOB / gender / category / mobile
+  const bh = 17;
+  put(doc, "Date of Birth :", { x: left, y: y + 11, size: 9, font: "Poppins-SemiBold", color: NAVY });
+  doc.setDrawColor(...rgb(NAVY));
+  doc.setLineWidth(pt(0.5));
+  const dob = ["D", "D", "M", "M", "Y", "Y", "Y", "Y"];
+  dob.forEach((ch, i) => {
+    rect(left + labelW + i * 16, y, 16, bh);
+    put(doc, ch, { x: left + labelW + i * 16 + 8, y: y + 10.5, size: 8, font: "Poppins-Regular", color: "#b4b9c9", align: "center" });
+  });
+  const tick = (label: string, x: number) => {
+    rect(x, y + 2, 11, 11);
+    put(doc, label, { x: x + 15, y: y + 11, size: 8.5, font: "Poppins-Medium", color: "#1a1a1a" });
+    return x + 15 + measure(doc, label, "Poppins-Medium", 8.5) + 10;
+  };
+  let tx = left + labelW + 8 * 16 + 14;
+  put(doc, "Gender :", { x: tx, y: y + 11, size: 9, font: "Poppins-SemiBold", color: NAVY });
+  tx += 42;
+  tx = tick("Male", tx);
+  tx = tick("Female", tx);
+  tick("Other", tx);
+  y += bh + 9;
+  put(doc, "Category :", { x: left, y: y + 11, size: 9, font: "Poppins-SemiBold", color: NAVY });
+  tx = left + labelW;
+  for (const cat of ["GEN", "OBC", "SC", "ST", "EWS"]) tx = tick(cat, tx);
+  put(doc, "Mobile :", { x: tx + 6, y: y + 11, size: 9, font: "Poppins-SemiBold", color: NAVY });
+  const mob0 = tx + 6 + 40;
+  for (let i = 0; i < 10; i++) rect(mob0 + i * 14, y, 14, bh);
+  y += bh + 10;
+  ul("Aadhaar No. :", left, y + 9, W / 2 - 8);
+  ul("Email :", left + W / 2 + 8, y + 9, W / 2 - 8);
+  y += 24;
+  boxes("Address :", 2);
+  ul("District :", left + labelW, y + 9, (W - labelW) / 3 - 6);
+  ul("State :", left + labelW + (W - labelW) / 3, y + 9, (W - labelW) / 3 - 6);
+  ul("PIN :", left + labelW + (2 * (W - labelW)) / 3, y + 9, (W - labelW) / 3);
+  y += 24;
+
+  // Last qualification table
+  put(doc, "Last Qualification :", { x: left, y: y + 11, size: 9, font: "Poppins-SemiBold", color: NAVY });
+  const cols = ["Examination", "Board / University", "Passing Year", "Percentage", "Division / CGPA"];
+  const cw = (W - labelW) / cols.length;
+  doc.setFillColor(232, 236, 246);
+  rect(left + labelW, y, W - labelW, 14, "F");
+  cols.forEach((h, i) => {
+    rect(left + labelW + i * cw, y, cw, 14);
+    put(doc, h, { x: left + labelW + i * cw + cw / 2, y: y + 10, size: 7.5, font: "Poppins-SemiBold", color: NAVY, align: "center" });
+    rect(left + labelW + i * cw, y + 14, cw, 18);
+    rect(left + labelW + i * cw, y + 32, cw, 18);
+  });
+  y += 50 + 12;
+
+  // Declaration and signatures
+  doc.setDrawColor(...rgb(NAVY));
+  rect(left, y + 1, 10, 10);
+  put(doc, "I declare that the information given above is true and I agree to abide by the rules and regulations of the Academy and the centre.", { x: left + 15, y: y + 9, size: 8, font: "Poppins-Regular", color: "#1a1a1a", maxWidth: W - 15 });
+  y += 34;
+  const sig = (label: string, x: number) => {
+    doc.setLineWidth(pt(0.6));
+    line(x, y, x + 130, y);
+    put(doc, label, { x: x + 65, y: y + 9, size: 7.5, font: "Poppins-SemiBold", color: NAVY, align: "center" });
+  };
+  sig("Signature of Student", left);
+  sig("Signature of Parent / Guardian", cx - 65);
+  sig("Centre Director (with seal)", right - 130);
+  y += 24;
+
+  // Cut line and the acknowledgement slip
+  doc.setDrawColor(120, 130, 160);
+  doc.setLineWidth(pt(0.5));
+  doc.setLineDashPattern([pt(3), pt(2)], 0);
+  line(left, y, right, y);
+  doc.setLineDashPattern([], 0);
+  y += 14;
+  put(doc, "FOR OFFICE USE ONLY", { x: left, y: y + 2, size: 7.5, font: "Poppins-Bold", color: ORANGE, charSpace: 1 });
+  put(doc, "STUDENT'S ACKNOWLEDGEMENT SLIP", { x: cx, y: y + 2, size: 9, font: "Poppins-ExtraBold", color: NAVY, align: "center", charSpace: 1 });
+  put(doc, "Date : ____ / ____ / ________", { x: right, y: y + 2, size: 8, font: "Poppins-Medium", color: "#1a1a1a", align: "right" });
+  y += 18;
+  const half = W / 2 - 8;
+  ul("Student's Name :", left, y, half);
+  ul("Reg. No. :", left + half + 16, y, half);
+  y += 19;
+  ul("Centre Name :", left, y, half, c.centreName);
+  ul("Centre Code :", left + half + 16, y, half, c.centreCode || "");
+  y += 19;
+  ul("Course :", left, y, half);
+  ul("Duration :", left + half + 16, y, half);
+  y += 19;
+  const third = W / 3 - 8;
+  ul("Admission Fee :", left, y, third);
+  ul("Course Fee :", left + third + 12, y, third);
+  ul("Exam Fee :", left + 2 * (third + 12), y, third);
+  y += 19;
+  ul("Total Fee :", left, y, third);
+  ul("Discount :", left + third + 12, y, third);
+  ul("Amount Paid :", left + 2 * (third + 12), y, third);
+  y += 19;
+  ul("Receipt No. :", left, y, half);
+  doc.setLineWidth(pt(0.6));
+  line(right - 150, y + 2, right, y + 2);
+  put(doc, "Centre Director Signature & Stamp", { x: right - 75, y: y + 11, size: 7.5, font: "Poppins-SemiBold", color: NAVY, align: "center" });
+}
+
+/** Text width in pt, in the brand font (or Helvetica when it is missing). */
+function measure(doc: jsPDF, text: string, font: BrandFont, size: number): number {
+  doc.setFont(fontOn(doc, font), "normal");
+  doc.setFontSize(size);
+  return doc.getTextWidth(text) / pt(1);
+}
+
+export async function admissionFormPdf(centre: AdmissionFormCentre, fileName = "admission-form") {
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+  await drawAdmissionForm(doc, centre);
+  save(doc, `${fileName}.pdf`);
+}
+
