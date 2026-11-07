@@ -220,6 +220,14 @@
     var logo = safeUrl(site.logo, true);
     if (logo) $("sLogo").src = logo;
     $("sLogo").alt = name + " logo";
+    // The centre's own mark, large, at the top of the hero; the head-office
+    // default stays only in the header, so a centre without a logo is not
+    // shown the academy's twice.
+    if (logo && $("sHeroLogo")) {
+      $("sHeroLogo").src = logo;
+      $("sHeroLogo").alt = name + " logo";
+      $("sHeroLogo").hidden = false;
+    }
     var call = telHref(phone);
     var chat = waHref(wa, "Hello " + name + ", I would like to know about admission.");
     setLink($("sCallTop"), call);

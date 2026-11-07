@@ -71,7 +71,7 @@ export default function Site() {
           <header className="s-head">
             <div className="s-wrap">
               <a className="s-brand" href="#home" aria-label="Home">
-                <img id="sLogo" className="s-logo" src="/logo.png" alt="" width={48} height={48} />
+                <img id="sLogo" className="s-logo" src="/logo.png" alt="" width={56} height={56} />
                 <span className="s-brand-text">
                   <span className="s-name" id="sName"><span className="s-skel">Loading centre name</span></span>
                   <span className="s-badge"><Icon name="badge" /> Authorised Study Centre of {BRAND.name}</span>
@@ -95,7 +95,10 @@ export default function Site() {
             <section className="s-hero" id="home">
               <div className="s-hero-bg" id="sHeroBg"></div>
               <div className="s-wrap">
-                <span className="s-kicker"><Icon name="badge" /> Authorised Study Centre · {BRAND.short}</span>
+                <div className="s-hero-top">
+                  <img id="sHeroLogo" className="s-hero-logo" src="" alt="" hidden />
+                  <span className="s-kicker"><Icon name="badge" /> Authorised Study Centre · {BRAND.short}</span>
+                </div>
                 <h1 id="sHeroTitle"><span className="s-skel">Loading the centre's website</span></h1>
                 <p id="sHeroSub"><span className="s-skel">Computer courses, admissions open</span></p>
                 <div className="s-cta" data-live="">
