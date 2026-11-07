@@ -842,6 +842,26 @@ const SLIP = { w: 595.3, h: 419.5 };
 export async function drawEnrollmentSlip(doc: jsPDF, e: EnrollmentSlip) {
   await registerBrandFonts(doc, ["Poppins-Regular", "Poppins-Medium", "Poppins-SemiBold", "Poppins-Bold", "Poppins-ExtraBold", "GreatVibes-Regular"]);
   await background(doc, "enrollment-slip.jpg", SLIP.w, SLIP.h);
+
+  // A double frame above the footer band, as the admission form has: navy outside, orange inside, corner marks
+  const frameBottom = SLIP.h - 20;
+  doc.setDrawColor(...rgb(NAVY));
+  doc.setLineWidth(pt(2.2));
+  doc.rect(pt(8), pt(8), pt(SLIP.w - 16), pt(frameBottom - 8));
+  doc.setDrawColor(...rgb(ORANGE));
+  doc.setLineWidth(pt(0.8));
+  doc.rect(pt(12.5), pt(12.5), pt(SLIP.w - 25), pt(frameBottom - 17));
+  doc.setDrawColor(...rgb(NAVY));
+  doc.setLineWidth(pt(1.2));
+  const corner = (x: number, y: number, dx: number, dy: number) => {
+    doc.line(pt(x), pt(y), pt(x + dx * 11), pt(y));
+    doc.line(pt(x), pt(y), pt(x), pt(y + dy * 11));
+  };
+  corner(17, 17, 1, 1);
+  corner(SLIP.w - 17, 17, -1, 1);
+  corner(17, frameBottom - 9, 1, -1);
+  corner(SLIP.w - 17, frameBottom - 9, -1, -1);
+
   const left = 24;
   const right = SLIP.w - 24;
   const W = right - left;
