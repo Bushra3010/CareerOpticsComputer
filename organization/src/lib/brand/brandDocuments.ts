@@ -724,6 +724,8 @@ export async function brandAdmitCardsPdf(cards: AdmitCard[], fileName = "admit-c
 
 export interface TypingCertificate {
   certificateNo: string;
+  /** The printed serial number, under the registration number. */
+  serialNo?: string;
   name: string;
   fatherName?: string;
   registrationNo: string;
@@ -752,6 +754,7 @@ export async function drawTypingCertificate(doc: jsPDF, t: TypingCertificate) {
   put(doc, "of Computer Typing Course", { x: lx(0.5), y: ly(0.357), size: 27, font: "GreatVibes-Regular", color: NAVY, align: "center" });
   // Registration number at the left, certificate number above the photograph at the right
   put(doc, `Reg. No. : ${t.registrationNo}`, { x: lx(0.11), y: ly(0.378), size: 8.5, font: "Poppins-Bold", color: NAVY, charSpace: 0.3 });
+  if (t.serialNo) put(doc, `Sl. No. : ${t.serialNo}`, { x: lx(0.11), y: ly(0.393), size: 8, font: "Poppins-SemiBold", color: NAVY, charSpace: 0.3 });
   put(doc, `Certificate No. : ${t.certificateNo}`, { x: lx(0.91), y: ly(0.378), size: 8, font: "Poppins-SemiBold", color: RED, align: "right", charSpace: 0.3 });
 
   // Photograph, right of the name
@@ -764,13 +767,18 @@ export async function drawTypingCertificate(doc: jsPDF, t: TypingCertificate) {
   if (t.fatherName) put(doc, `Son / Daughter of  ${t.fatherName.toUpperCase()}`, { x: lx(0.5), y: ly(0.4564), size: 10.5, font: "Poppins-SemiBold", color: NAVY, align: "center", maxWidth: lx(0.6), charSpace: 0.3 });
 
   // The statement, centred over three lines where the licence's wording was
-  const statement = `has successfully completed the ${t.course} course of ${t.duration ? `${t.duration} ` : ""}at ${t.centre}${t.centreCode ? ` (Centre Code ${t.centreCode})` : ""} and has attained the computer typing speed recorded below in the assessment conducted by the Academy.`;
+  const statement = `has successfully completed the ${t.course} course${t.duration ? ` of ${t.duration}` : ""} at the study centre named below and has attained the computer typing speed recorded in the assessment conducted by the Academy.`;
   doc.setFont(fontOn(doc, "Poppins-Medium"), "normal");
   doc.setFontSize(10.5);
   const lines = doc.splitTextToSize(statement, pt(lx(0.74))) as string[];
-  lines.slice(0, 4).forEach((line, k) => put(doc, line, { x: lx(0.5), y: ly(0.4875) + k * 16, size: 10.5, font: "Poppins-Medium", color: "#1f2340", align: "center" }));
+  lines.slice(0, 3).forEach((line, k) => put(doc, line, { x: lx(0.5), y: ly(0.4875) + k * 15, size: 10.5, font: "Poppins-Medium", color: "#1f2340", align: "center" }));
 
-  put(doc, "TYPING PERFORMANCE", { x: lx(0.5), y: ly(0.6009), size: 15, font: "Poppins-ExtraBold", color: NAVY, align: "center", charSpace: 3 });
+  // The centre, highlighted: name in red, code beside it
+  put(doc, "STUDY CENTRE", { x: lx(0.5), y: ly(0.552), size: 7.5, font: "Poppins-SemiBold", color: ORANGE, align: "center", charSpace: 1.6 });
+  put(doc, t.centre.toUpperCase(), { x: lx(0.5), y: ly(0.571), size: 13, font: "Poppins-ExtraBold", color: RED, align: "center", maxWidth: lx(0.8) });
+  if (t.centreCode) put(doc, `CENTRE CODE : ${t.centreCode}`, { x: lx(0.5), y: ly(0.587), size: 9, font: "Poppins-Bold", color: NAVY, align: "center", charSpace: 0.6 });
+
+  put(doc, "TYPING PERFORMANCE", { x: lx(0.5), y: ly(0.618), size: 13, font: "Poppins-ExtraBold", color: NAVY, align: "center", charSpace: 3 });
 
   // The three boxes: label on the band row, value below
   const cell = (label: string, value: string, centre: number) => {

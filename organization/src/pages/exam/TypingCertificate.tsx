@@ -37,6 +37,7 @@ export default function TypingCertificate() {
 
   const today = new Date().toISOString().slice(0, 10);
   const [certificateNo, setCertificateNo] = useState(`COCA/TYP/${new Date().getFullYear()}/`);
+  const [serialNo, setSerialNo] = useState("");
   const [issueDate, setIssueDate] = useState(today);
   const [course, setCourse] = useState("TSA (Typing Speed & Accuracy)");
   const [duration, setDuration] = useState("");
@@ -99,6 +100,7 @@ export default function TypingCertificate() {
         [
           {
             certificateNo: certificateNo.trim(),
+            serialNo: serialNo.trim(),
             name,
             fatherName: String(student.fatherName ?? ""),
             registrationNo: String(student.enrollmentNo || student.applicationNo || ""),
@@ -182,6 +184,12 @@ export default function TypingCertificate() {
                 <Label htmlFor="certificateNo">Certificate No.</Label>
                 <Input id="certificateNo" value={certificateNo} onChange={(e) => setCertificateNo(e.target.value)} />
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="serialNo">Sl. No.</Label>
+                <Input id="serialNo" value={serialNo} onChange={(e) => setSerialNo(e.target.value)} placeholder="0001" />
+              </div>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label>Date of issue</Label>
                 <DatePicker value={issueDate} onChange={setIssueDate} />
