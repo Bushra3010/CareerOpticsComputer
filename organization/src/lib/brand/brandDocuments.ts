@@ -1131,12 +1131,25 @@ export async function drawAdmissionForm(doc: jsPDF, c: AdmissionFormCentre) {
   sig("Centre Director (with seal)", right - 130);
   y += 24;
 
-  // Cut line and the acknowledgement slip
-  doc.setDrawColor(120, 130, 160);
-  doc.setLineWidth(pt(0.5));
-  doc.setLineDashPattern([pt(3), pt(2)], 0);
-  line(left, y, right, y);
+  // Cut line: a bold dashed red rule across the frame, with a scissors mark and "cut here" on both ends
+  doc.setDrawColor(...rgb(RED));
+  doc.setLineWidth(pt(1.3));
+  doc.setLineDashPattern([pt(5), pt(3)], 0);
+  line(20, y, MS.w - 20, y);
   doc.setLineDashPattern([], 0);
+  const scissors = (x: number) => {
+    // two blades and two rings, drawn as lines and circles in the rule's colour
+    doc.setLineWidth(pt(1));
+    doc.line(pt(x - 5), pt(y - 4), pt(x + 4), pt(y + 2));
+    doc.line(pt(x - 5), pt(y + 4), pt(x + 4), pt(y - 2));
+    doc.circle(pt(x - 7), pt(y - 4.5), pt(1.8));
+    doc.circle(pt(x - 7), pt(y + 4.5), pt(1.8));
+  };
+  scissors(left + 6);
+  scissors(right - 6);
+  doc.setFillColor(255, 255, 255);
+  doc.rect(pt(cx - 34), pt(y - 5), pt(68), pt(10), "F");
+  put(doc, "CUT HERE", { x: cx, y: y + 2.6, size: 7, font: "Poppins-Bold", color: RED, align: "center", charSpace: 1.4 });
   y += 14;
   put(doc, "FOR OFFICE USE ONLY", { x: left, y: y + 2, size: 7.5, font: "Poppins-Bold", color: ORANGE, charSpace: 1 });
   put(doc, "STUDENT'S ACKNOWLEDGEMENT SLIP", { x: cx, y: y + 2, size: 9, font: "Poppins-ExtraBold", color: NAVY, align: "center", charSpace: 1 });
