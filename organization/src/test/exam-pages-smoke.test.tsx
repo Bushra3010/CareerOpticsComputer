@@ -213,7 +213,7 @@ describe("exam workflow pages", () => {
     expect(studentId).toBe("s1");
     expect(by).toBe("Head Office");
     expect(dates.examConductedDate).toBe("2026-11-20");
-    await waitFor(() => expect(certificatePdf).toHaveBeenCalledWith(expect.objectContaining({ examinationDate: "2026-11-20" })));
+    await waitFor(() => expect(certificatePdf).toHaveBeenCalledWith(expect.objectContaining({ examinationDate: "2026-11-20" }), expect.objectContaining({ certificate_no: "CERT-E001" })));
     await waitFor(() => expect(toast).toHaveBeenCalledWith(expect.objectContaining({ title: "Certificate issued" })));
   });
 
@@ -244,7 +244,7 @@ describe("exam workflow pages", () => {
     fireEvent.click(screen.getByRole("button", { name: "Generate 1 certificate" }));
     await waitFor(() => expect(issueCertificate).toHaveBeenCalledTimes(1));
     expect((issueCertificate.mock.calls[0] as unknown[])[0]).toBe("s1");
-    await waitFor(() => expect(certificatesPdf).toHaveBeenCalledWith([expect.anything()], "certificates-Begusarai Centre"));
+    await waitFor(() => expect(certificatesPdf).toHaveBeenCalledWith([expect.anything()], "certificates-Begusarai Centre", [expect.objectContaining({ certificate_no: "CERT-E001" })]));
     await waitFor(() => expect(toast).toHaveBeenCalledWith(expect.objectContaining({ title: "1 certificate(s) ready" })));
   });
 

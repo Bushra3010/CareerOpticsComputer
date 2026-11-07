@@ -2,7 +2,7 @@ import { jsPDF } from "jspdf";
 import QRCode from "qrcode";
 import { instituteName } from "./instituteName";
 import { instituteLogo } from "./instituteLogo";
-import { brandMarksheetPdf, brandMarksheetsPdf, type MarksheetExtra } from "./brand/brandDocuments";
+import { brandCertificatePdf, brandCertificatesPdf, brandMarksheetPdf, brandMarksheetsPdf, type CertificateExtra, type MarksheetExtra } from "./brand/brandDocuments";
 
 export type StudentDocument = {
   firstName: string;
@@ -426,199 +426,14 @@ export async function marksheetsPdf(students: StudentDocument[], fileName = "mar
   await brandMarksheetsPdf(students.map((student, i) => ({ student, extra: extras[i] })), fileName);
 }
 
-export async function certificatePdf(s: StudentDocument) {
-  const doc = new jsPDF({ orientation: "landscape", format: "a4" });
-  await drawCertificate(doc, s);
-  save(doc, `certificate-${s.enrollmentNo || s.applicationNo || s.firstName}.pdf`);
+/** The course-completion certificate, on the academy's own sheet (lib/brand). */
+export async function certificatePdf(s: StudentDocument, extra: CertificateExtra = {}) {
+  await brandCertificatePdf(s, extra);
 }
 
 /** Several students' certificates in one file, a page each, for one print run. */
-export async function certificatesPdf(students: StudentDocument[], fileName = "certificates") {
-  if (!students.length) return;
-  const doc = new jsPDF({ orientation: "landscape", format: "a4" });
-  for (const [i, s] of students.entries()) {
-    if (i) doc.addPage();
-    await drawCertificate(doc, s);
-  }
-  save(doc, `${fileName}.pdf`);
-}
-
-/**
- * The course-completion certificate, on a landscape sheet: the institute's
- * frame and seal, the student's name over a gold rule, the course and its
- * result, a code that opens the verification page, and two signatures.
- */
-async function drawCertificate(doc: jsPDF, s: StudentDocument) {
-  const W = 297;
-  const H = 210;
-  const cx = W / 2;
-  const name = [s.firstName, s.lastName].filter(Boolean).join(" ") || "-";
-  const reference = s.enrollmentNo || s.applicationNo || "";
-  const summary = marksheetSummary(s.examResults);
-  const logo = s.branch.logo || instituteLogo();
-  const org = (s.branch.organization.name || instituteName()).toUpperCase();
-
-  doc.setFillColor(255, 255, 255);
-  doc.rect(0, 0, W, H, "F");
-  doc.setFillColor("#fffdf7");
-  doc.rect(10, 10, W - 20, H - 20, "F");
-  watermark(doc, logo, cx - 55, H / 2 - 55, 110);
-  frame(doc, W, H);
-
-  /* ---- head: mark, institute, centre, photograph ---- */
-  tryImage(doc, logo, 22, 17, 26, 26);
-  if (s.photo) {
-    doc.setDrawColor(BRAND_GOLD);
-    doc.setLineWidth(0.4);
-    doc.rect(251, 17, 24, 30);
-    tryImage(doc, s.photo, 251.3, 17.3, 23.4, 29.4);
-  }
-  doc.setTextColor(BRAND_NAVY);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(19);
-  const heading = doc.splitTextToSize(org, 170) as string[];
-  doc.text(heading, cx, 27, { align: "center" });
-  let y = 27 + (heading.length - 1) * 8;
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9.5);
-  doc.setTextColor("#475569");
-  doc.text(s.branch.name, cx, y + 7, { align: "center", maxWidth: 170 });
-  y += 13;
-  doc.setDrawColor(BRAND_GOLD);
-  doc.setLineWidth(0.5);
-  doc.line(cx - 60, y, cx - 4, y);
-  doc.line(cx + 4, y, cx + 60, y);
-  doc.setFillColor(BRAND_GOLD);
-  doc.triangle(cx, y - 2, cx + 2, y, cx, y + 2, "F");
-  doc.triangle(cx, y - 2, cx - 2, y, cx, y + 2, "F");
-
-  /* ---- title ---- */
-  doc.setFont("times", "bold");
-  doc.setFontSize(38);
-  doc.setTextColor(BRAND_GOLD_DARK);
-  doc.text("CERTIFICATE", cx, y + 16, { align: "center", charSpace: 2 });
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
-  doc.setTextColor(BRAND_NAVY);
-  doc.text("OF COURSE COMPLETION", cx, y + 24, { align: "center", charSpace: 1.8 });
-  y += 38;
-
-  /* ---- the award ---- */
-  doc.setFont("times", "italic");
-  doc.setFontSize(13);
-  doc.setTextColor("#334155");
-  doc.text("This is to certify that", cx, y, { align: "center" });
-  y += 13;
-  doc.setFont("times", "bold");
-  doc.setFontSize(27);
-  doc.setTextColor(BRAND_NAVY);
-  const names = doc.splitTextToSize(name, 200) as string[];
-  doc.text(names, cx, y, { align: "center" });
-  const rule = Math.min(200, Math.max(80, doc.getTextWidth(names[0]) + 24));
-  y += (names.length - 1) * 11 + 3;
-  doc.setDrawColor(BRAND_GOLD);
-  doc.setLineWidth(0.5);
-  doc.line(cx - rule / 2, y, cx + rule / 2, y);
-  y += 8;
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10.5);
-  doc.setTextColor("#334155");
-  // Half of it is not enough to print a line: "Son of" with no name reads as a
-  // mistake on a certificate somebody keeps.
-  if (s.fatherName) {
-    doc.text(`${s.parentage || "Son/Daughter of"} ${s.fatherName}`, cx, y, { align: "center" });
-    y += 8;
-  }
-  doc.text("has successfully completed the course of", cx, y, { align: "center" });
-  y += 10;
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(16);
-  doc.setTextColor(BRAND_NAVY);
-  const course = doc.splitTextToSize(s.course?.name || "-", 220) as string[];
-  doc.text(course, cx, y, { align: "center" });
-  y += (course.length - 1) * 7 + 8;
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9.5);
-  doc.setTextColor("#475569");
-  const facts = [
-    s.course?.duration ? `Duration: ${s.course.duration}` : "",
-    s.session ? `Session: ${s.session}` : "",
-    s.examinationDate
-      ? `Examination held: ${new Date(s.examinationDate).toLocaleDateString("en-IN", { month: "long", year: "numeric" })}`
-      : "",
-  ].filter(Boolean);
-  if (facts.length) {
-    doc.text(facts.join("   \u2022   "), cx, y, { align: "center" });
-    y += 9;
-  }
-
-  /* ---- result, when there is one ---- */
-  if (summary.max) {
-    const pct = (summary.total / summary.max) * 100;
-    const boxes: Array<[string, string]> = [
-      ["GRADE", marksheetGrade(pct, summary.result === "Pass")],
-      ["PERCENTAGE", `${pct.toFixed(2)}%`],
-      ["MARKS OBTAINED", `${shownMarks(summary.total)} / ${shownMarks(summary.max)}`],
-    ];
-    const bw = 46;
-    const gap = 6;
-    let bx = cx - (boxes.length * bw + (boxes.length - 1) * gap) / 2;
-    for (const [label, value] of boxes) {
-      doc.setFillColor(255, 255, 255);
-      doc.setDrawColor(BRAND_GOLD);
-      doc.setLineWidth(0.4);
-      doc.roundedRect(bx, y, bw, 14, 2, 2, "FD");
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(6.5);
-      doc.setTextColor("#64748b");
-      doc.text(label, bx + bw / 2, y + 5, { align: "center", charSpace: 0.6 });
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(11);
-      doc.setTextColor(BRAND_NAVY);
-      doc.text(value, bx + bw / 2, y + 11, { align: "center" });
-      bx += bw + gap;
-    }
-  }
-
-  /* ---- foot: verification code, signatures, seal, issue ---- */
-  const footY = 176;
-  if (reference) {
-    // The code opens the public verification page for this number, so a
-    // phone camera settles whether the paper is genuine.
-    const origin = typeof window !== "undefined" && window.location ? window.location.origin : "";
-    const qr = await QRCode.toDataURL(`${origin}/verification.html?no=${encodeURIComponent(reference)}#certificate`, {
-      margin: 1,
-      width: 160,
-    }).catch(() => "");
-    tryImage(doc, qr, 24, footY - 18, 22, 22);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(6.5);
-    doc.setTextColor("#64748b");
-    doc.text("Scan to verify", 35, footY + 8, { align: "center" });
-  }
-  doc.setDrawColor(BRAND_NAVY);
-  doc.setLineWidth(0.4);
-  doc.line(80, footY, 128, footY);
-  doc.line(169, footY, 217, footY);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
-  doc.setTextColor(BRAND_NAVY);
-  doc.text("Centre Head", 104, footY + 5, { align: "center" });
-  doc.text(s.awarding?.signatory || "Director / Authorised Signatory", 193, footY + 5, { align: "center" });
-  seal(doc, cx, footY - 4, 13, logo);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(6.5);
-  doc.setTextColor(BRAND_GOLD_DARK);
-  doc.text("ISO 9001:2015 CERTIFIED", cx, footY + 13, { align: "center", charSpace: 0.5 });
-  const issued = new Date(s.issueDate || Date.now()).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" });
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
-  doc.setTextColor("#334155");
-  doc.text(`Date of issue: ${issued}`, 275, footY + 5, { align: "right" });
-  doc.setFontSize(7.5);
-  doc.setTextColor("#6b7280");
-  const ids = [reference ? `Enrollment No. ${reference}` : "", s.rollNo ? `Roll No. ${s.rollNo}` : ""].filter(Boolean);
-  if (ids.length) doc.text(ids.join("   \u2022   "), cx, 192, { align: "center" });
+export async function certificatesPdf(students: StudentDocument[], fileName = "certificates", extras: CertificateExtra[] = []) {
+  await brandCertificatesPdf(students.map((student, i) => ({ student, extra: extras[i] })), fileName);
 }
 
 export function feeStatementPdf(record: {

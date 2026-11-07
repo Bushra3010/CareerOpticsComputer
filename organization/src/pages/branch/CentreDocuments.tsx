@@ -16,11 +16,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { loadInstituteName } from "@/lib/instituteName";
-import {
-  printStandardCentreCertificate,
-  standardCentreCertificateHtml,
-  type BranchDetails,
-} from "@/lib/branchTemplateDocument";
+import { franchiseLicenceOf, printFranchiseLicences, type BranchDetails } from "@/lib/branchTemplateDocument";
 import { getBranchDetails, getBranches } from "@/lib/supabase/data";
 
 /**
@@ -77,10 +73,10 @@ export default function CentreDocuments() {
     };
   }, [branchId, organizationId, toast]);
 
-  const print = () => {
+  const print = async () => {
     if (!details) return;
     try {
-      printStandardCentreCertificate(details.branch, details.institute);
+      await printFranchiseLicences([details.branch]);
     } catch (error) {
       toast({
         title: "Could not print the certificate",
@@ -94,12 +90,12 @@ export default function CentreDocuments() {
     <AppLayout>
       <PageHeader
         title="Centre Certificate"
-        description="The certificate that names this branch an authorised study centre. Download saves it as PDF from the print dialog."
+        description="The franchise partner licence that names this branch an authorised study centre, on the academy's own design."
         breadcrumbs={[{ label: "Certificate & Marksheet" }, { label: "Centre Certificate" }]}
         actions={
-          <Button className="gap-2" onClick={print} disabled={loading || !details}>
+          <Button className="gap-2" onClick={() => void print()} disabled={loading || !details}>
             <Printer className="h-4 w-4" />
-            Print certificate
+            Download licence
           </Button>
         }
       />
@@ -140,14 +136,27 @@ export default function CentreDocuments() {
         ) : details ? (
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">Centre certificate</CardTitle>
+              <CardTitle className="text-base">Franchise partner licence</CardTitle>
             </CardHeader>
             <CardContent>
-              <div
-                className="overflow-hidden rounded-lg border bg-white p-4 text-black"
-                // standardCentreCertificateHtml escapes every value it writes.
-                dangerouslySetInnerHTML={{ __html: standardCentreCertificateHtml(details.branch, details.institute) }}
-              />
+              <dl className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-[auto_1fr]">
+                {(() => {
+                  const l = franchiseLicenceOf(details.branch);
+                  return [
+                    ["Centre", l.centreName],
+                    ["Address", l.address],
+                    ["Director", l.directorName],
+                    ["Branch code", l.branchCode],
+                    ["Contact", l.contact],
+                    ["Date of issue", new Date(l.issueDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })],
+                  ].map(([k, v]) => (
+                    <div key={k} className="contents">
+                      <dt className="text-muted-foreground">{k}</dt>
+                      <dd className="font-medium">{v || "—"}</dd>
+                    </div>
+                  ));
+                })()}
+              </dl>
             </CardContent>
           </Card>
         ) : null}

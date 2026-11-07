@@ -1,4 +1,6 @@
 import { printDesignPages } from "@/lib/export";
+import { franchiseLicencePdf, type FranchiseLicence } from "@/lib/brand/brandDocuments";
+import { MAIN_SITE_ORIGIN } from "@/lib/branchSite";
 
 /**
  * The centre certificate: what the office prints to say a branch is an
@@ -93,4 +95,28 @@ export function standardCentreCertificateHtml(branch: BranchDetails, institute: 
 /** The standard centre certificate on an A4 sheet of its own, with no report heading over it. */
 export function printStandardCentreCertificate(branch: BranchDetails, institute: string) {
   printDesignPages(`Centre Certificate — ${branch.name ?? ""}`, [standardCentreCertificateHtml(branch, institute)], 794, 1123);
+}
+
+/** The designer's franchise partner licence, filled from the branch's record. */
+export function franchiseLicenceOf(branch: BranchDetails, slug?: string | null): FranchiseLicence {
+  const address = branch.address ?? {};
+  const city = String(address.city || address.district || "");
+  const name = String(branch.name ?? "");
+  return {
+    centreName: city && !name.toLowerCase().includes(city.toLowerCase()) ? `${name}, ${city}` : name,
+    address: [address.streetAddress, address.city, address.district, address.state, address.pincode].filter(Boolean).join(", "),
+    directorName: String(branch.director?.name ?? branch.contactPerson ?? ""),
+    branchCode: String(branch.code ?? ""),
+    contact: String(branch.phone ?? ""),
+    issueDate: String(branch.license?.registrationDate ?? branch.createdAt ?? new Date().toISOString()),
+    verifyLink: slug ? `${MAIN_SITE_ORIGIN}/c/${slug}` : `${MAIN_SITE_ORIGIN}/franchise.html`,
+  };
+}
+
+/** One or many branches' licences in one PDF. */
+export async function printFranchiseLicences(branches: BranchDetails[], slugs: Record<string, string | null | undefined> = {}) {
+  await franchiseLicencePdf(
+    branches.map((b) => franchiseLicenceOf(b, slugs[String(b.id ?? "")])),
+    branches.length === 1 ? `franchise-licence-${branches[0].code ?? branches[0].name ?? ""}` : `franchise-licences-${branches.length}`,
+  );
 }

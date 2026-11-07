@@ -45,8 +45,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { getBranchesWithStats, updateBranchWithDetails, getBranchDetails, deleteBranch, setBranchLogin } from "@/lib/supabase/data";
 import { downloadCsv } from "@/lib/export";
 import { instituteName } from "@/lib/instituteName";
-import { type BranchDetails } from "@/lib/branchTemplateDocument";
-import { printHtml } from "@/lib/export";
+import { printFranchiseLicences, type BranchDetails } from "@/lib/branchTemplateDocument";
 import { isoOrNull, dateInputValue } from "@/lib/dates";
 import { INDIAN_STATES, canonicalState, districtsFor } from "@/data/indianStates";
 import { lookupPincode, geocode } from "@/lib/postal";
@@ -382,131 +381,35 @@ export default function ViewBranch() {
     fetchBranches();
   }, [toast, user?.organizationId]);
 
-  // Generate a single branch's certificate HTML content
-  const getCertificateHtml = (branch: Branch) => `
-    <div style="page-break-after:always;border:6px double #1f2937;padding:48px;text-align:center;font-family:Georgia,serif">
-      <p style="letter-spacing:.3em;font-size:12px;text-transform:uppercase;color:#6b7280">Career Optics Computer Academy</p>
-      <h1 style="margin:16px 0 4px;font-size:30px">Center Certificate</h1>
-      <p style="color:#6b7280;font-size:13px">This is to certify that the centre named below is authorised to operate</p>
-      <h2 style="margin:28px 0 4px;font-size:24px">${branch.name}</h2>
-      <p style="font-size:14px">Centre code <strong>${branch.code}</strong></p>
-      <p style="font-size:14px">${branch.city}, ${branch.state}</p>
-      <table style="margin:28px auto 0;font-size:13px;border-collapse:collapse">
-        <tr><td style="padding:4px 16px;text-align:right;color:#6b7280">Type</td><td style="padding:4px 16px;text-align:left"><strong>${branch.branchType}</strong></td></tr>
-        <tr><td style="padding:4px 16px;text-align:right;color:#6b7280">Status</td><td style="padding:4px 16px;text-align:left"><strong>${branch.status === "active" ? "Active" : "Inactive"}</strong></td></tr>
-      </table>
-      <p style="margin-top:48px;font-size:12px;color:#6b7280">Issued on ${new Date().toLocaleDateString()}</p>
-    </div>
-  `;
-
-  /**
-   * The certificates as the branches' own templates draw them: the full record
-   * behind each branch (address, director, licence) fills the template, and a
-   * branch the designer assigned nothing to keeps the built-in layout.
-   */
-  const printFromTemplates = async (branches: Branch[]) => {
-    const orgId = user?.organizationId ?? null;
-    const details = await Promise.all(
-      branches.map((branch) =>
-        orgId
-          ? getBranchDetails(orgId, branch.id)
-              .then((r) => r.data as BranchDetails)
-              .catch(() => ({ ...branch }) as BranchDetails)
-          : Promise.resolve({ ...branch } as BranchDetails),
-      ),
-    );
-    const byId = new Map(branches.map((branch) => [branch.id, branch]));
-    const title = branches.length === 1 ? `Centre Certificate — ${branches[0].name ?? ""}` : `Centre Certificates — ${branches.length} branches`;
-    printHtml(title, details.map((detail) => { const branch = byId.get(String(detail.id)); return branch ? getCertificateHtml(branch) : ""; }).join(""));
-  };
-
-  // Print certificate for a single branch
-  const certificate = (branch: Branch) =>
-    printFromTemplates([branch]).catch((error) =>
-      toast({
-        title: "Could not print the certificate",
-        description: error instanceof Error ? error.message : undefined,
-        variant: "destructive",
-      }),
-    );
-
-  // Bulk download certificates for selected branches
-  const bulkCertificates = async (branches: Branch[]) => {
-    if (branches.length === 0) {
+  /** The franchise partner licence for the chosen branches, each from its full record. */
+  const printLicences = async (branches: Branch[]) => {
+    if (!branches.length) {
       toast({ title: "No branches selected", variant: "destructive" });
       return;
     }
+    const orgId = user?.organizationId ?? null;
     try {
-      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const margin = 15;
-
-      for (let i = 0; i < branches.length; i++) {
-        const branch = branches[i];
-        if (i > 0) pdf.addPage();
-
-        // Header
-        pdf.setFontSize(10);
-        pdf.setTextColor(107, 114, 128);
-        pdf.text("Career Optics Computer Academy", pageWidth / 2, margin, { align: "center" });
-
-        pdf.setFontSize(26);
-        pdf.setTextColor(31, 41, 55);
-        pdf.text("Center Certificate", pageWidth / 2, margin + 12, { align: "center" });
-
-        pdf.setFontSize(11);
-        pdf.setTextColor(107, 114, 128);
-        pdf.text("This is to certify that the centre named below is authorised to operate", pageWidth / 2, margin + 20, { align: "center" });
-
-        // Branch name
-        pdf.setFontSize(20);
-        pdf.setTextColor(31, 41, 55);
-        pdf.text(branch.name, pageWidth / 2, margin + 35, { align: "center" });
-
-        // Details
-        pdf.setFontSize(12);
-        pdf.setTextColor(55, 65, 81);
-        pdf.text(`Centre code ${branch.code}`, pageWidth / 2, margin + 44, { align: "center" });
-        pdf.text(`${branch.city}, ${branch.state}`, pageWidth / 2, margin + 51, { align: "center" });
-
-        // Table
-        const tableY = margin + 62;
-        pdf.setDrawColor(200, 200, 200);
-        pdf.setLineWidth(0.3);
-
-        // Type row
-        pdf.setTextColor(107, 114, 128);
-        pdf.text("Type", pageWidth / 2 - 40, tableY, { align: "right" });
-        pdf.setTextColor(31, 41, 55);
-        pdf.setFont(undefined, "bold");
-        pdf.text(branch.branchType, pageWidth / 2 + 10, tableY, { align: "left" });
-        pdf.setFont(undefined, "normal");
-
-        // Status row
-        pdf.setTextColor(107, 114, 128);
-        pdf.text("Status", pageWidth / 2 - 40, tableY + 8, { align: "right" });
-        pdf.setTextColor(31, 41, 55);
-        pdf.setFont(undefined, "bold");
-        pdf.text(branch.status === "active" ? "Active" : "Inactive", pageWidth / 2 + 10, tableY + 8, { align: "left" });
-        pdf.setFont(undefined, "normal");
-
-        // Footer
-        pdf.setFontSize(10);
-        pdf.setTextColor(107, 114, 128);
-        pdf.text(`Issued on ${new Date().toLocaleDateString()}`, pageWidth / 2, pageHeight - margin, { align: "center" });
-      }
-
-      pdf.save(`center-certificates-${new Date().toISOString().slice(0, 10)}.pdf`);
-      toast({ title: `${branches.length} certificate${branches.length > 1 ? "s" : ""} downloaded` });
+      const details = await Promise.all(
+        branches.map((branch) =>
+          orgId
+            ? getBranchDetails(orgId, branch.id)
+                .then((r) => r.data as BranchDetails)
+                .catch(() => ({ ...branch }) as BranchDetails)
+            : Promise.resolve({ ...branch } as BranchDetails),
+        ),
+      );
+      await printFranchiseLicences(details);
+      toast({ title: `${branches.length} licence${branches.length > 1 ? "s" : ""} downloaded` });
     } catch (error) {
       toast({
-        title: "Failed to generate certificates",
+        title: "Could not make the licence",
         description: error instanceof Error ? error.message : undefined,
         variant: "destructive",
       });
     }
   };
+  const certificate = (branch: Branch) => printLicences([branch]);
+  const bulkCertificates = (branches: Branch[]) => printLicences(branches);
 
   const handleSelectionChange = (ids: (string | number)[]) => {
     setSelectedBranches(branchesData.filter((b) => ids.includes(b.id)));

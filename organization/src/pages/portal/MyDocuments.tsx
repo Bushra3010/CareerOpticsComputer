@@ -15,7 +15,7 @@ import { getPortalRequests, getStudentProfile, getStudentPortalInvoices, getStud
 import { useAuth } from "@/contexts/AuthContext";
 import { downloadHtml, printHtml } from "@/lib/export";
 import { admissionPdf } from "@/lib/documents";
-import { admitCardHtml, blankAdmitCardTemplate, type Exam } from "@/data/admit-card-templates";
+import { blankAdmitCardTemplate, type Exam } from "@/data/admit-card-templates";
 import { getPublicAdmitCard, type PublicAdmitCard } from "@/lib/supabase/examWorkflow";
 import { termLabel, termPlan } from "@/lib/examWorkflow";
 import { studentCardsPdf } from "@/lib/brand/brandDocuments";
@@ -156,11 +156,6 @@ export default function MyDocuments() {
       setCardBusy(false);
     }
   };
-  const printAdmitCard = () => {
-    if (!admitCard || !admitStudent) return toast({ title: "Admit card not issued yet", description: "Your centre issues it once the exam schedule is out.", variant: "destructive" });
-    if (admitBlocked) return toast({ title: "Admit card on hold", description: `${money(dues.overdue)} is overdue. Clear it from Fees & receipts to release the card.`, variant: "destructive" });
-    printHtml(`Admit card — ${profile?.name}`, admitCardHtml(admitCard, admitStudent));
-  };
   const downloadAdmitCard = () => {
     if (!admitCard || !admitStudent) return toast({ title: "Admit card not issued yet", description: "Your centre issues it once the exam schedule is out.", variant: "destructive" });
     if (admitBlocked) return toast({ title: "Admit card on hold", description: `${money(dues.overdue)} is overdue. Clear it from Fees & receipts to release the card.`, variant: "destructive" });
@@ -233,11 +228,10 @@ export default function MyDocuments() {
             <CardContent>
               {admitBlocked && <p className="mb-3 rounded-xl border border-destructive/25 bg-destructive/10 p-3 text-xs text-destructive">Held back: {money(dues.overdue)} is overdue. The card is released as soon as the balance is cleared.</p>}
               {admitCard && admitStudent
-                ? <div className="max-h-[420px] overflow-auto rounded-2xl bg-muted/50 p-4" dangerouslySetInnerHTML={{ __html: admitCardHtml(admitCard, admitStudent) }} />
+                ? <p className="text-sm text-muted-foreground">{exam?.label} · {exam?.window}. Your admit card is on the academy's letterhead with your roll number, photo and paper-wise schedule.</p>
                 : <p className="py-10 text-center text-sm text-muted-foreground">Your admit card has not been issued yet. It appears here once your centre issues it.</p>}
               <div className="mt-4 flex flex-wrap gap-2">
                 <Button size="sm" onClick={downloadAdmitCard} disabled={!admitCard || !profile}><Download className="mr-1.5 h-3.5 w-3.5" />Download PDF</Button>
-                <Button size="sm" variant="outline" onClick={printAdmitCard} disabled={!admitCard || !profile}><Printer className="mr-1.5 h-3.5 w-3.5" />Print</Button>
                 {exam && <span className="self-center text-xs text-muted-foreground">{exam.window}</span>}
               </div>
             </CardContent>

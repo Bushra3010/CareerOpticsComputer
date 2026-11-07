@@ -483,3 +483,237 @@ export async function verificationLetterPdf(v: VerificationLetter) {
   await drawVerificationLetter(doc, v);
   save(doc, `verification-letter-${v.enrollmentNo || v.studentName}.pdf`);
 }
+
+/* ------------------------------------------------------------------ */
+/* Course certificate (A4 landscape, on the designer's sheet)           */
+/* ------------------------------------------------------------------ */
+
+/** A4 landscape in pt; the certificate artwork was measured as fractions of the sheet. */
+const CERT = { w: 841.9, h: 595.3 };
+const cx = (f: number) => f * CERT.w;
+const cy = (f: number) => f * CERT.h;
+
+export type CertificateExtra = { certificate_no?: string; serial_no?: string };
+
+/**
+ * The course-completion certificate on the designer's landscape sheet: the
+ * numbers top-left, the student's particulars on the dotted lines, the grade
+ * from the final result, the photograph top-right and the QR bottom-left.
+ */
+export async function drawBrandCertificate(doc: jsPDF, s: StudentDocument, extra: CertificateExtra = {}) {
+  await registerBrandFonts(doc, ["Poppins-SemiBold", "Poppins-Bold"]);
+  await background(doc, "certificate.jpg", CERT.w, CERT.h);
+  const DARK = "#1a1f4b";
+  const name = fullName(s) || "-";
+  const regd = s.enrollmentNo || s.applicationNo || "";
+  const summary = marksheetSummary(s.examResults);
+  const percentage = summary.max ? (summary.total / summary.max) * 100 : 0;
+  const grade = summary.max ? marksheetGrade(percentage, summary.result === "Pass") : "";
+  const V = (text: string, x: number, y: number, maxWidth: number, size = 12.5, color = DARK) =>
+    put(doc, text, { x: cx(x), y: cy(y), size, font: "Poppins-SemiBold", color, maxWidth: cx(maxWidth) });
+
+  V(extra.certificate_no || "", 0.2023, 0.3095, 0.125, 12);
+  V(regd, 0.2023, 0.3447, 0.125, 12);
+  V(extra.serial_no || s.rollNo || "", 0.2023, 0.3795, 0.125, 12);
+
+  picture(doc, s.photo, cx(0.832), cy(0.288), cx(0.916 - 0.832), cy(0.434 - 0.288));
+
+  V(name.toUpperCase(), 0.4611, 0.4725, 0.45, 13.5);
+  V((s.fatherName || "").toUpperCase(), 0.3322, 0.5295, 0.58, 13);
+  V((s.course?.name || "").toUpperCase(), 0.403, 0.5815, 0.51, 13);
+  V((s.course?.duration || "").toUpperCase(), 0.238, 0.6305, 0.12, 12.5);
+  V(grade, 0.5153, 0.6305, 0.1, 12.5);
+  V(ddmmyyyy(s.dateOfBirth), 0.73, 0.6305, 0.18, 12.5);
+  V((s.branch.name || s.branch.organization.name).toUpperCase(), 0.1596, 0.6875, 0.75, 13, RED);
+  V(ddmmyyyy(s.admissionDate), 0.2503, 0.7345, 0.1, 12.5);
+  V(ddmmyyyy(s.issueDate), 0.7794, 0.7345, 0.13, 12.5);
+
+  const code = await qr(verifyUrl(extra.certificate_no || regd || name, "certificate"));
+  picture(doc, code, cx(0.088), cy(0.788), cx(0.078), cx(0.078));
+}
+
+export async function brandCertificatePdf(s: StudentDocument, extra: CertificateExtra = {}) {
+  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+  await drawBrandCertificate(doc, s, extra);
+  save(doc, `certificate-${s.enrollmentNo || s.applicationNo || fullName(s) || "-"}.pdf`);
+}
+
+export async function brandCertificatesPdf(items: Array<{ student: StudentDocument; extra?: CertificateExtra }>, fileName = "certificates") {
+  if (!items.length) return;
+  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+  for (const [i, item] of items.entries()) {
+    if (i) doc.addPage();
+    await drawBrandCertificate(doc, item.student, item.extra);
+  }
+  save(doc, `${fileName}.pdf`);
+}
+
+/* ------------------------------------------------------------------ */
+/* Franchise partner licence (A4 portrait, on the designer's sheet)     */
+/* ------------------------------------------------------------------ */
+
+const LIC = { w: 595.3, h: 841.9 };
+const lx = (f: number) => f * LIC.w;
+const ly = (f: number) => f * LIC.h;
+
+export interface FranchiseLicence {
+  /** "SUCCESS COMPUTER INSTITUTE, UTTAM NAGAR, DELHI" */
+  centreName: string;
+  address: string;
+  directorName: string;
+  branchCode: string;
+  contact: string;
+  issueDate: string | Date;
+  /** What the QR opens: the centre's own website, else the verification page. */
+  verifyLink: string;
+}
+
+export async function drawFranchiseLicence(doc: jsPDF, l: FranchiseLicence) {
+  await registerBrandFonts(doc, ["Poppins-SemiBold", "Poppins-Bold", "Poppins-ExtraBold"]);
+  await background(doc, "franchise-licence.jpg", LIC.w, LIC.h);
+  put(doc, l.centreName.toUpperCase(), { x: lx(0.5), y: ly(0.4306), size: 19, font: "Poppins-ExtraBold", color: RED, align: "center", maxWidth: lx(0.82) });
+  put(doc, l.address.toUpperCase(), { x: lx(0.5), y: ly(0.4564), size: 10, font: "Poppins-SemiBold", color: NAVY, align: "center", maxWidth: lx(0.8), charSpace: 0.4 });
+  put(doc, l.directorName.toUpperCase(), { x: lx(0.5), y: ly(0.6009), size: 17, font: "Poppins-ExtraBold", color: RED, align: "center", maxWidth: lx(0.6) });
+  const box = (text: string, centre: number) => put(doc, text, { x: lx(centre), y: ly(0.6689), size: 16, font: "Poppins-ExtraBold", color: NAVY, align: "center", maxWidth: lx(0.2) });
+  box(l.branchCode, 0.236);
+  box(l.contact, 0.5);
+  box(ddmmyyyy(l.issueDate).replace(/-/g, "/"), 0.7646);
+  const code = await qr(l.verifyLink);
+  picture(doc, code, lx(0.437), ly(0.7445), lx(0.127), lx(0.127));
+}
+
+export async function franchiseLicencePdf(licences: FranchiseLicence[], fileName = "franchise-licence") {
+  if (!licences.length) return;
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+  for (const [i, l] of licences.entries()) {
+    if (i) doc.addPage();
+    await drawFranchiseLicence(doc, l);
+  }
+  save(doc, `${fileName}.pdf`);
+}
+
+/* ------------------------------------------------------------------ */
+/* Admit card (A4 portrait, on the academy's letterhead)                */
+/* ------------------------------------------------------------------ */
+
+export interface AdmitCard {
+  name: string;
+  enrollmentNo: string;
+  rollNo: string;
+  course: string;
+  /** "Term 1 (Semester Examination)" */
+  term: string;
+  session?: string;
+  /** The exam window as words: "12 Dec 2026 to 15 Dec 2026". */
+  examWindow: string;
+  examCentre?: string;
+  schedule: Array<{ subject: string; when: string }>;
+  photo?: string | null;
+  fatherName?: string;
+}
+
+const ADMIT_INSTRUCTIONS = [
+  "Carry this admit card and a valid photo ID to every paper. Without both, entry to the examination hall is not allowed.",
+  "Reach the examination centre 30 minutes before the reporting time. Latecomers may be refused entry.",
+  "Mobile phones, smart watches, calculators and written material are not permitted inside the hall.",
+  "Write your roll number exactly as printed here on the answer sheet.",
+  "Any unfair means will lead to cancellation of the examination.",
+];
+
+export async function drawAdmitCard(doc: jsPDF, a: AdmitCard) {
+  await registerBrandFonts(doc, ["Poppins-Regular", "Poppins-Medium", "Poppins-SemiBold", "Poppins-Bold", "Poppins-ExtraBold"]);
+  await background(doc, "letterhead.jpg", MS.w, MS.h);
+  const left = 45.4;
+  const right = 549.9;
+
+  put(doc, "ADMIT CARD", { x: MS.w / 2, y: 236, size: 20, font: "Poppins-ExtraBold", color: NAVY, align: "center", charSpace: 2.5 });
+  put(doc, [a.course, a.term, a.session].filter(Boolean).join("  ·  ").toUpperCase(), { x: MS.w / 2, y: 252, size: 8.5, font: "Poppins-SemiBold", color: ORANGE, align: "center", maxWidth: 440, charSpace: 1 });
+
+  // Photograph and the roll number under it
+  doc.setDrawColor(...rgb(ORANGE));
+  doc.setLineWidth(pt(1.2));
+  doc.rect(pt(465), pt(268), pt(78), pt(94));
+  if (!picture(doc, a.photo, 466, 269, 76, 92)) put(doc, "Photograph", { x: 504, y: 318, size: 8, font: "Poppins-Regular", color: "#8a8fa5", align: "center" });
+  put(doc, "Roll No.", { x: 504, y: 376, size: 8, font: "Poppins-Regular", color: "#4a4f63", align: "center" });
+  put(doc, a.rollNo, { x: 504, y: 392, size: 14, font: "Poppins-ExtraBold", color: RED, align: "center", maxWidth: 90 });
+
+  // Particulars
+  const rows: Array<[string, string]> = [
+    ["Candidate's Name", a.name.toUpperCase()],
+    ["Father's / Husband's Name", (a.fatherName || "").toUpperCase()],
+    ["Enrolment No.", a.enrollmentNo],
+    ["Course", a.course],
+    ["Examination", a.term],
+    ["Exam Dates", a.examWindow],
+    ["Exam Centre", a.examCentre || ""],
+  ].filter(([, v]) => v) as Array<[string, string]>;
+  let y = 285;
+  for (const [label, value] of rows) {
+    put(doc, label, { x: left, y, size: 9.5, font: "Poppins-SemiBold", color: NAVY });
+    put(doc, ":", { x: left + 150, y, size: 9.5, font: "Poppins-SemiBold", color: NAVY });
+    put(doc, value, { x: left + 158, y, size: 9.5, font: "Poppins-Medium", color: "#1a1a1a", maxWidth: 255 });
+    doc.setDrawColor(205, 212, 230);
+    doc.setLineWidth(pt(0.5));
+    doc.setLineDashPattern([pt(1), pt(1.5)], 0);
+    doc.line(pt(left), pt(y + 5), pt(left + 400), pt(y + 5));
+    doc.setLineDashPattern([], 0);
+    y += 19;
+  }
+
+  // The schedule, one paper a row
+  y = Math.max(y + 14, 412);
+  const cols = [left, left + 40, left + 300, right];
+  doc.setFillColor(...rgb("#1f3a99"));
+  doc.rect(pt(cols[0]), pt(y), pt(right - left), pt(20), "F");
+  put(doc, "S. NO.", { x: (cols[0] + cols[1]) / 2, y: y + 13.5, size: 8, font: "Poppins-SemiBold", color: "#ffffff", align: "center" });
+  put(doc, "PAPER / SUBJECT", { x: cols[1] + 10, y: y + 13.5, size: 8, font: "Poppins-SemiBold", color: "#ffffff", charSpace: 0.6 });
+  put(doc, "DATE & TIME", { x: (cols[2] + cols[3]) / 2, y: y + 13.5, size: 8, font: "Poppins-SemiBold", color: "#ffffff", align: "center", charSpace: 0.6 });
+  y += 20;
+  const slots = a.schedule.length ? a.schedule : [{ subject: "Schedule to be announced", when: "" }];
+  slots.slice(0, 14).forEach((slot, i) => {
+    if (i % 2) {
+      doc.setFillColor(238, 241, 249);
+      doc.rect(pt(cols[0]), pt(y), pt(right - left), pt(18), "F");
+    }
+    put(doc, String(i + 1), { x: (cols[0] + cols[1]) / 2, y: y + 12.5, size: 9, font: "Poppins-Medium", color: "#1a1a1a", align: "center" });
+    put(doc, slot.subject, { x: cols[1] + 10, y: y + 12.5, size: 9, font: "Poppins-Medium", color: "#1a1a1a", maxWidth: 245 });
+    put(doc, slot.when, { x: (cols[2] + cols[3]) / 2, y: y + 12.5, size: 9, font: "Poppins-SemiBold", color: NAVY, align: "center", maxWidth: 190 });
+    y += 18;
+  });
+  doc.setDrawColor(...rgb("#1f3a99"));
+  doc.setLineWidth(pt(0.8));
+  doc.line(pt(left), pt(y), pt(right), pt(y));
+
+  // Instructions
+  y += 22;
+  put(doc, "INSTRUCTIONS TO THE CANDIDATE", { x: left, y, size: 8.5, font: "Poppins-Bold", color: ORANGE, charSpace: 1 });
+  y += 14;
+  doc.setFont(fontOn(doc, "Poppins-Regular"), "normal");
+  doc.setFontSize(8.5);
+  for (const line of ADMIT_INSTRUCTIONS) {
+    const wrapped = doc.splitTextToSize(line, pt(right - left - 14)) as string[];
+    put(doc, "•", { x: left, y, size: 8.5, font: "Poppins-Bold", color: ORANGE });
+    wrapped.forEach((w, i) => put(doc, w, { x: left + 12, y: y + i * 11.5, size: 8.5, font: "Poppins-Regular", color: "#333333" }));
+    y += wrapped.length * 11.5 + 2;
+    if (y > 630) break;
+  }
+
+  // The candidate signs bottom-left; the letterhead already carries the authorised signatory bottom-right.
+  doc.setDrawColor(...rgb(NAVY));
+  doc.setLineWidth(pt(0.6));
+  doc.line(pt(left), pt(702), pt(left + 150), pt(702));
+  put(doc, "Candidate's Signature", { x: left + 75, y: 712, size: 7.5, font: "Poppins-SemiBold", color: NAVY, align: "center" });
+  const code = await qr(verifyUrl(a.enrollmentNo || a.rollNo, "admit"), 300);
+  picture(doc, code, 250, 650, 56, 56);
+  put(doc, "Scan to verify", { x: 278, y: 715, size: 7, font: "Poppins-SemiBold", color: NAVY, align: "center" });
+}
+
+export async function brandAdmitCardsPdf(cards: AdmitCard[], fileName = "admit-cards") {
+  if (!cards.length) return;
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+  for (const [i, card] of cards.entries()) {
+    if (i) doc.addPage();
+    await drawAdmitCard(doc, card);
+  }
+  save(doc, `${fileName}.pdf`);
+}

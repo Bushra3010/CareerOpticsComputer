@@ -154,8 +154,8 @@ export default function Certificates({ passoutOnly = false }: { passoutOnly?: bo
     return { doc, extra, branchId: data.branchId || ownBranch };
   };
   const printFor = async (sid: string, dates: Dates) => {
-    const { doc } = await certificateDoc(sid, dates);
-    await certificatePdf(doc);
+    const { doc, extra } = await certificateDoc(sid, dates);
+    await certificatePdf(doc, extra);
   };
 
   /**
@@ -204,7 +204,7 @@ export default function Certificates({ passoutOnly = false }: { passoutOnly?: bo
     try {
       if (printable.length) {
         setProgress("Preparing the print…");
-        await certificatesPdf(printable.map((p) => p.doc), `certificates-${branchOf.get(branchId)?.name || "centre"}`);
+        await certificatesPdf(printable.map((p) => p.doc), `certificates-${branchOf.get(branchId)?.name || "centre"}`, printable.map((p) => p.extra));
         toast({
           title: `${printable.length} certificate(s) ready`,
           description: `${issuedNow} newly issued${charged ? `, ₹${charged.toLocaleString("en-IN")} deducted from the centre wallet` : ""}.`,

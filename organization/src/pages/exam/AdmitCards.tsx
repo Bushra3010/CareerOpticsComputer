@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Printer } from "lucide-react";
-import QRCode from "qrcode";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { DataTable, type Column } from "@/components/ui/DataTable";
@@ -12,7 +11,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { printHtml } from "@/lib/export";
 import { matchesSearch } from "@/lib/search";
 import { getStudentDocument } from "@/lib/supabase/data";
 import { isFinalTerm, termLabel, termPlan, termsOf, type CourseSubject } from "@/lib/examWorkflow";
@@ -25,24 +23,8 @@ import {
   type AdmitCardRecord,
   type ExamSchedule,
 } from "@/lib/supabase/examWorkflow";
-import {
-  ADMIT_CARD_TEMPLATES_KEY,
-  admitCardSheetHtml,
-  blankAdmitCardTemplate,
-  type AdmitCardStudent,
-  type AdmitCardTemplate,
-  type Exam,
-} from "@/data/admit-card-templates";
+import { brandAdmitCardsPdf, type AdmitCard } from "@/lib/brand/brandDocuments";
 import { studentName, useExamData, type ExamStudent } from "./useExamData";
-
-const readTemplates = (): AdmitCardTemplate[] => {
-  try {
-    const raw = localStorage.getItem(ADMIT_CARD_TEMPLATES_KEY);
-    return raw ? (JSON.parse(raw) as AdmitCardTemplate[]).filter((t) => t.status === "active") : [];
-  } catch {
-    return [];
-  }
-};
 
 const day = (iso: string) =>
   iso ? new Date(`${iso}T00:00:00`).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "";
@@ -65,8 +47,6 @@ export default function AdmitCards() {
   const [schedules, setSchedules] = useState<ExamSchedule[]>([]);
   const [subjects, setSubjects] = useState<CourseSubject[]>([]);
   const [busy, setBusy] = useState(false);
-  const [templates] = useState(readTemplates);
-  const [templateId, setTemplateId] = useState("");
   // One student at a time, or many ticked at once.
   const [many, setMany] = useState(false);
   const [picked, setPicked] = useState<Set<string>>(new Set());
@@ -80,9 +60,6 @@ export default function AdmitCards() {
   useEffect(() => {
     if (!session && sessions[0]) setSession(sessions[0]);
   }, [sessions, session]);
-  useEffect(() => {
-    if (!templateId && templates[0]) setTemplateId(templates[0].id);
-  }, [templates, templateId]);
 
   const load = useCallback(async () => {
     try {
@@ -181,45 +158,35 @@ export default function AdmitCards() {
 
   const print = async (records: AdmitCardRecord[]) => {
     if (!records.length) return;
-    const template = templates.find((t) => t.id === templateId) || { ...blankAdmitCardTemplate(), id: "default", name: "Admit card", status: "active" as const };
     try {
-      const first = await getStudentDocument(records[0].studentId, ownBranch);
-      const institute = { name: first.data.branch.organization.name || first.data.branch.name, address: first.data.branch.address || "" };
-      const sheets: string[] = [];
+      const built: AdmitCard[] = [];
       for (const card of records) {
         const st = studentOf.get(card.studentId);
         const c = courseOf.get(card.courseId);
         const sch = schedules.find((s) => s.id === card.scheduleId);
         const centre = centreOf.get(card.examCentreId);
         const dates = (sch?.items || []).map((i) => i.date).filter(Boolean).sort();
-        const exam: Exam = {
-          value: card.id,
-          label: `${c?.name || "Examination"} — ${termLabel(termPlan(c).type, card.term)}${card.session ? ` (${card.session})` : ""}`,
-          window: dates.length ? `${day(dates[0])}${dates.length > 1 ? ` to ${day(dates[dates.length - 1])}` : ""}` : "To be announced",
-          schedule: [
-            ...(centre ? [{ subject: "Exam centre", when: [centre.name, centre.address].filter(Boolean).join(", ") }] : []),
-            ...(sch?.items || []).map((i) => ({
-              subject: subjects.find((s) => s.id === i.subjectId)?.name || "Paper",
-              when: `${day(i.date)} ${i.time}`,
-            })),
-          ],
-        };
         // The photo is not in the pick list (it would carry every student's
         // upload); it comes with the card's own document record.
-        const docRecord = card.studentId === records[0].studentId ? first : await getStudentDocument(card.studentId, ownBranch);
-        const student: AdmitCardStudent = {
-          id: st?.enrollmentNo || st?.applicationNo || card.rollNo,
+        const docRecord = await getStudentDocument(card.studentId, ownBranch);
+        built.push({
           name: studentName(st),
-          class: c?.name || "",
-          section: termLabel(termPlan(c).type, card.term),
+          enrollmentNo: st?.enrollmentNo || st?.applicationNo || card.rollNo,
           rollNo: card.rollNo,
-          feeStatus: "paid",
-          photo: docRecord.data.photo || undefined,
-          qr: await QRCode.toDataURL(`admit:${st?.enrollmentNo || st?.applicationNo || card.rollNo}`, { margin: 1, width: 128 }),
-        };
-        sheets.push(admitCardSheetHtml({ ...template, liveExam: exam, institute }, [student]));
+          course: c?.name || "",
+          term: termLabel(termPlan(c).type, card.term),
+          session: card.session || undefined,
+          examWindow: dates.length ? `${day(dates[0])}${dates.length > 1 ? ` to ${day(dates[dates.length - 1])}` : ""}` : "To be announced",
+          examCentre: centre ? [centre.name, centre.address].filter(Boolean).join(", ") : undefined,
+          schedule: (sch?.items || []).map((i) => ({
+            subject: subjects.find((s) => s.id === i.subjectId)?.name || "Paper",
+            when: `${day(i.date)} ${i.time}`,
+          })),
+          photo: docRecord.data.photo || null,
+          fatherName: docRecord.data.fatherName || undefined,
+        });
       }
-      printHtml(`Admit card${records.length > 1 ? "s" : ""}`, sheets.join('<div style="page-break-after:always"></div>'));
+      await brandAdmitCardsPdf(built, records.length > 1 ? `admit-cards-${records.length}` : `admit-card-${records[0].rollNo}`);
     } catch (e) {
       toast({ title: "Could not print", description: e instanceof Error ? e.message : "", variant: "destructive" });
     }
@@ -371,14 +338,6 @@ export default function AdmitCards() {
             <Button size="sm" variant="outline" disabled={!cards.length} onClick={() => void print(cards)}>
               Print all ({cards.length})
             </Button>
-            <Label className="text-xs text-muted-foreground">Print with</Label>
-            <Select value={templateId || "default"} onValueChange={setTemplateId}>
-              <SelectTrigger className="w-56"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {!templates.length && <SelectItem value="default">Standard layout</SelectItem>}
-                {templates.map((t) => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
           </div>
         </CardHeader>
         <CardContent>

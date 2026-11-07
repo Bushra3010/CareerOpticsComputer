@@ -4,7 +4,8 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { DceButton, DceLinkButton, DcePanel, DceSelect } from "@/components/dce/Dce";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { printStandardCentreCertificate, type BranchDetails } from "@/lib/branchTemplateDocument";
+import { printFranchiseLicences, type BranchDetails } from "@/lib/branchTemplateDocument";
+import { staffCardsPdf } from "@/lib/brand/brandDocuments";
 import { loadInstituteLogo } from "@/lib/instituteLogo";
 import { loadInstituteName } from "@/lib/instituteName";
 import { asFile } from "@/lib/studentDocuments";
@@ -144,49 +145,6 @@ function admissionFormHtml({ branch, institute, logo }: Ctx) {
   );
 }
 
-/* ------------------------------------------------------- Director ID card */
-
-function idCardHtml({ branch, institute, logo }: Ctx) {
-  const director = branch.director ?? {};
-  const name = String(director.name || branch.contactPerson || branch.name || "");
-  const photo = asFile("photo", "Director Photo", director.photo)?.url ?? "";
-  const valid = longDate(branch.license?.expiryDate ?? branch.license?.validDate) || "—";
-  const body = `
-  <div class="card">
-    <div class="top">${logoTag(logo, 30)}<div><b>${esc(institute)}</b><small>Authorised Franchise</small></div></div>
-    <div class="mid">
-      <div class="ph">${photo ? `<img src="${esc(photo)}" alt="" />` : "PHOTO"}</div>
-      <div class="info">
-        <p class="nm">${esc(name)}</p>
-        <p class="role">Franchise Director</p>
-        <p><span>Centre</span>${esc(branch.name)}</p>
-        <p><span>Code</span>${esc(branch.code || "—")}</p>
-        <p><span>Phone</span>${esc(branch.phone || "—")}</p>
-        <p><span>Valid upto</span>${esc(valid)}</p>
-      </div>
-    </div>
-    <div class="bot">Helpline: ${HELPLINE}</div>
-  </div>`;
-  return pageDocument(
-    `Director ID Card — ${branch.name ?? ""}`,
-    "size:85.6mm 54mm;margin:0",
-    body,
-    `.card{width:85.6mm;height:54mm;overflow:hidden;display:flex;flex-direction:column;border:1px solid #173653;border-radius:3mm}
-     .top{display:flex;align-items:center;gap:2mm;background:#173653;color:#fff;padding:1.5mm 2.5mm}
-     .top b{display:block;font-size:8.5pt;text-transform:uppercase;line-height:1.1}
-     .top small{font-size:6pt;color:#c7ff2f}
-     .mid{flex:1;display:flex;gap:2.5mm;padding:2mm 2.5mm}
-     .ph{width:20mm;height:24mm;border:1px solid #173653;display:flex;align-items:center;justify-content:center;font-size:6pt;color:#777;overflow:hidden}
-     .ph img{width:100%;height:100%;object-fit:cover}
-     .info{flex:1;font-size:6.5pt;line-height:1.35}
-     .info p{margin:0}
-     .info .nm{font-size:9pt;font-weight:bold;color:#173653}
-     .info .role{font-size:6.5pt;color:#b91c1c;font-weight:bold;margin-bottom:1mm}
-     .info span{display:inline-block;width:14mm;color:#555}
-     .bot{background:#38c3be;color:#fff;text-align:center;font-size:6.5pt;font-weight:bold;padding:1mm}`,
-  );
-}
-
 /* --------------------------------------------------------- Promotional banner */
 
 function bannerHtml({ branch, institute, logo, courses }: Ctx) {
@@ -274,9 +232,32 @@ export default function CentreDownloads() {
   const printAuthorization = async () => {
     if (!ctx || !target) return;
     try {
-      printStandardCentreCertificate(ctx.branch, ctx.institute);
+      await printFranchiseLicences([ctx.branch]);
     } catch (error) {
       toast({ title: "Could not print the authorization letter", description: (error as Error).message, variant: "destructive" });
+    }
+  };
+
+  const directorCard = async () => {
+    if (!ctx) return;
+    const director = ctx.branch.director ?? {};
+    try {
+      await staffCardsPdf(
+        [
+          {
+            name: String(director.name || ctx.branch.contactPerson || ctx.branch.name || ""),
+            role: "Center Director",
+            idNo: String(ctx.branch.code || ""),
+            phone: String(ctx.branch.phone || ""),
+            centre: [ctx.branch.name, addressOf(ctx.branch)].filter(Boolean).join(", "),
+            validTill: String(ctx.branch.license?.expiryDate ?? ctx.branch.license?.validDate ?? ""),
+            photo: asFile("photo", "Director Photo", director.photo)?.url ?? null,
+          },
+        ],
+        `director-id-card-${String(ctx.branch.code || "centre")}.pdf`,
+      );
+    } catch (error) {
+      toast({ title: "Could not make the card", description: (error as Error).message, variant: "destructive" });
     }
   };
 
@@ -301,8 +282,8 @@ export default function CentreDownloads() {
         },
         {
           title: "Franchise Director ID Card",
-          text: "A CR80-size identity card for the centre director.",
-          actions: <DceButton onClick={() => open(idCardHtml(ctx))}>Print</DceButton>,
+          text: "The director's identity card on the academy's design, front and back, as a PDF.",
+          actions: <DceButton onClick={() => void directorCard()}>Download</DceButton>,
         },
         {
           title: "Promotional Banner",
