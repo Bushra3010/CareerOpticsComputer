@@ -342,9 +342,16 @@ export async function createInvoiceRow(
   branchId: string | null,
   input: CreateInvoiceInput,
 ): Promise<{ success: true; data: InvoiceRow }> {
+  // The head office has no branch of its own; an invoice it raises belongs to
+  // the student's centre. Without this the insert failed on the NOT NULL branch.
+  let owner = branchId || null;
+  if (!owner && input.studentId) {
+    const { data: student } = await supabase.from("students").select("branchId").eq("id", input.studentId).maybeSingle();
+    owner = (student?.branchId as string | undefined) || null;
+  }
   const payload = compact({
     invoiceNo: invoiceNumber(),
-    branchId: branchId || undefined,
+    branchId: owner || undefined,
     studentId: input.studentId,
     description: input.description || "Fee invoice",
     totalAmount: Number(input.totalAmount) || 0,

@@ -1449,14 +1449,7 @@ export async function getInvoices(branchId: string | null) {
 }
 
 export async function createInvoice(branchId: string, input: Record<string, unknown>) {
-  // The head office has no branch of its own; an invoice it raises belongs to
-  // the student's centre. Without this the insert failed on the NOT NULL branch.
-  let owner = branchId || null;
-  if (!owner && input.studentId) {
-    const { data } = await supabase.from("students").select("branchId").eq("id", String(input.studentId)).maybeSingle();
-    owner = (data?.branchId as string | undefined) || null;
-  }
-  return createInvoiceRow(owner, input as unknown as CreateInvoiceInput);
+  return createInvoiceRow(branchId || null, input as unknown as CreateInvoiceInput);
 }
 
 export async function updateInvoice(id: string, _branchId: string, input: Record<string, unknown>) {
