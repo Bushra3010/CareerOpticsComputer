@@ -832,22 +832,38 @@ const SLIP = { w: 595.3, h: 419.5 };
  * enrolment check.
  */
 export async function drawEnrollmentSlip(doc: jsPDF, e: EnrollmentSlip) {
-  await registerBrandFonts(doc, ["Poppins-Regular", "Poppins-Medium", "Poppins-SemiBold", "Poppins-Bold", "Poppins-ExtraBold"]);
+  await registerBrandFonts(doc, ["Poppins-Regular", "Poppins-Medium", "Poppins-SemiBold", "Poppins-Bold", "Poppins-ExtraBold", "GreatVibes-Regular"]);
   await background(doc, "enrollment-slip.jpg", SLIP.w, SLIP.h);
   const left = 24;
   const right = SLIP.w - 24;
   const W = right - left;
   const line = (x1: number, y1: number, x2: number, y2: number) => doc.line(pt(x1), pt(y1), pt(x2), pt(y2));
 
-  // Title pill under the contact lines
+  // Header: logo, name, registrations; photograph at the right
+  const logo = await documentArtwork("../career-optics-logo.png");
+  if (logo) picture(doc, logo, left + 2, 14, 62, 62);
+  put(doc, "CAREER OPTICS", { x: SLIP.w / 2, y: 34, size: 22, font: "Poppins-ExtraBold", color: NAVY, align: "center", charSpace: 1 });
+  doc.setFillColor(...rgb(ORANGE));
+  doc.roundedRect(pt(SLIP.w / 2 - 95), pt(39), pt(190), pt(13), pt(2), pt(2), "F");
+  put(doc, "COMPUTER ACADEMY", { x: SLIP.w / 2, y: 48.5, size: 8.5, font: "Poppins-Bold", color: "#ffffff", align: "center", charSpace: 2.2 });
+  put(doc, "Learn · Grow · Succeed", { x: SLIP.w / 2, y: 64, size: 13, font: "GreatVibes-Regular", color: GREEN, align: "center" });
+  put(doc, "Run under: Career Optics Education Service Private Limited", { x: SLIP.w / 2, y: 74, size: 6.3, font: "Poppins-SemiBold", color: "#1a1a1a", align: "center" });
+  put(doc, "Incorporated under the Companies Act, 2013 (Ministry of Corporate Affairs, Govt. of India)  |  CIN: U85500BR2026PTC085770", { x: SLIP.w / 2, y: 82, size: 5.8, font: "Poppins-Regular", color: "#1a1a1a", align: "center" });
+  put(doc, "An ISO 9001:2015 Certified Institute  |  MSME Registered  |  DPIIT Recognised Startup", { x: SLIP.w / 2, y: 90, size: 5.8, font: "Poppins-SemiBold", color: RED, align: "center" });
+  doc.setDrawColor(...rgb(ORANGE));
+  doc.setLineWidth(pt(1));
+  doc.rect(pt(right - 66), pt(14), pt(66), pt(80));
+  if (!picture(doc, e.photo, right - 65, 15, 64, 78)) put(doc, "Photograph", { x: right - 33, y: 56, size: 6.5, font: "Poppins-Regular", color: "#8a8fa5", align: "center" });
+
+  // Title pill
   doc.setFillColor(...rgb(NAVY));
-  doc.roundedRect(pt(SLIP.w / 2 - 72), pt(131), pt(144), pt(14), pt(3), pt(3), "F");
-  put(doc, "ENROLLMENT SLIP", { x: SLIP.w / 2, y: 141, size: 9.5, font: "Poppins-ExtraBold", color: "#ffffff", align: "center", charSpace: 1.8 });
+  doc.roundedRect(pt(SLIP.w / 2 - 72), pt(99), pt(144), pt(14), pt(3), pt(3), "F");
+  put(doc, "ENROLLMENT SLIP", { x: SLIP.w / 2, y: 109, size: 9.5, font: "Poppins-ExtraBold", color: "#ffffff", align: "center", charSpace: 1.8 });
 
   // Row of three: enrolment number, centre code, date of admission
   doc.setDrawColor(...rgb(NAVY));
   doc.setLineWidth(pt(0.7));
-  let y = 150;
+  let y = 120;
   const cw = W / 3;
   doc.setFillColor(232, 236, 246);
   doc.rect(pt(left), pt(y), pt(W), pt(11), "F");
@@ -858,7 +874,7 @@ export async function drawEnrollmentSlip(doc: jsPDF, e: EnrollmentSlip) {
   line(left + 2 * cw, y, left + 2 * cw, y + 24);
   y += 24;
 
-  // Particulars with the photograph in the block's right end
+  // Particulars
   const rows: Array<[string, string]> = [
     ["Name of Student", e.name.toUpperCase()],
     ["Date of Birth", e.dateOfBirth ? ddmmyyyy(e.dateOfBirth).replace(/-/g, "/") : ""],
@@ -866,20 +882,16 @@ export async function drawEnrollmentSlip(doc: jsPDF, e: EnrollmentSlip) {
     ["Mother's Name", (e.motherName || "").toUpperCase()],
     ["Mobile / Session", [e.mobile, e.session].filter(Boolean).join("   ·   ")],
   ];
-  const blockH = 60;
+  const blockH = 62;
   doc.rect(pt(left), pt(y), pt(W), pt(blockH));
-  doc.setDrawColor(...rgb(ORANGE));
-  doc.setLineWidth(pt(1));
-  doc.rect(pt(right - 54), pt(y + 4), pt(48), pt(52));
-  if (!picture(doc, e.photo, right - 53, y + 5, 46, 50)) put(doc, "Photo", { x: right - 32, y: y + 36, size: 6.5, font: "Poppins-Regular", color: "#8a8fa5", align: "center" });
   doc.setDrawColor(...rgb(NAVY));
   doc.setLineWidth(pt(0.7));
   let ry = y + 12;
   for (const [label, value] of rows) {
     put(doc, label, { x: left + 8, y: ry, size: 7.6, font: "Poppins-Bold", color: NAVY });
     put(doc, ":", { x: left + 84, y: ry, size: 7.6, font: "Poppins-Bold", color: NAVY });
-    put(doc, value || "—", { x: left + 90, y: ry, size: 8, font: "Poppins-SemiBold", color: "#1a1a1a", maxWidth: W - 90 - 70 });
-    ry += 11.5;
+    put(doc, value || "—", { x: left + 90, y: ry, size: 8, font: "Poppins-SemiBold", color: "#1a1a1a", maxWidth: W - 98 });
+    ry += 12;
   }
   y += blockH;
 
