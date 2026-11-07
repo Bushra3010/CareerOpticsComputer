@@ -825,122 +825,89 @@ const SLIP = { w: 595.3, h: 419.5 };
 
 /**
  * The enrollment slip: the academy's confirmation of a student's enrolment,
- * handed over at admission. A half-page slip with its own header (the
- * letterhead is not used), a bordered table of the particulars, the course
- * and the centre, and the signatures with a QR that opens the enrolment check.
+ * handed over at admission. A half-page slip on its own artwork
+ * (enrollment-slip.jpg: the letterhead's header, watermark, seal, signatory,
+ * logos and footer, composed for A5 landscape), with a bordered table of
+ * the particulars, the course and the centre, and a QR that opens the
+ * enrolment check.
  */
 export async function drawEnrollmentSlip(doc: jsPDF, e: EnrollmentSlip) {
-  await registerBrandFonts(doc, ["Poppins-Regular", "Poppins-Medium", "Poppins-SemiBold", "Poppins-Bold", "Poppins-ExtraBold", "GreatVibes-Regular"]);
-  const M = 14;
-  const left = M;
-  const right = SLIP.w - M;
+  await registerBrandFonts(doc, ["Poppins-Regular", "Poppins-Medium", "Poppins-SemiBold", "Poppins-Bold", "Poppins-ExtraBold"]);
+  await background(doc, "enrollment-slip.jpg", SLIP.w, SLIP.h);
+  const left = 24;
+  const right = SLIP.w - 24;
   const W = right - left;
-
-  // Cream page with a double frame, as the slip's reference had
-  doc.setFillColor(253, 251, 245);
-  doc.rect(0, 0, pt(SLIP.w), pt(SLIP.h), "F");
-  doc.setDrawColor(...rgb(ORANGE));
-  doc.setLineWidth(pt(3));
-  doc.rect(pt(6), pt(6), pt(SLIP.w - 12), pt(SLIP.h - 12));
-  doc.setDrawColor(...rgb(NAVY));
-  doc.setLineWidth(pt(0.8));
-  doc.rect(pt(10.5), pt(10.5), pt(SLIP.w - 21), pt(SLIP.h - 21));
-
-  // Header: logo, name, registrations; photograph at the right
-  const logo = await documentArtwork("../career-optics-logo.png");
-  if (logo) picture(doc, logo, left + 2, 16, 62, 62);
-  put(doc, "CAREER OPTICS", { x: 300, y: 36, size: 22, font: "Poppins-ExtraBold", color: NAVY, align: "center", charSpace: 1 });
-  doc.setFillColor(...rgb(ORANGE));
-  doc.roundedRect(pt(205), pt(41), pt(190), pt(13), pt(2), pt(2), "F");
-  put(doc, "COMPUTER ACADEMY", { x: 300, y: 50.5, size: 8.5, font: "Poppins-Bold", color: "#ffffff", align: "center", charSpace: 2.2 });
-  put(doc, "Learn · Grow · Succeed", { x: 300, y: 66, size: 13, font: "GreatVibes-Regular", color: GREEN, align: "center" });
-  put(doc, "Run under: Career Optics Education Service Private Limited", { x: 300, y: 76, size: 6.3, font: "Poppins-SemiBold", color: "#1a1a1a", align: "center" });
-  put(doc, "Incorporated under the Companies Act, 2013 (Ministry of Corporate Affairs, Govt. of India)  |  CIN: U85500BR2026PTC085770", { x: 300, y: 84, size: 5.8, font: "Poppins-Regular", color: "#1a1a1a", align: "center" });
-  put(doc, "An ISO 9001:2015 Certified Institute  |  MSME Registered  |  DPIIT Recognised Startup", { x: 300, y: 92, size: 5.8, font: "Poppins-SemiBold", color: RED, align: "center" });
-  doc.setDrawColor(...rgb(ORANGE));
-  doc.setLineWidth(pt(1));
-  doc.rect(pt(right - 66), pt(16), pt(66), pt(80));
-  if (!picture(doc, e.photo, right - 65, 17, 64, 78)) put(doc, "Photograph", { x: right - 33, y: 58, size: 6.5, font: "Poppins-Regular", color: "#8a8fa5", align: "center" });
-
-  // Title pill
-  doc.setFillColor(...rgb(NAVY));
-  doc.roundedRect(pt(228), pt(99), pt(144), pt(15), pt(3), pt(3), "F");
-  put(doc, "ENROLLMENT SLIP", { x: 300, y: 109.5, size: 9.5, font: "Poppins-ExtraBold", color: "#ffffff", align: "center", charSpace: 1.8 });
-
-  // The table
   const line = (x1: number, y1: number, x2: number, y2: number) => doc.line(pt(x1), pt(y1), pt(x2), pt(y2));
+
+  // Title pill under the contact lines
+  doc.setFillColor(...rgb(NAVY));
+  doc.roundedRect(pt(SLIP.w / 2 - 72), pt(131), pt(144), pt(14), pt(3), pt(3), "F");
+  put(doc, "ENROLLMENT SLIP", { x: SLIP.w / 2, y: 141, size: 9.5, font: "Poppins-ExtraBold", color: "#ffffff", align: "center", charSpace: 1.8 });
+
+  // Row of three: enrolment number, centre code, date of admission
   doc.setDrawColor(...rgb(NAVY));
   doc.setLineWidth(pt(0.7));
-  let y = 121;
+  let y = 150;
   const cw = W / 3;
   doc.setFillColor(232, 236, 246);
-  doc.rect(pt(left), pt(y), pt(W), pt(13), "F");
-  ["Enrollment No.", "Institute / Centre Code", "Date of Admission"].forEach((h, k) => put(doc, h, { x: left + cw * k + cw / 2, y: y + 9.5, size: 7.5, font: "Poppins-Bold", color: NAVY, align: "center" }));
-  y += 13;
-  [e.enrollmentNo, e.centreCode || "—", ddmmyyyy(e.admissionDate).replace(/-/g, "/")].forEach((v, k) => put(doc, v, { x: left + cw * k + cw / 2, y: y + 10.5, size: 9, font: "Poppins-Bold", color: "#1a1a1a", align: "center", maxWidth: cw - 8 }));
-  doc.rect(pt(left), pt(121), pt(W), pt(28));
-  line(left + cw, 121, left + cw, 149);
-  line(left + 2 * cw, 121, left + 2 * cw, 149);
-  y = 149;
+  doc.rect(pt(left), pt(y), pt(W), pt(11), "F");
+  ["Enrollment No.", "Institute / Centre Code", "Date of Admission"].forEach((h, k) => put(doc, h, { x: left + cw * k + cw / 2, y: y + 8.2, size: 7, font: "Poppins-Bold", color: NAVY, align: "center" }));
+  [e.enrollmentNo, e.centreCode || "—", ddmmyyyy(e.admissionDate).replace(/-/g, "/")].forEach((v, k) => put(doc, v, { x: left + cw * k + cw / 2, y: y + 20.5, size: 8.8, font: "Poppins-Bold", color: "#1a1a1a", align: "center", maxWidth: cw - 8 }));
+  doc.rect(pt(left), pt(y), pt(W), pt(24));
+  line(left + cw, y, left + cw, y + 24);
+  line(left + 2 * cw, y, left + 2 * cw, y + 24);
+  y += 24;
 
-  // Particulars block
+  // Particulars with the photograph in the block's right end
   const rows: Array<[string, string]> = [
     ["Name of Student", e.name.toUpperCase()],
     ["Date of Birth", e.dateOfBirth ? ddmmyyyy(e.dateOfBirth).replace(/-/g, "/") : ""],
     ["Father's Name", (e.fatherName || "").toUpperCase()],
     ["Mother's Name", (e.motherName || "").toUpperCase()],
+    ["Mobile / Session", [e.mobile, e.session].filter(Boolean).join("   ·   ")],
   ];
-  const mobile = e.mobile ? `Mobile : ${e.mobile}` : "";
-  const session = e.session ? `Session : ${e.session}` : "";
-  const blockH = 6 + rows.length * 13.5 + (mobile || session ? 13.5 : 0) + 2;
+  const blockH = 60;
   doc.rect(pt(left), pt(y), pt(W), pt(blockH));
-  let ry = y + 14;
+  doc.setDrawColor(...rgb(ORANGE));
+  doc.setLineWidth(pt(1));
+  doc.rect(pt(right - 54), pt(y + 4), pt(48), pt(52));
+  if (!picture(doc, e.photo, right - 53, y + 5, 46, 50)) put(doc, "Photo", { x: right - 32, y: y + 36, size: 6.5, font: "Poppins-Regular", color: "#8a8fa5", align: "center" });
+  doc.setDrawColor(...rgb(NAVY));
+  doc.setLineWidth(pt(0.7));
+  let ry = y + 12;
   for (const [label, value] of rows) {
-    put(doc, label, { x: left + 8, y: ry, size: 7.8, font: "Poppins-Bold", color: NAVY });
-    put(doc, ":", { x: left + 86, y: ry, size: 7.8, font: "Poppins-Bold", color: NAVY });
-    put(doc, value || "—", { x: left + 92, y: ry, size: 8.2, font: "Poppins-SemiBold", color: "#1a1a1a", maxWidth: W - 100 });
-    ry += 13.5;
+    put(doc, label, { x: left + 8, y: ry, size: 7.6, font: "Poppins-Bold", color: NAVY });
+    put(doc, ":", { x: left + 84, y: ry, size: 7.6, font: "Poppins-Bold", color: NAVY });
+    put(doc, value || "—", { x: left + 90, y: ry, size: 8, font: "Poppins-SemiBold", color: "#1a1a1a", maxWidth: W - 90 - 70 });
+    ry += 11.5;
   }
-  if (mobile || session) put(doc, [mobile, session].filter(Boolean).join("        "), { x: left + 8, y: ry, size: 7.8, font: "Poppins-SemiBold", color: "#1a1a1a" });
   y += blockH;
 
-  // Course band and value
-  const band = (label: string) => {
-    doc.setFillColor(232, 236, 246);
-    doc.rect(pt(left), pt(y), pt(W), pt(12), "F");
-    doc.rect(pt(left), pt(y), pt(W), pt(12));
-    put(doc, label, { x: 300, y: y + 8.8, size: 7.5, font: "Poppins-Bold", color: NAVY, align: "center", charSpace: 0.8 });
-    y += 12;
-  };
-  band("COURSE");
-  doc.rect(pt(left), pt(y), pt(W), pt(24));
-  put(doc, e.course.toUpperCase(), { x: 300, y: y + 11, size: 9, font: "Poppins-Bold", color: "#1a1a1a", align: "center", maxWidth: W - 16 });
-  put(doc, [e.duration ? `Duration : ${e.duration}` : "", e.session ? `Session : ${e.session}` : ""].filter(Boolean).join("     ·     "), { x: 300, y: y + 20, size: 6.8, font: "Poppins-Medium", color: "#4a4f63", align: "center" });
-  y += 24;
+  // Course
+  doc.setFillColor(232, 236, 246);
+  doc.rect(pt(left), pt(y), pt(W), pt(10), "F");
+  doc.rect(pt(left), pt(y), pt(W), pt(10));
+  put(doc, "COURSE", { x: SLIP.w / 2, y: y + 7.5, size: 7.2, font: "Poppins-Bold", color: NAVY, align: "center", charSpace: 0.8 });
+  y += 10;
+  doc.rect(pt(left), pt(y), pt(W), pt(19));
+  put(doc, e.course.toUpperCase(), { x: SLIP.w / 2, y: y + 9, size: 8.8, font: "Poppins-Bold", color: "#1a1a1a", align: "center", maxWidth: W - 16 });
+  put(doc, [e.duration ? `Duration : ${e.duration}` : "", e.session ? `Session : ${e.session}` : ""].filter(Boolean).join("     ·     "), { x: SLIP.w / 2, y: y + 16.5, size: 6.4, font: "Poppins-Medium", color: "#4a4f63", align: "center" });
+  y += 19;
 
   // Centre
-  const addr = e.centreAddress ? (doc.splitTextToSize(e.centreAddress, pt(W - 118)) as string[]).slice(0, 2) : [];
-  const ch = 18 + addr.length * 9.5 + 4;
+  const addr = e.centreAddress ? (doc.splitTextToSize(e.centreAddress, pt(W - 118)) as string[]).slice(0, 1) : [];
+  const ch = 14 + addr.length * 9 + 1;
   doc.rect(pt(left), pt(y), pt(W), pt(ch));
-  line(left + 108, y, left + 108, y + ch);
-  put(doc, "Name of", { x: left + 8, y: y + ch / 2 - 1, size: 7.8, font: "Poppins-Bold", color: NAVY });
-  put(doc, "Institute / Centre :", { x: left + 8, y: y + ch / 2 + 9, size: 7.8, font: "Poppins-Bold", color: NAVY });
-  put(doc, e.centreName.toUpperCase(), { x: left + 116, y: y + 13, size: 8.6, font: "Poppins-Bold", color: RED, maxWidth: W - 124 });
-  addr.forEach((l, k) => put(doc, l, { x: left + 116, y: y + 23 + k * 9.5, size: 7.2, font: "Poppins-Medium", color: "#333333" }));
+  line(left + 104, y, left + 104, y + ch);
+  put(doc, "Name of Institute / Centre", { x: left + 8, y: y + ch / 2 + 2.5, size: 7.2, font: "Poppins-Bold", color: NAVY, maxWidth: 92 });
+  put(doc, e.centreName.toUpperCase(), { x: left + 112, y: y + 10, size: 8.4, font: "Poppins-Bold", color: RED, maxWidth: W - 120 });
+  addr.forEach((l, k) => put(doc, l, { x: left + 112, y: y + 19 + k * 9, size: 6.8, font: "Poppins-Medium", color: "#333333" }));
   y += ch;
 
-  // Signatures and the QR
-  const sy = Math.min(SLIP.h - 22, y + 66);
-  doc.setDrawColor(...rgb(NAVY));
-  doc.setLineWidth(pt(0.6));
-  line(left + 6, sy - 10, left + 126, sy - 10);
-  put(doc, "Verified by", { x: left + 66, y: sy, size: 7.5, font: "Poppins-SemiBold", color: NAVY, align: "center" });
-  line(right - 126, sy - 10, right - 6, sy - 10);
-  put(doc, "Authorised Signature", { x: right - 66, y: sy, size: 7.5, font: "Poppins-SemiBold", color: NAVY, align: "center" });
+  // The artwork carries the seal (left) and the signatory (right); the QR sits between them
   const code = await qr(verifyUrl(e.enrollmentNo, "enrollment"), 240);
-  const qy = sy - 52;
-  picture(doc, code, 282, qy, 36, 36);
-  put(doc, "Scan to verify", { x: 300, y: qy + 43, size: 5.8, font: "Poppins-SemiBold", color: NAVY, align: "center" });
+  picture(doc, code, SLIP.w / 2 - 19, 300, 38, 38);
+  put(doc, "Scan to verify", { x: SLIP.w / 2, y: 345, size: 5.8, font: "Poppins-SemiBold", color: NAVY, align: "center" });
 }
 
 export async function enrollmentSlipsPdf(slips: EnrollmentSlip[], fileName = "enrollment-slip") {
