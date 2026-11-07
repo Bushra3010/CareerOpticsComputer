@@ -857,13 +857,13 @@ export async function drawEnrollmentSlip(doc: jsPDF, e: EnrollmentSlip) {
 
   // Title pill
   doc.setFillColor(...rgb(NAVY));
-  doc.roundedRect(pt(SLIP.w / 2 - 72), pt(99), pt(144), pt(14), pt(3), pt(3), "F");
-  put(doc, "ENROLLMENT SLIP", { x: SLIP.w / 2, y: 109, size: 9.5, font: "Poppins-ExtraBold", color: "#ffffff", align: "center", charSpace: 1.8 });
+  doc.roundedRect(pt(SLIP.w / 2 - 72), pt(97), pt(144), pt(14), pt(3), pt(3), "F");
+  put(doc, "ENROLLMENT SLIP", { x: SLIP.w / 2, y: 107, size: 9.5, font: "Poppins-ExtraBold", color: "#ffffff", align: "center", charSpace: 1.8 });
 
   // Row of three: enrolment number, centre code, date of admission
   doc.setDrawColor(...rgb(NAVY));
   doc.setLineWidth(pt(0.7));
-  let y = 120;
+  let y = 114;
   const cw = W / 3;
   doc.setFillColor(232, 236, 246);
   doc.rect(pt(left), pt(y), pt(W), pt(11), "F");
@@ -882,7 +882,7 @@ export async function drawEnrollmentSlip(doc: jsPDF, e: EnrollmentSlip) {
     ["Mother's Name", (e.motherName || "").toUpperCase()],
     ["Mobile / Session", [e.mobile, e.session].filter(Boolean).join("   ·   ")],
   ];
-  const blockH = 62;
+  const blockH = 60;
   doc.rect(pt(left), pt(y), pt(W), pt(blockH));
   doc.setDrawColor(...rgb(NAVY));
   doc.setLineWidth(pt(0.7));
@@ -891,7 +891,7 @@ export async function drawEnrollmentSlip(doc: jsPDF, e: EnrollmentSlip) {
     put(doc, label, { x: left + 8, y: ry, size: 7.6, font: "Poppins-Bold", color: NAVY });
     put(doc, ":", { x: left + 84, y: ry, size: 7.6, font: "Poppins-Bold", color: NAVY });
     put(doc, value || "—", { x: left + 90, y: ry, size: 8, font: "Poppins-SemiBold", color: "#1a1a1a", maxWidth: W - 98 });
-    ry += 12;
+    ry += 11.6;
   }
   y += blockH;
 
@@ -918,8 +918,8 @@ export async function drawEnrollmentSlip(doc: jsPDF, e: EnrollmentSlip) {
 
   // The artwork carries the seal (left) and the signatory (right); the QR sits between them
   const code = await qr(verifyUrl(e.enrollmentNo, "enrollment"), 240);
-  picture(doc, code, SLIP.w / 2 - 19, 300, 38, 38);
-  put(doc, "Scan to verify", { x: SLIP.w / 2, y: 345, size: 5.8, font: "Poppins-SemiBold", color: NAVY, align: "center" });
+  picture(doc, code, SLIP.w / 2 - 18, 262, 36, 36);
+  put(doc, "Scan to verify", { x: SLIP.w / 2, y: 305, size: 5.8, font: "Poppins-SemiBold", color: NAVY, align: "center" });
 }
 
 export async function enrollmentSlipsPdf(slips: EnrollmentSlip[], fileName = "enrollment-slip") {
