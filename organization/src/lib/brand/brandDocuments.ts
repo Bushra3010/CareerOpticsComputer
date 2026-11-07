@@ -1048,9 +1048,9 @@ export async function drawAdmissionForm(doc: jsPDF, c: AdmissionFormCentre) {
   doc.setDrawColor(...rgb(NAVY));
   doc.setLineWidth(pt(0.8));
   doc.setLineDashPattern([pt(2), pt(1.5)], 0);
-  rect(right - 78, 153, 78, 94);
+  rect(right - 70, 150, 70, 86);
   doc.setLineDashPattern([], 0);
-  ["Paste recent", "passport size", "photograph"].forEach((t, i) => put(doc, t, { x: right - 39, y: 193 + i * 10, size: 7, font: "Poppins-Regular", color: "#8a8fa5", align: "center" }));
+  ["Paste recent", "passport size", "photograph"].forEach((t, i) => put(doc, t, { x: right - 35, y: 184 + i * 10, size: 7, font: "Poppins-Regular", color: "#8a8fa5", align: "center" }));
 
   // Top lines: course, centre code / reg. no., date / duration
   const ul = (label: string, x: number, y: number, w: number, value = "") => {
@@ -1062,15 +1062,15 @@ export async function drawAdmissionForm(doc: jsPDF, c: AdmissionFormCentre) {
     if (value) put(doc, value, { x: lx0 + 4, y, size: 9, font: "Poppins-Bold", color: "#1a1a1a", maxWidth: x + w - lx0 - 6 });
   };
   const formW = W - 90;
-  let y = 185;
+  let y = 184;
   ul("Course Name :", left, y, formW);
-  y += 20;
+  y += 19;
   ul("Centre Code :", left, y, formW / 2 - 6, c.centreCode || "");
   ul("Reg. No. :", left + formW / 2 + 6, y, formW / 2 - 6);
-  y += 20;
+  y += 19;
   ul("Date of Admission :", left, y, formW / 2 - 6);
   ul("Duration :", left + formW / 2 + 6, y, formW / 2 - 6);
-  y += 18;
+  y += 22;
 
   // Character boxes
   const labelW = 92;
