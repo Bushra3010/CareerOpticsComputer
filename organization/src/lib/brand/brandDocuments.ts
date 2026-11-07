@@ -717,3 +717,125 @@ export async function brandAdmitCardsPdf(cards: AdmitCard[], fileName = "admit-c
   }
   save(doc, `${fileName}.pdf`);
 }
+
+/* ------------------------------------------------------------------ */
+/* Computer typing certificate (A4 portrait, on the letterhead)         */
+/* ------------------------------------------------------------------ */
+
+export interface TypingCertificate {
+  certificateNo: string;
+  name: string;
+  fatherName?: string;
+  registrationNo: string;
+  course: string;
+  duration: string;
+  centre: string;
+  centreCode?: string;
+  issueDate: string | Date;
+  /** Words per minute in each language; a language left blank is not printed. */
+  englishWpm?: number | string;
+  hindiWpm?: number | string;
+  accuracy?: number | string;
+  photo?: string | null;
+}
+
+/**
+ * The computer typing certificate: a typing-speed course's completion, with
+ * the student's speed in English and Hindi, on the academy's letterhead.
+ */
+export async function drawTypingCertificate(doc: jsPDF, t: TypingCertificate) {
+  await registerBrandFonts(doc, ["Poppins-Regular", "Poppins-Medium", "Poppins-SemiBold", "Poppins-Bold", "Poppins-ExtraBold", "GreatVibes-Regular"]);
+  await background(doc, "letterhead.jpg", MS.w, MS.h);
+  const left = 45.4;
+  const right = 549.9;
+
+  put(doc, `Certificate No. : ${t.certificateNo}`, { x: right, y: 222, size: 8.5, font: "Poppins-SemiBold", color: NAVY, align: "right" });
+  put(doc, "COMPUTER TYPING CERTIFICATE", { x: MS.w / 2, y: 252, size: 19, font: "Poppins-ExtraBold", color: NAVY, align: "center", charSpace: 2 });
+  put(doc, "This is to certify that", { x: MS.w / 2, y: 274, size: 12, font: "GreatVibes-Regular", color: ORANGE, align: "center" });
+
+  // Photograph, right
+  doc.setDrawColor(...rgb(ORANGE));
+  doc.setLineWidth(pt(1.2));
+  doc.rect(pt(465), pt(286), pt(78), pt(94));
+  if (!picture(doc, t.photo, 466, 287, 76, 92)) put(doc, "Photograph", { x: 504, y: 336, size: 8, font: "Poppins-Regular", color: "#8a8fa5", align: "center" });
+
+  // Particulars, dotted lines as the design's forms have
+  const rows: Array<[string, string]> = [
+    ["Mr. / Ms. / Mrs.", t.name.toUpperCase()],
+    ["Son / Daughter of", (t.fatherName || "").toUpperCase()],
+    ["Registration No.", t.registrationNo],
+    ["Course Name", t.course],
+    ["Course Duration", t.duration],
+    ["Study Centre", t.centre],
+    ["Centre Code", t.centreCode || ""],
+    ["Date of Issue", ddmmyyyy(t.issueDate)],
+  ].filter(([, v]) => v) as Array<[string, string]>;
+  let y = 302;
+  for (const [label, value] of rows) {
+    put(doc, label, { x: left, y, size: 10, font: "Poppins-SemiBold", color: NAVY });
+    put(doc, ":", { x: left + 118, y, size: 10, font: "Poppins-SemiBold", color: NAVY });
+    put(doc, value, { x: left + 128, y, size: 10.5, font: "Poppins-Bold", color: "#1a1a1a", maxWidth: 280 });
+    doc.setDrawColor(205, 212, 230);
+    doc.setLineWidth(pt(0.5));
+    doc.setLineDashPattern([pt(1), pt(1.5)], 0);
+    doc.line(pt(left), pt(y + 5), pt(left + 405), pt(y + 5));
+    doc.setLineDashPattern([], 0);
+    y += 20;
+  }
+
+  // Performance: a full-width table with a navy header, one language a row.
+  y = Math.max(y + 12, 480);
+  put(doc, "Performance", { x: MS.w / 2, y, size: 24, font: "GreatVibes-Regular", color: NAVY, align: "center" });
+  y += 10;
+  const perf: Array<[string, string, string]> = [];
+  if (t.englishWpm !== undefined && t.englishWpm !== "") perf.push(["Computer Typing Speed in English", `${t.englishWpm}`, "Words Per Minute"]);
+  if (t.hindiWpm !== undefined && t.hindiWpm !== "") perf.push(["Computer Typing Speed in Hindi", `${t.hindiWpm}`, "Words Per Minute"]);
+  if (t.accuracy !== undefined && t.accuracy !== "") perf.push(["Typing Accuracy", `${t.accuracy}`.replace(/%?$/, "%"), "Overall"]);
+  const cols = [left, left + 290, left + 370, right];
+  doc.setFillColor(...rgb("#1f3a99"));
+  doc.rect(pt(cols[0]), pt(y), pt(right - left), pt(20), "F");
+  put(doc, "PARTICULARS", { x: cols[0] + 12, y: y + 13.5, size: 8, font: "Poppins-SemiBold", color: "#ffffff", charSpace: 0.6 });
+  put(doc, "RESULT", { x: (cols[1] + cols[2]) / 2, y: y + 13.5, size: 8, font: "Poppins-SemiBold", color: "#ffffff", align: "center", charSpace: 0.6 });
+  put(doc, "UNIT", { x: (cols[2] + cols[3]) / 2, y: y + 13.5, size: 8, font: "Poppins-SemiBold", color: "#ffffff", align: "center", charSpace: 0.6 });
+  y += 20;
+  perf.forEach(([label, value, unit], i) => {
+    if (i % 2) {
+      doc.setFillColor(238, 241, 249);
+      doc.rect(pt(cols[0]), pt(y), pt(right - left), pt(22), "F");
+    }
+    put(doc, label, { x: cols[0] + 12, y: y + 15, size: 10, font: "Poppins-Medium", color: "#1a1a1a" });
+    put(doc, value, { x: (cols[1] + cols[2]) / 2, y: y + 15.5, size: 14, font: "Poppins-ExtraBold", color: RED, align: "center" });
+    put(doc, unit, { x: (cols[2] + cols[3]) / 2, y: y + 15, size: 9.5, font: "Poppins-SemiBold", color: NAVY, align: "center" });
+    y += 22;
+  });
+  doc.setDrawColor(...rgb("#1f3a99"));
+  doc.setLineWidth(pt(0.8));
+  doc.line(pt(left), pt(y), pt(right), pt(y));
+
+  // The statement, then the verification block beside the QR bottom-left,
+  // level with the letterhead's authorised signatory on the right.
+  y += 20;
+  doc.setFont(fontOn(doc, "Poppins-Regular"), "normal");
+  doc.setFontSize(9.5);
+  const note = `${t.name} has successfully completed the ${t.course} course at ${t.centre} and attained the typing speed recorded above in the academy's assessment. This certificate is issued on the basis of the academy's records.`;
+  const wrapped = doc.splitTextToSize(note, pt(right - left)) as string[];
+  wrapped.slice(0, 3).forEach((w, i) => put(doc, w, { x: left, y: y + i * 12.5, size: 9.5, font: "Poppins-Regular", color: "#333333" }));
+
+  const code = await qr(verifyUrl(t.certificateNo, "certificate"), 300);
+  picture(doc, code, left, 648, 58, 58);
+  put(doc, "Scan to verify", { x: left + 29, y: 715, size: 7, font: "Poppins-SemiBold", color: NAVY, align: "center" });
+  put(doc, "VERIFICATION", { x: left + 70, y: 660, size: 8, font: "Poppins-Bold", color: ORANGE, charSpace: 1 });
+  put(doc, `Certificate No. : ${t.certificateNo}`, { x: left + 70, y: 674, size: 8.5, font: "Poppins-SemiBold", color: NAVY });
+  put(doc, "Verify online at www.careeropticscomputer.in", { x: left + 70, y: 687, size: 8.5, font: "Poppins-Medium", color: "#333333" });
+  put(doc, `Place : Ara, Bhojpur   ·   Date : ${ddmmyyyy(t.issueDate)}`, { x: left + 70, y: 700, size: 8.5, font: "Poppins-Medium", color: "#333333" });
+}
+
+export async function typingCertificatesPdf(items: TypingCertificate[], fileName = "typing-certificate") {
+  if (!items.length) return;
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+  for (const [i, item] of items.entries()) {
+    if (i) doc.addPage();
+    await drawTypingCertificate(doc, item);
+  }
+  save(doc, `${fileName}.pdf`);
+}

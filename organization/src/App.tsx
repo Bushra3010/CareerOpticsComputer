@@ -122,6 +122,7 @@ const Whiteboard = lazy(() => import("./pages/tools/Whiteboard"));
 // Cards
 const GenerateIDCards = lazy(() => import("./pages/cards/GenerateIDCards"));
 const VerificationLetter = lazy(() => import("./pages/exam/VerificationLetter"));
+const TypingCertificate = lazy(() => import("./pages/exam/TypingCertificate"));
 
 // Settings
 const GeneralSettings = lazy(() => import("./pages/settings/GeneralSettings"));
@@ -311,6 +312,7 @@ const App = () => (
 
           {/* Certificates */}
           <Route path="/certificate/verification-letter" element={<VerificationLetter />} />
+          <Route path="/certificate/typing" element={<TypingCertificate />} />
           <Route path="/certificate/generate" element={<AssessmentsWorkspace />} />
           <Route path="/certificate/issue" element={<Certificates />} />
           <Route path="/certificate/approvals" element={<PrintApprovals />} />
