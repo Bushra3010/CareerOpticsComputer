@@ -1000,8 +1000,14 @@ export async function drawAdmissionForm(doc: jsPDF, c: AdmissionFormCentre) {
   doc.roundedRect(pt(cx - 100), pt(50), pt(200), pt(14), pt(2), pt(2), "F");
   put(doc, "COMPUTER ACADEMY", { x: cx, y: 60, size: 9, font: "Poppins-Bold", color: "#ffffff", align: "center", charSpace: 2.4 });
   put(doc, "Learn · Grow · Succeed", { x: cx, y: 77, size: 14, font: "GreatVibes-Regular", color: GREEN, align: "center" });
-  put(doc, "Run under: Career Optics Education Service Private Limited  |  CIN: U85500BR2026PTC085770", { x: cx, y: 87, size: 6.5, font: "Poppins-SemiBold", color: "#1a1a1a", align: "center" });
-  put(doc, "An ISO 9001:2015 Certified Institute  |  MSME Registered  |  DPIIT Recognised Startup", { x: cx, y: 95, size: 6.5, font: "Poppins-SemiBold", color: RED, align: "center" });
+  // The company lines, as every certificate carries them
+  const run = "Run under: ";
+  const company = "Career Optics Education Service Private Limited";
+  const runW = measure(doc, run, "Poppins-Bold", 7) + measure(doc, company, "Poppins-Regular", 7);
+  put(doc, run, { x: cx - runW / 2, y: 86, size: 7, font: "Poppins-Bold", color: "#1a1a1a" });
+  put(doc, company, { x: cx - runW / 2 + measure(doc, run, "Poppins-Bold", 7), y: 86, size: 7, font: "Poppins-Regular", color: "#1a1a1a" });
+  put(doc, "Incorporated under the Companies Act, 2013 (Ministry of Corporate Affairs, Govt. of India)  |  CIN: U85500BR2026PTC085770", { x: cx, y: 94, size: 6.5, font: "Poppins-Regular", color: "#1a1a1a", align: "center" });
+  put(doc, "An ISO 9001:2015 Certified Institute  |  MSME Registered  |  DPIIT Recognised Startup", { x: cx, y: 102, size: 6.5, font: "Poppins-SemiBold", color: RED, align: "center" });
   if (c.logo) {
     doc.setDrawColor(...rgb(ORANGE));
     doc.setLineWidth(pt(0.8));
@@ -1010,21 +1016,21 @@ export async function drawAdmissionForm(doc: jsPDF, c: AdmissionFormCentre) {
   }
   doc.setDrawColor(...rgb(ORANGE));
   doc.setLineWidth(pt(1.2));
-  line(left, 103, right, 103);
-  put(doc, c.centreName.toUpperCase(), { x: cx, y: 118, size: 14, font: "Poppins-ExtraBold", color: RED, align: "center", maxWidth: W });
-  put(doc, [c.address, c.phone ? `Ph: ${c.phone}` : ""].filter(Boolean).join("   ·   "), { x: cx, y: 130, size: 8.5, font: "Poppins-Medium", color: NAVY, align: "center", maxWidth: W });
-  put(doc, `AUTHORISED STUDY CENTRE OF CAREER OPTICS COMPUTER ACADEMY${c.centreCode ? `   ·   CENTRE CODE : ${c.centreCode}` : ""}`, { x: cx, y: 142, size: 7.5, font: "Poppins-Bold", color: ORANGE, align: "center", charSpace: 0.8, maxWidth: W });
+  line(left, 108, right, 108);
+  put(doc, c.centreName.toUpperCase(), { x: cx, y: 123, size: 14, font: "Poppins-ExtraBold", color: RED, align: "center", maxWidth: W });
+  put(doc, [c.address, c.phone ? `Ph: ${c.phone}` : ""].filter(Boolean).join("   ·   "), { x: cx, y: 135, size: 8.5, font: "Poppins-Medium", color: NAVY, align: "center", maxWidth: W });
+  put(doc, `AUTHORISED STUDY CENTRE OF CAREER OPTICS COMPUTER ACADEMY${c.centreCode ? `   ·   CENTRE CODE : ${c.centreCode}` : ""}`, { x: cx, y: 146, size: 7.5, font: "Poppins-Bold", color: ORANGE, align: "center", charSpace: 0.8, maxWidth: W });
 
   // Title and photograph
   doc.setFillColor(...rgb(NAVY));
-  doc.roundedRect(pt(cx - 70), pt(150), pt(140), pt(17), pt(3), pt(3), "F");
-  put(doc, "ADMISSION FORM", { x: cx, y: 162, size: 10.5, font: "Poppins-ExtraBold", color: "#ffffff", align: "center", charSpace: 2 });
+  doc.roundedRect(pt(cx - 70), pt(153), pt(140), pt(17), pt(3), pt(3), "F");
+  put(doc, "ADMISSION FORM", { x: cx, y: 165, size: 10.5, font: "Poppins-ExtraBold", color: "#ffffff", align: "center", charSpace: 2 });
   doc.setDrawColor(...rgb(NAVY));
   doc.setLineWidth(pt(0.8));
   doc.setLineDashPattern([pt(2), pt(1.5)], 0);
-  rect(right - 78, 150, 78, 94);
+  rect(right - 78, 153, 78, 94);
   doc.setLineDashPattern([], 0);
-  ["Paste recent", "passport size", "photograph"].forEach((t, i) => put(doc, t, { x: right - 39, y: 190 + i * 10, size: 7, font: "Poppins-Regular", color: "#8a8fa5", align: "center" }));
+  ["Paste recent", "passport size", "photograph"].forEach((t, i) => put(doc, t, { x: right - 39, y: 193 + i * 10, size: 7, font: "Poppins-Regular", color: "#8a8fa5", align: "center" }));
 
   // Top lines: course, centre code / reg. no., date / duration
   const ul = (label: string, x: number, y: number, w: number, value = "") => {
@@ -1036,7 +1042,7 @@ export async function drawAdmissionForm(doc: jsPDF, c: AdmissionFormCentre) {
     if (value) put(doc, value, { x: lx0 + 4, y, size: 9, font: "Poppins-Bold", color: "#1a1a1a", maxWidth: x + w - lx0 - 6 });
   };
   const formW = W - 90;
-  let y = 182;
+  let y = 185;
   ul("Course Name :", left, y, formW);
   y += 20;
   ul("Centre Code :", left, y, formW / 2 - 6, c.centreCode || "");
