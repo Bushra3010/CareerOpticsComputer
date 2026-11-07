@@ -214,7 +214,23 @@
     );
   }
 
+  /*
+   * Tiles written into the page itself (gallery.html's sample documents and
+   * the payment poster): <button data-full="/image/..." data-title data-category>.
+   * They only need the lightbox; the images are already on the page.
+   */
+  function wireStatic(root) {
+    var tiles = Array.prototype.slice.call(root.querySelectorAll("[data-full]"));
+    var photos = tiles.map(function (t) {
+      return { imageUrl: t.getAttribute("data-full"), title: t.getAttribute("data-title") || "", category: t.getAttribute("data-category") || "" };
+    });
+    tiles.forEach(function (t, i) {
+      t.addEventListener("click", function () { open(photos, i); });
+    });
+  }
+
   function init() {
+    document.querySelectorAll("[data-gallery-static]").forEach(wireStatic);
     document.querySelectorAll("[data-gallery]").forEach(function (root) {
       if (root.getAttribute("data-gallery") === "home") home(root);
       else full(root);
