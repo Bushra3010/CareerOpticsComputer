@@ -750,7 +750,9 @@ export async function drawTypingCertificate(doc: jsPDF, t: TypingCertificate) {
   await background(doc, "typing-certificate.jpg", LIC.w, LIC.h);
 
   put(doc, "of Computer Typing Course", { x: lx(0.5), y: ly(0.357), size: 27, font: "GreatVibes-Regular", color: NAVY, align: "center" });
-  put(doc, `Certificate No. : ${t.certificateNo}`, { x: lx(0.5), y: ly(0.378), size: 8, font: "Poppins-SemiBold", color: ORANGE, align: "center", charSpace: 0.3 });
+  // Registration number at the left, certificate number above the photograph at the right
+  put(doc, `Reg. No. : ${t.registrationNo}`, { x: lx(0.11), y: ly(0.378), size: 8.5, font: "Poppins-Bold", color: NAVY, charSpace: 0.3 });
+  put(doc, `Certificate No. : ${t.certificateNo}`, { x: lx(0.91), y: ly(0.378), size: 8, font: "Poppins-SemiBold", color: RED, align: "right", charSpace: 0.3 });
 
   // Photograph, right of the name
   doc.setDrawColor(...rgb(ORANGE));
@@ -759,8 +761,7 @@ export async function drawTypingCertificate(doc: jsPDF, t: TypingCertificate) {
   if (!picture(doc, t.photo, lx(0.81) + 1, ly(0.386) + 1, lx(0.1) - 2, ly(0.085) - 2)) put(doc, "Photo", { x: lx(0.86), y: ly(0.432), size: 7.5, font: "Poppins-Regular", color: "#8a8fa5", align: "center" });
 
   put(doc, t.name.toUpperCase(), { x: lx(0.5), y: ly(0.4306), size: 19, font: "Poppins-ExtraBold", color: RED, align: "center", maxWidth: lx(0.58) });
-  const parent = t.fatherName ? `SON / DAUGHTER OF ${t.fatherName.toUpperCase()}` : "";
-  put(doc, [parent, `REG. NO. ${t.registrationNo}`].filter(Boolean).join("   ·   "), { x: lx(0.5), y: ly(0.4564), size: 9.5, font: "Poppins-SemiBold", color: NAVY, align: "center", maxWidth: lx(0.6), charSpace: 0.4 });
+  if (t.fatherName) put(doc, `Son / Daughter of  ${t.fatherName.toUpperCase()}`, { x: lx(0.5), y: ly(0.4564), size: 10.5, font: "Poppins-SemiBold", color: NAVY, align: "center", maxWidth: lx(0.6), charSpace: 0.3 });
 
   // The statement, centred over three lines where the licence's wording was
   const statement = `has successfully completed the ${t.course} course of ${t.duration ? `${t.duration} ` : ""}at ${t.centre}${t.centreCode ? ` (Centre Code ${t.centreCode})` : ""} and has attained the computer typing speed recorded below in the assessment conducted by the Academy.`;
