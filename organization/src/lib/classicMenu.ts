@@ -74,7 +74,6 @@ const FRANCHISE_PLAN: Plan = [
     ],
   },
   { title: "Admission Forms", icon: Globe, urls: ["/centre/admission-forms"] },
-  { title: "Sample Certificate", icon: Award, urls: ["/centre/sample-certificates"] },
   { title: "Downloads", icon: Download, urls: ["/centre/downloads", ["/certificate/centre", "Authorization Letter"]] },
   { title: "Exam & Questions", icon: ClipboardList, urls: [["/centre/questions", "Question Bank"], "/centre/exams"] },
   { title: "Batch & Attendance", icon: School, urls: ["/centre/batches", "/centre/attendance"] },
@@ -159,7 +158,6 @@ const ADMIN_PLAN: Plan = [
     ],
   },
   { title: "Admission Forms", icon: Globe, urls: ["/centre/admission-forms"] },
-  { title: "Sample Certificate", icon: Award, urls: ["/centre/sample-certificates"] },
   {
     title: "Exam & Questions",
     icon: ClipboardList,
@@ -169,7 +167,7 @@ const ADMIN_PLAN: Plan = [
   {
     title: "Certificates",
     icon: Printer,
-    urls: ["/centre/orders", "/certificate/approvals", "/certificate/issue", "/cards/generate-id", "/certificate/generate", "/documents/designer"],
+    urls: ["/centre/orders", "/certificate/approvals", "/certificate/issue", "/cards/generate-id", "/certificate/generate", ["/certificate/verification-letter", "Verification Letter"]],
   },
   { title: "Awards", icon: Trophy, urls: ["/centre/awards"] },
   { title: "Help & Support", icon: Headphones, urls: ["/centre/tickets"] },

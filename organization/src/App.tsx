@@ -52,7 +52,6 @@ const CentreTickets = lazy(() => import("./pages/centre/CentreTickets"));
 const CentreAwards = lazy(() => import("./pages/centre/CentreAwards"));
 const CentreOrders = lazy(() => import("./pages/centre/CentreOrders"));
 const CentreWallet = lazy(() => import("./pages/centre/CentreWallet"));
-const CentreSampleCertificates = lazy(() => import("./pages/centre/CentreSampleCertificates"));
 const CentreDownloads = lazy(() => import("./pages/centre/CentreDownloads"));
 const CentreProfile = lazy(() => import("./pages/centre/CentreProfile"));
 const CentreEnquiry = lazy(() => import("./pages/centre/CentreEnquiry"));
@@ -121,10 +120,8 @@ const CodeLab = lazy(() => import("./pages/tools/CodeLab"));
 const Whiteboard = lazy(() => import("./pages/tools/Whiteboard"));
 
 // Cards
-const IDCardTemplate = lazy(() => import("./pages/cards/IDCardTemplate"));
 const GenerateIDCards = lazy(() => import("./pages/cards/GenerateIDCards"));
-const AdmitCardTemplate = lazy(() => import("./pages/cards/AdmitCardTemplate"));
-const DocumentDesigner = lazy(() => import("./pages/documents/DocumentDesigner"));
+const VerificationLetter = lazy(() => import("./pages/exam/VerificationLetter"));
 
 // Settings
 const GeneralSettings = lazy(() => import("./pages/settings/GeneralSettings"));
@@ -286,10 +283,8 @@ const App = () => (
           <Route path="/tools/whiteboard" element={<Whiteboard />} />
 
           {/* Cards */}
-          <Route path="/cards/id-template" element={<IDCardTemplate />} />
           <Route path="/cards/generate-id" element={<GenerateIDCards />} />
-          <Route path="/cards/admit-template" element={<AdmitCardTemplate />} />
-          <Route path="/documents/designer" element={<DocumentDesigner />} />
+          <Route path="/documents/designer" element={<Navigate to="/certificate/issue" replace />} />
           {/* Admit cards are issued from the exam schedule now; the old bulk page redirects there. */}
           <Route path="/cards/generate-admit" element={<Navigate to="/exam/admit-cards" replace />} />
 
@@ -300,7 +295,6 @@ const App = () => (
           <Route path="/centre/awards" element={<CentreAwards />} />
           <Route path="/centre/orders" element={<CentreOrders />} />
           <Route path="/centre/wallet" element={<CentreWallet />} />
-          <Route path="/centre/sample-certificates" element={<CentreSampleCertificates />} />
           <Route path="/centre/downloads" element={<CentreDownloads />} />
           <Route path="/centre/profile" element={<CentreProfile />} />
           <Route path="/centre/enquiry" element={<CentreEnquiry />} />
@@ -316,7 +310,7 @@ const App = () => (
           <Route path="/centre/attendance" element={<CentreAttendance />} />
 
           {/* Certificates */}
-          <Route path="/certificate/template" element={<DocumentDesigner />} />
+          <Route path="/certificate/verification-letter" element={<VerificationLetter />} />
           <Route path="/certificate/generate" element={<AssessmentsWorkspace />} />
           <Route path="/certificate/issue" element={<Certificates />} />
           <Route path="/certificate/approvals" element={<PrintApprovals />} />
@@ -324,7 +318,6 @@ const App = () => (
           <Route path="/certificate/centre" element={<CentreDocuments />} />
 
           {/* Marksheets */}
-          <Route path="/marksheet/template" element={<DocumentDesigner />} />
           <Route path="/marksheet/generate" element={<AssessmentsWorkspace />} />
 
           {/* Settings */}

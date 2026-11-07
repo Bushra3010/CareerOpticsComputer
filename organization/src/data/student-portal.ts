@@ -4,7 +4,7 @@
  * (getStudentProfile, getStudentAttendance … in lib/supabase/data.ts).
  */
 import type { StudentDocument } from "@/lib/documents";
-import type { IdCardStudent } from "@/data/id-card-templates";
+import type { StudentCard } from "@/lib/brand/brandDocuments";
 import type { AdmitCardStudent } from "@/data/admit-card-templates";
 
 export interface StudentProfile {
@@ -206,17 +206,16 @@ export const asStudentDocument = (
   };
 };
 
-export const asIdCardStudent = (profile: StudentProfile): IdCardStudent => ({
-  id: profile.id,
+export const asIdCardStudent = (profile: StudentProfile): StudentCard => ({
   name: profile.name,
-  class: profile.course,
-  section: profile.section,
-  rollNo: profile.rollNo,
-  photo: Boolean(profile.photo),
+  studentId: profile.enrollmentNo || profile.rollNo,
+  course: profile.courseCode || profile.course,
+  fatherName: profile.guardian,
   dob: profile.dob,
-  bloodGroup: profile.bloodGroup,
-  parentContact: profile.guardianPhone,
+  mobile: profile.phone || profile.guardianPhone,
   address: profile.address,
+  validTill: `${new Date().getFullYear() + 1}-03-31`,
+  photo: profile.photo,
 });
 
 export const asAdmitCardStudent = (

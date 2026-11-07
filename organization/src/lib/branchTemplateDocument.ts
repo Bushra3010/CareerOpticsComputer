@@ -1,33 +1,13 @@
-import {
-  DOCUMENT_KINDS,
-  canvasSize,
-  SAMPLE_DATA,
-  designHtml,
-  type DocumentDesign,
-  type DocumentKind,
-  type TokenData,
-} from "@/lib/documentDesigner";
-import { printDesignPages, printHtml } from "@/lib/export";
-import { qrImages } from "@/lib/studentTemplateDocument";
-import {
-  getTemplateAssignments,
-  getTemplates,
-  type DocumentTemplate,
-} from "@/lib/supabase/documentTemplates";
+import { printDesignPages } from "@/lib/export";
 
 /**
- * Printing a document about a branch -- its centre certificate, its awards --
- * from the template the organisation gave it.
- *
- * These kinds were designable and assignable in the Document Designer, and then
- * nothing printed them: the branch panel had no screen for them at all, and the
- * "Center Certificate" on View Branch drew a layout of its own that ignored the
- * library. This is the join, the branch-side twin of studentTemplateDocument.
+ * The centre certificate: what the office prints to say a branch is an
+ * authorised study centre. The designer's franchise certificate replaces
+ * this layout once its blank artwork arrives; until then the standard sheet
+ * below is printed for every branch.
  */
 
-/** The documents a branch holds about itself rather than about a student. */
-export const BRANCH_DOCUMENT_KINDS = ["centre-certificate", "branch-award"] as const;
-export type BranchDocumentKind = (typeof BRANCH_DOCUMENT_KINDS)[number];
+type TokenData = Record<string, string>;
 
 /** A branch as `getBranchDetails` returns it: the row with its address, director and licence. */
 export type BranchDetails = Record<string, unknown> & {
@@ -69,97 +49,11 @@ export function branchTokens(branch: BranchDetails, institute: string, extra: To
     institute,
   };
 
-  // The sample values stand in only for what the record cannot answer, so a
-  // half-filled template still reads as a document rather than as `{{tokens}}`.
-  const data: TokenData = { ...SAMPLE_DATA };
+  const data: TokenData = {};
   for (const [key, value] of Object.entries({ ...filled, ...extra })) {
     if (value) data[key] = value;
   }
-  // A branch document has no student on it.
-  data.photo = "";
   return data;
-}
-
-/**
- * The template a branch prints for one of its own documents, or null when it
- * has none.
- *
- * Stricter than the student documents on purpose: a branch prints only what it
- * was assigned. A centre certificate says the organisation authorised this
- * centre, so falling back to the organisation's default -- or to the only one
- * there is -- would hand every branch an authorisation nobody gave it.
- */
-export function assignedBranchDesign(
-  kind: BranchDocumentKind,
-  templates: DocumentTemplate[],
-  assignments: Record<string, Record<string, string>>,
-  branchId: string,
-): { template: DocumentTemplate; design: DocumentDesign } | null {
-  const assignedId = assignments[branchId]?.[kind];
-  const template = templates.find((item) => item.kind === kind && item.id === assignedId);
-  return template ? { template, design: template.design } : null;
-}
-
-/** Every branch document assigned to this branch, fetched. */
-export async function loadAssignedBranchDocuments(organizationId: string | null, branchId: string) {
-  const [templates, assignments] = await Promise.all([
-    getTemplates(organizationId),
-    getTemplateAssignments(organizationId),
-  ]);
-  return BRANCH_DOCUMENT_KINDS.flatMap((kind) => {
-    const found = assignedBranchDesign(kind, templates.data, assignments.data, branchId);
-    return found ? [{ kind, ...found }] : [];
-  });
-}
-
-/** The printable HTML of one branch document, QR codes included. */
-export async function branchDocumentHtml(kind: DocumentKind, design: DocumentDesign, data: TokenData) {
-  const qr = await qrImages(design, data);
-  return designHtml(kind, design, data, qr);
-}
-
-/**
- * Prints one or more branches' documents, for the office.
- *
- * Each branch gets the template it was assigned -- the same rule the branch
- * itself sees -- and a branch with none gets `fallback`, the layout the caller
- * printed before templates existed, so printing never stops working.
- */
-export async function printBranchDocuments<B extends BranchDetails>(
-  kind: BranchDocumentKind,
-  branches: B[],
-  organizationId: string | null,
-  institute: string,
-  fallback: (branch: B) => string,
-) {
-  const [templates, assignments] = await Promise.all([
-    getTemplates(organizationId).catch(() => ({ data: [] as DocumentTemplate[] })),
-    getTemplateAssignments(organizationId).catch(() => ({ data: {} })),
-  ]);
-  const designed = await Promise.all(
-    branches.map(async (branch) => {
-      const found = assignedBranchDesign(kind, templates.data, assignments.data, String(branch.id ?? ""));
-      return found ? branchDocumentHtml(kind, found.design, branchTokens(branch, institute)) : null;
-    }),
-  );
-  const title =
-    branches.length === 1 ? `Centre Certificate — ${branches[0].name ?? ""}` : `Centre Certificates — ${branches.length} branches`;
-
-  // Nobody has a template: the built-in layout, printed the way it always was.
-  if (designed.every((html) => html === null)) {
-    printHtml(title, branches.map(fallback).join(""));
-    return;
-  }
-  // One sheet size for the run: the first designed page's, which is the
-  // organisation's template for this kind and so the same for every branch.
-  const first = branches.map((b) => assignedBranchDesign(kind, templates.data, assignments.data, String(b.id ?? ""))).find(Boolean);
-  const { width, height } = canvasSize(kind, first?.design);
-  printDesignPages(
-    title,
-    designed.map((html, i) => html ?? fallback(branches[i])),
-    width,
-    height,
-  );
 }
 
 const escapeHtml = (value: unknown) =>
@@ -199,10 +93,4 @@ export function standardCentreCertificateHtml(branch: BranchDetails, institute: 
 /** The standard centre certificate on an A4 sheet of its own, with no report heading over it. */
 export function printStandardCentreCertificate(branch: BranchDetails, institute: string) {
   printDesignPages(`Centre Certificate — ${branch.name ?? ""}`, [standardCentreCertificateHtml(branch, institute)], 794, 1123);
-}
-
-/** Prints one already-drawn branch document, a sheet to itself. */
-export function printBranchDocument(kind: BranchDocumentKind, title: string, html: string, design?: DocumentDesign) {
-  const { width, height } = canvasSize(kind, design);
-  printDesignPages(title, [html], width, height);
 }

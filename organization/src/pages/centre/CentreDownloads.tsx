@@ -4,14 +4,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { DceButton, DceLinkButton, DcePanel, DceSelect } from "@/components/dce/Dce";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import {
-  branchDocumentHtml,
-  branchTokens,
-  loadAssignedBranchDocuments,
-  printBranchDocument,
-  printStandardCentreCertificate,
-  type BranchDetails,
-} from "@/lib/branchTemplateDocument";
+import { printStandardCentreCertificate, type BranchDetails } from "@/lib/branchTemplateDocument";
 import { loadInstituteLogo } from "@/lib/instituteLogo";
 import { loadInstituteName } from "@/lib/instituteName";
 import { asFile } from "@/lib/studentDocuments";
@@ -281,15 +274,7 @@ export default function CentreDownloads() {
   const printAuthorization = async () => {
     if (!ctx || !target) return;
     try {
-      // The centre's assigned design when the office gave it one, else the standard layout.
-      const assigned = await loadAssignedBranchDocuments(organizationId, target);
-      const designed = assigned.find((d) => d.kind === "centre-certificate");
-      if (designed) {
-        const html = await branchDocumentHtml(designed.kind, designed.design, branchTokens(ctx.branch, ctx.institute));
-        printBranchDocument(designed.kind, `Authorization Letter — ${ctx.branch.name ?? ""}`, html, designed.design);
-      } else {
-        printStandardCentreCertificate(ctx.branch, ctx.institute);
-      }
+      printStandardCentreCertificate(ctx.branch, ctx.institute);
     } catch (error) {
       toast({ title: "Could not print the authorization letter", description: (error as Error).message, variant: "destructive" });
     }

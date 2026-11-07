@@ -14,7 +14,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { certificatePdf, certificatesPdf, marksheetPdf, marksheetSummary, type StudentDocument } from "@/lib/documents";
 import { matchesSearch } from "@/lib/search";
-import { printFromTemplate, printManyFromTemplate } from "@/lib/studentTemplateDocument";
 import { Link } from "react-router-dom";
 import { getCertificateFees, getStudentDocument, getWallet, issueCertificate } from "@/lib/supabase/data";
 import {
@@ -155,9 +154,8 @@ export default function Certificates({ passoutOnly = false }: { passoutOnly?: bo
     return { doc, extra, branchId: data.branchId || ownBranch };
   };
   const printFor = async (sid: string, dates: Dates) => {
-    const { doc, extra, branchId: printBranch } = await certificateDoc(sid, dates);
-    const printed = await printFromTemplate("certificate", doc, user?.organizationId ?? null, printBranch, extra);
-    if (!printed) await certificatePdf(doc);
+    const { doc } = await certificateDoc(sid, dates);
+    await certificatePdf(doc);
   };
 
   /**
@@ -206,9 +204,7 @@ export default function Certificates({ passoutOnly = false }: { passoutOnly?: bo
     try {
       if (printable.length) {
         setProgress("Preparing the print…");
-        const docs = printable.map((p) => p.doc);
-        const printed = await printManyFromTemplate("certificate", docs, user?.organizationId ?? null, branchId || ownBranch, printable.map((p) => p.extra));
-        if (!printed) await certificatesPdf(docs, `certificates-${branchOf.get(branchId)?.name || "centre"}`);
+        await certificatesPdf(printable.map((p) => p.doc), `certificates-${branchOf.get(branchId)?.name || "centre"}`);
         toast({
           title: `${printable.length} certificate(s) ready`,
           description: `${issuedNow} newly issued${charged ? `, ₹${charged.toLocaleString("en-IN")} deducted from the centre wallet` : ""}.`,

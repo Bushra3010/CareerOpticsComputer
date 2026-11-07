@@ -18,7 +18,7 @@ import { admissionPdf } from "@/lib/documents";
 import { admitCardHtml, blankAdmitCardTemplate, type Exam } from "@/data/admit-card-templates";
 import { getPublicAdmitCard, type PublicAdmitCard } from "@/lib/supabase/examWorkflow";
 import { termLabel, termPlan } from "@/lib/examWorkflow";
-import { idCardHtml } from "@/data/id-card-templates";
+import { studentCardsPdf } from "@/lib/brand/brandDocuments";
 import { admitCardsPdf } from "@/lib/admit-card-pdf";
 import {
   REQUEST_KINDS,
@@ -49,11 +49,9 @@ export default function MyDocuments() {
   const [invoices, setInvoices] = useState<PortalInvoice[]>([]);
   const [results, setResults] = useState<PortalResult[]>([]);
   const [requests, setRequests] = useState<PortalRequest[]>([]);
-  const [idTemplates, setIdTemplates] = useState<import("@/data/id-card-templates").IdCardTemplate[]>([]);
   const [admitTemplates, setAdmitTemplates] = useState<import("@/data/admit-card-templates").AdmitCardTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [idTemplateId, setIdTemplateId] = useState("");
   const [admitTemplateId, setAdmitTemplateId] = useState("");
   // The admit card the centre issued (exam-workflow.sql): roll number, exam
   // centre and the paper-by-paper schedule.
@@ -68,14 +66,8 @@ export default function MyDocuments() {
     setLoading(true);
     setError(null);
 
-    // Template data is still loaded from localStorage (staff-side designers write
-    // templates there; no backend endpoint yet).
-    const localTemplates: import("@/data/id-card-templates").IdCardTemplate[] = (() => {
-      try {
-        const raw = localStorage.getItem("erp-id-card-templates");
-        return raw ? JSON.parse(raw) : [];
-      } catch { return []; }
-    })();
+    // Admit card templates are still read from this browser (the admit card
+    // keeps its field-list layout); the ID card is the academy's own.
     const localAdmitTemplates: import("@/data/admit-card-templates").AdmitCardTemplate[] = (() => {
       try {
         const raw = localStorage.getItem("erp-admit-card-templates");
@@ -113,11 +105,8 @@ export default function MyDocuments() {
             };
           }),
         );
-        setIdTemplates(localTemplates);
         setAdmitTemplates(localAdmitTemplates);
-        const activeIds = localTemplates.filter((t) => t.status === "active");
         const activeAdmits = localAdmitTemplates.filter((t) => t.status === "active");
-        if (activeIds.length) setIdTemplateId(activeIds[0].id);
         if (activeAdmits.length) setAdmitTemplateId(activeAdmits[0].id);
       })
       .catch((err) => {
@@ -129,10 +118,8 @@ export default function MyDocuments() {
     return () => { cancelled = true; };
   }, [toast, userId, branchId]);
 
-  const activeIdTemplates = idTemplates.filter((template) => template.status === "active");
   const activeAdmitTemplates = admitTemplates.filter((template) => template.status === "active");
   const dues = feeSummary(invoices);
-  const idTemplate = activeIdTemplates.find((template) => template.id === idTemplateId);
   const admitTemplate = activeAdmitTemplates.find((template) => template.id === admitTemplateId);
   const day = (iso: string) =>
     iso ? new Date(`${iso}T00:00:00`).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "";
@@ -156,14 +143,18 @@ export default function MyDocuments() {
   const template = admitTemplate || { ...blankAdmitCardTemplate(), id: "standard", name: "Admit card", status: "active" as const };
   const admitCard = exam ? { ...template, exam: exam.value, liveExam: exam } : undefined;
 
-  const printIdCard = () => {
-    if (!idTemplate || !idStudent) return toast({ title: "No ID card template published", variant: "destructive" });
-    printHtml(`ID card — ${profile?.name}`, idCardHtml(idTemplate, idStudent));
-  };
-  const saveIdCard = () => {
-    if (!idTemplate || !idStudent) return toast({ title: "No ID card template published", variant: "destructive" });
-    downloadHtml(`id-card-${profile?.rollNo}.html`, `ID card — ${profile?.name}`, idCardHtml(idTemplate, idStudent));
-    toast({ title: "ID card saved", description: "Open the file and print it at actual size." });
+  const [cardBusy, setCardBusy] = useState(false);
+  const saveIdCard = async () => {
+    if (!idStudent) return;
+    setCardBusy(true);
+    try {
+      await studentCardsPdf([idStudent], `id-card-${profile?.rollNo || profile?.enrollmentNo}.pdf`);
+      toast({ title: "ID card downloaded", description: "Print it at actual size; the back is beside the front." });
+    } catch (err) {
+      toast({ title: "Could not make the card", description: err instanceof Error ? err.message : undefined, variant: "destructive" });
+    } finally {
+      setCardBusy(false);
+    }
   };
   const printAdmitCard = () => {
     if (!admitCard || !admitStudent) return toast({ title: "Admit card not issued yet", description: "Your centre issues it once the exam schedule is out.", variant: "destructive" });
@@ -225,21 +216,12 @@ export default function MyDocuments() {
           <Card>
             <CardHeader className="flex-row items-center justify-between space-y-0">
               <CardTitle className="flex items-center gap-2"><IdCard className="h-4 w-4" />Student ID card</CardTitle>
-              {activeIdTemplates.length > 1 && (
-                <Select value={idTemplateId} onValueChange={setIdTemplateId}>
-                  <SelectTrigger className="w-[190px]"><SelectValue placeholder="Template" /></SelectTrigger>
-                  <SelectContent>{activeIdTemplates.map((template) => <SelectItem key={template.id} value={template.id}>{template.name}</SelectItem>)}</SelectContent>
-                </Select>
-              )}
             </CardHeader>
-            <CardContent>
-              {idTemplate && idStudent
-                ? <div className="flex justify-center overflow-x-auto rounded-2xl bg-muted/50 p-4" dangerouslySetInnerHTML={{ __html: idCardHtml(idTemplate, idStudent) }} />
-                : <p className="py-10 text-center text-sm text-muted-foreground">Your institute has not published an ID card template yet.</p>}
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Button size="sm" onClick={printIdCard} disabled={!idTemplate || !profile}><Printer className="mr-1.5 h-3.5 w-3.5" />Print</Button>
-                <Button size="sm" variant="outline" onClick={saveIdCard} disabled={!idTemplate || !profile}><Download className="mr-1.5 h-3.5 w-3.5" />Save a copy</Button>
-              </div>
+            <CardContent className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Your identity card on the academy's design: name, course, enrolment number, photo and a QR code that verifies you. The PDF has the front and the back side by side.
+              </p>
+              <Button size="sm" onClick={saveIdCard} disabled={!profile || cardBusy}><Download className="mr-1.5 h-3.5 w-3.5" />Download ID card</Button>
             </CardContent>
           </Card>
 

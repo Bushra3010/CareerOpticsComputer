@@ -55,7 +55,8 @@ describe("toStudentProfile", () => {
 
   it("prints the father on the ID card, which reads the guardian field", () => {
     const card = asIdCardStudent(toStudentProfile(row()));
-    expect(card.parentContact).toBe("+91 98220 41199");
+    expect(card.fatherName).toBe("Rajesh Sharma");
+    expect(card.mobile).toBe("+91 98220 41100");
   });
 
   // The bug this file now covers: the row was typed as the old api-server's

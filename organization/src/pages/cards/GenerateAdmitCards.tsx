@@ -35,7 +35,7 @@ import {
 } from "@/data/admit-card-templates";
 import QRCode from "qrcode";
 import { isExamCandidate } from "@/lib/assessments";
-import { photoOf } from "@/lib/studentTemplateDocument";
+import { photoOf } from "@/lib/studentRecord";
 import { getStudents, getBatches, getInvoices, getExams, getStudentDocument } from "@/lib/supabase/data";
 import { useAuth } from "@/contexts/AuthContext";
 

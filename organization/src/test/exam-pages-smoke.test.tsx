@@ -10,9 +10,9 @@ import { MemoryRouter } from "react-router-dom";
 const toast = vi.fn();
 let walletBalance = 500;
 const issueCertificate = vi.fn((..._args: unknown[]) => Promise.resolve({ charged: true, alreadyIssued: false, amount: 150, certificateNo: "CERT-E001" }));
-const printFromTemplate = vi.fn((..._args: unknown[]) => Promise.resolve(true));
-const printMarksheetsFromTemplate = vi.fn((..._a: unknown[]) => Promise.resolve(true));
-const printManyFromTemplate = vi.fn((..._args: unknown[]) => Promise.resolve(true));
+const certificatePdf = vi.fn((..._args: unknown[]) => Promise.resolve());
+const certificatesPdf = vi.fn((..._args: unknown[]) => Promise.resolve());
+const marksheetsPdf = vi.fn((..._a: unknown[]) => Promise.resolve());
 const marksheetPdf = vi.fn((..._args: unknown[]) => Promise.resolve());
 let issuedList: unknown[] = [];
 // Null: approvals not set up, so pages behave as before.
@@ -35,16 +35,10 @@ vi.mock("@/contexts/AuthContext", () => ({
       ? { view, user: { id: "u1", name: "Head Office", role: "SUPER_ADMIN", organizationId: "org1", branchId: null } }
       : { view, user: { id: "u2", name: "Centre Staff", role: "FRANCHISE", organizationId: "org1", branchId: "b1" } },
 }));
-vi.mock("@/lib/studentTemplateDocument", () => ({
-  printFromTemplate: (...a: unknown[]) => printFromTemplate(...a),
-  printManyFromTemplate: (...a: unknown[]) => printManyFromTemplate(...a),
-  printMarksheetsFromTemplate: (...a: unknown[]) => printMarksheetsFromTemplate(...a),
-  photoOf: () => "",
-}));
 vi.mock("@/lib/documents", () => ({
-  certificatePdf: vi.fn(),
-  certificatesPdf: vi.fn(),
-  marksheetsPdf: vi.fn(),
+  certificatePdf: (...a: unknown[]) => certificatePdf(...a),
+  certificatesPdf: (...a: unknown[]) => certificatesPdf(...a),
+  marksheetsPdf: (...a: unknown[]) => marksheetsPdf(...a),
   marksheetPdf: (...a: unknown[]) => marksheetPdf(...a),
   marksheetSummary: () => ({ result: "Pass" }),
 }));
@@ -114,11 +108,12 @@ beforeEach(() => {
   view = "admin";
   requestCertificateApproval.mockClear();
   reviewPrintApproval.mockClear();
-  printManyFromTemplate.mockClear();
+  certificatesPdf.mockClear();
+  marksheetsPdf.mockClear();
   marksheetPdf.mockClear();
   toast.mockClear();
   issueCertificate.mockClear();
-  printFromTemplate.mockClear();
+  certificatePdf.mockClear();
   saveCourseSubject.mockClear();
 });
 
@@ -218,7 +213,7 @@ describe("exam workflow pages", () => {
     expect(studentId).toBe("s1");
     expect(by).toBe("Head Office");
     expect(dates.examConductedDate).toBe("2026-11-20");
-    await waitFor(() => expect(printFromTemplate).toHaveBeenCalledWith("certificate", expect.anything(), "org1", "b1", { certificate_no: "CERT-E001", certificate_id: "CERT-E001" }));
+    await waitFor(() => expect(certificatePdf).toHaveBeenCalledWith(expect.objectContaining({ examinationDate: "2026-11-20" })));
     await waitFor(() => expect(toast).toHaveBeenCalledWith(expect.objectContaining({ title: "Certificate issued" })));
   });
 
@@ -249,14 +244,11 @@ describe("exam workflow pages", () => {
     fireEvent.click(screen.getByRole("button", { name: "Generate 1 certificate" }));
     await waitFor(() => expect(issueCertificate).toHaveBeenCalledTimes(1));
     expect((issueCertificate.mock.calls[0] as unknown[])[0]).toBe("s1");
-    await waitFor(() =>
-      expect(printManyFromTemplate).toHaveBeenCalledWith("certificate", [expect.anything()], "org1", "b1", [{ certificate_no: "CERT-E001", certificate_id: "CERT-E001" }]),
-    );
+    await waitFor(() => expect(certificatesPdf).toHaveBeenCalledWith([expect.anything()], "certificates-Begusarai Centre"));
     await waitFor(() => expect(toast).toHaveBeenCalledWith(expect.objectContaining({ title: "1 certificate(s) ready" })));
   });
 
   it("prints the chosen students' marksheets from the certificate form", async () => {
-    printMarksheetsFromTemplate.mockClear();
     const Certificates = await page("@/pages/exam/Certificates");
     render(<MemoryRouter><Certificates /></MemoryRouter>);
     const label = () => Array.from(document.querySelectorAll("label")).find((el) => el.textContent === "Student")!;
@@ -264,7 +256,7 @@ describe("exam workflow pages", () => {
     fireEvent.keyDown(within(label().parentElement!).getByRole("combobox"), { key: "Enter" });
     fireEvent.click(await screen.findByRole("option", { name: /Ram Kumar/ }));
     fireEvent.click(screen.getByRole("button", { name: "Print marksheet" }));
-    await waitFor(() => expect(printFromTemplate).toHaveBeenCalledWith("marksheet", expect.anything(), "org1", "b1", expect.objectContaining({ marksheet_no: "MS-E001-1" })));
+    await waitFor(() => expect(marksheetPdf).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ marksheet_no: "MS-E001-1" })));
 
     fireEvent.click(screen.getByRole("button", { name: "Multiple students" }));
     const centre = Array.from(document.querySelectorAll("label")).find((el) => el.textContent === "Centre")!;
@@ -272,21 +264,19 @@ describe("exam workflow pages", () => {
     fireEvent.click(await screen.findByRole("option", { name: "Begusarai Centre" }));
     fireEvent.click(await screen.findByRole("checkbox", { name: "Select all students shown" }));
     fireEvent.click(screen.getByRole("button", { name: "Print 1 marksheet" }));
-    await waitFor(() => expect(printMarksheetsFromTemplate).toHaveBeenCalledTimes(1));
-    expect((printMarksheetsFromTemplate.mock.calls[0] as unknown[])[0]).toEqual([expect.objectContaining({ branchId: "b1", extra: expect.objectContaining({ marksheet_no: "MS-E001-1" }) })]);
+    await waitFor(() => expect(marksheetsPdf).toHaveBeenCalledTimes(1));
+    expect((marksheetsPdf.mock.calls[0] as unknown[])[2]).toEqual([expect.objectContaining({ marksheet_no: "MS-E001-1" })]);
   });
 
   it("prints the marksheet beside an issued certificate", async () => {
     issuedList = [{ id: "c1", studentId: "s1", branchId: "b1", certificateNo: "CERT-E001", issueDate: "2026-11-25", examConductedDate: "2026-11-20", amount: 150 }];
-    printFromTemplate.mockResolvedValueOnce(false);
     const Certificates = await page("@/pages/exam/Certificates");
     render(<MemoryRouter><Certificates /></MemoryRouter>);
     await waitFor(() => expect(screen.getAllByText("Ram Kumar").length).toBeGreaterThan(0));
     const row = screen.getAllByText("CERT-E001").map((el) => el.closest("tr")).find(Boolean) as HTMLElement;
     fireEvent.keyDown(within(row).getByRole("button", { name: "Row actions" }), { key: "Enter" });
     fireEvent.click(await screen.findByRole("menuitem", { name: "Print marksheet" }));
-    await waitFor(() => expect(printFromTemplate).toHaveBeenCalledWith("marksheet", expect.anything(), "org1", "b1", expect.objectContaining({ marksheet_no: "MS-E001-1" })));
-    await waitFor(() => expect(marksheetPdf).toHaveBeenCalledWith(expect.objectContaining({ rollNo: "R1001", examinationDate: "2026-11-20" })));
+    await waitFor(() => expect(marksheetPdf).toHaveBeenCalledWith(expect.objectContaining({ rollNo: "R1001", examinationDate: "2026-11-20" }), expect.objectContaining({ marksheet_no: "MS-E001-1" })));
   });
 
   it("sends a centre's certificate to the head office instead of issuing it", async () => {
@@ -303,7 +293,7 @@ describe("exam workflow pages", () => {
     fireEvent.click(screen.getByRole("button", { name: "Send for approval" }));
     await waitFor(() => expect(requestCertificateApproval).toHaveBeenCalledWith("s1", "Centre Staff", { issueDate: expect.any(String), examConductedDate: "2026-11-20" }));
     expect(issueCertificate).not.toHaveBeenCalled();
-    expect(printFromTemplate).not.toHaveBeenCalled();
+    expect(certificatePdf).not.toHaveBeenCalled();
     await waitFor(() => expect(toast).toHaveBeenCalledWith(expect.objectContaining({ title: "Sent for approval" })));
   });
 
@@ -324,7 +314,7 @@ describe("exam workflow pages", () => {
     // The marksheet waits too.
     fireEvent.click(screen.getByRole("button", { name: "Print marksheet" }));
     await waitFor(() => expect(toast).toHaveBeenCalledWith(expect.objectContaining({ title: "Could not print marksheet", description: expect.stringMatching(/waiting for the head office/) })));
-    expect(printFromTemplate).not.toHaveBeenCalled();
+    expect(marksheetPdf).not.toHaveBeenCalled();
   });
 
   it("lets the head office approve centres' requests", async () => {

@@ -53,12 +53,7 @@ vi.mock("@/lib/supabase/examWorkflow", () => ({
 }));
 
 vi.mock("@/components/ui/PageHeader", () => ({ PageHeader: () => <div /> }));
-const printMarksheetsFromTemplate = vi.fn((..._a: unknown[]) => Promise.resolve(false));
 const marksheetsPdf = vi.fn((..._a: unknown[]) => Promise.resolve());
-vi.mock("@/lib/studentTemplateDocument", () => ({
-  printFromTemplate: vi.fn(),
-  printMarksheetsFromTemplate: (...a: unknown[]) => printMarksheetsFromTemplate(...a),
-}));
 vi.mock("@/lib/documents", () => ({ marksheetPdf: vi.fn(), marksheetsPdf: (...a: unknown[]) => marksheetsPdf(...a) }));
 
 const Results = (await import("@/pages/exam/Results")).default;
@@ -77,7 +72,6 @@ beforeEach(() => {
   approvals = null;
   toast.mockClear();
   saveMarksheet.mockClear();
-  printMarksheetsFromTemplate.mockClear();
   marksheetsPdf.mockClear();
 });
 
@@ -122,8 +116,6 @@ describe("Results page", () => {
     fireEvent.click(screen.getByRole("button", { name: "Print all (2)" }));
     await waitFor(() => expect(marksheetsPdf).toHaveBeenCalledTimes(2));
     expect((marksheetsPdf.mock.calls[1] as unknown[])[0]).toHaveLength(2);
-    // The designs are tried first, all in one run.
-    expect((printMarksheetsFromTemplate.mock.calls[1] as unknown[])[0]).toHaveLength(2);
   });
 
   it("works out the result from theory and practical marks and saves the final term", async () => {

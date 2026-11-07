@@ -14,23 +14,11 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ChevronDown, Printer, Download, Eye, Search, Users, CreditCard, Image as ImageIcon, QrCode } from "lucide-react";
+import { ChevronDown, Download, Search, Users, CreditCard } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { printHtml } from "@/lib/export";
-import {
-  photoOf,
-  printRecordsByBranch,
-  type StudentRecord,
-} from "@/lib/studentTemplateDocument";
-import { idCardsPdf } from "@/lib/id-card-pdf";
-import {
-  ID_CARD_TEMPLATES_KEY,
-  IdCardTemplate,
-  fieldValue,
-  idCardSheetHtml,
-} from "@/data/id-card-templates";
+import { photoOf, type StudentRecord } from "@/lib/studentRecord";
+import { studentCardsPdf, type StudentCard } from "@/lib/brand/brandDocuments";
 import { getBatches, getBranches, getCourses, getStudents } from "@/lib/supabase/data";
 import { matchesSearch } from "@/lib/search";
 import { useAuth } from "@/contexts/AuthContext";
@@ -50,9 +38,11 @@ interface IdCardStudent {
   bloodGroup: string;
   parentContact: string;
   address: string;
+  fatherName?: string;
+  session?: string;
+  /** The date of birth as stored, for the card's DD-MM-YYYY. */
+  dobIso?: string;
 }
-
-const STORAGE_KEY = ID_CARD_TEMPLATES_KEY;
 
 const ALL_COURSES = "all";
 
@@ -61,12 +51,8 @@ export default function GenerateIDCards() {
   const { user, view } = useAuth();
   const ownBranch = view === "admin" ? null : user?.branchId || null;
   const { toast } = useToast();
-  const [templates, setTemplates] = useState<IdCardTemplate[]>([]);
-  /** The student rows as the database returns them, for the branch's template. */
-  const [records, setRecords] = useState<StudentRecord[]>([]);
   const [rawStudents, setStudents] = useState<IdCardStudent[]>([]);
   const [loading, setLoading] = useState(false);
-  const [templateId, setTemplateId] = useState("");
   const [branches, setBranches] = useState<Array<{ id: string; name: string }>>([]);
   const [courses, setCourses] = useState<Array<{ id: string; name: string }>>([]);
   // One branch or many: the office can print several centres' cards in one run.
@@ -77,21 +63,6 @@ export default function GenerateIDCards() {
   const [courseId, setCourseId] = useState(ALL_COURSES);
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [previewOpen, setPreviewOpen] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setTemplates(JSON.parse(raw));
-    } catch { /* use empty */ }
-    return () => { cancelled = true; };
-  }, []);
-
-  const persistTemplates = (next: IdCardTemplate[]) => {
-    setTemplates(next);
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch { /* quota */ }
-  };
 
   useEffect(() => {
     let cancelled = false;
@@ -113,7 +84,6 @@ export default function GenerateIDCards() {
     setCourseId(ALL_COURSES);
     const ids = branchKey ? branchKey.split(",") : [];
     if (!ids.length) {
-      setRecords([]);
       setStudents([]);
       return;
     }
@@ -129,7 +99,6 @@ export default function GenerateIDCards() {
         // `getStudents` resolves to `{ success, data, meta }` - mapping over the
         // envelope threw, so this list was always empty.
         const rows = results.flatMap((r) => (r.data ?? []) as StudentRecord[]);
-        setRecords(rows);
         const mapped: IdCardStudent[] = rows.map((row) => {
           const s = row as StudentRecord & Record<string, string>;
           return {
@@ -148,6 +117,9 @@ export default function GenerateIDCards() {
           bloodGroup: s.bloodGroup ?? "—",
           parentContact: s.phone ?? "—",
           address: [s.streetAddress, s.city, s.state, s.pincode].filter(Boolean).join(", ") || "—",
+          fatherName: s.fatherName || "",
+          session: s.academicYear || "",
+          dobIso: s.dateOfBirth || "",
           };
         });
         setStudents(mapped);
@@ -171,7 +143,6 @@ export default function GenerateIDCards() {
     return rawStudents.map((s) => ({ ...s, class: courseName.get(s.courseId) || "—" }));
   }, [rawStudents, courses]);
 
-  const template = templates.find((item) => item.id === templateId) ?? null;
   const branchName = (id: string) => branches.find((b) => b.id === id)?.name || "";
   const many = branchIds.length > 1;
   const shownBranches = branches.filter((b) => matchesSearch(b.name, branchQuery));
@@ -215,60 +186,38 @@ export default function GenerateIDCards() {
     );
   };
 
-  /** Every output button needs the same two things picked. */
-  const ready = () => {
-    if (!template) {
-      toast({ title: "Choose a template", description: "Pick an ID card template first.", variant: "destructive" });
-      return false;
-    }
-    if (!chosen.length) {
-      toast({ title: "No students selected", description: "Tick at least one student.", variant: "destructive" });
-      return false;
-    }
-    return true;
-  };
 
   /**
-   * The branch's own template first.
-   *
-   * The organisation designs an ID card in the Document Designer and gives it
-   * to a branch; that is what its cards should look like. The field-list
-   * template on this page is what prints when the library has none -- and each
-   * card carries the student's own passport photograph either way.
+   * The academy's student identity card for every ticked student, as one PDF:
+   * each card's front beside its back, three to an A4 sheet.
    */
-  const printCards = async () => {
+  const downloadPdf = async () => {
     if (!chosen.length) {
       toast({ title: "No students selected", description: "Tick at least one student.", variant: "destructive" });
       return;
     }
-    // The card prints the course and batch by name; the rows hold their ids.
-    const picked: StudentRecord[] = records.flatMap((row) => {
-      const shown = chosen.find((s) => s.id === row.id);
-      return shown ? [{ ...row, courseName: shown.class === "—" ? "" : shown.class, batchName: shown.section === "—" ? "" : shown.section }] : [];
-    });
-    // Each card in its own branch's design, all in one print run.
-    const printed = await printRecordsByBranch("student-id", picked, user?.organizationId ?? null).catch(() => false);
-    if (printed) return;
-
-    if (!ready() || !template) return;
-    printHtml(
-      `ID Cards - ${template.name} - ${runName}`,
-      idCardSheetHtml(template, chosen),
-    );
-  };
-
-  const downloadPdf = () => {
-    if (!ready() || !template) return;
-    const { pages } = idCardsPdf(template, chosen, `id-cards-${runName}.pdf`);
-    toast({
-      title: "PDF generated",
-      description: `${chosen.length} card${chosen.length === 1 ? "" : "s"} across ${pages} page${pages === 1 ? "" : "s"} - check your Downloads.`,
-    });
-  };
-
-  const openPreview = () => {
-    if (!ready()) return;
-    setPreviewOpen(true);
+    const validTill = `${new Date().getFullYear() + 1}-03-31`;
+    const cards: StudentCard[] = chosen.map((s) => ({
+      name: s.name,
+      studentId: s.code || s.rollNo,
+      course: s.class === "—" ? "" : s.class,
+      session: s.session || "",
+      fatherName: s.fatherName || "",
+      dob: s.dobIso || "",
+      mobile: s.parentContact === "—" ? "" : s.parentContact,
+      address: s.address === "—" ? "" : s.address,
+      validTill,
+      photo: s.photoUrl || null,
+    }));
+    try {
+      const { pages } = await studentCardsPdf(cards, `id-cards-${runName}.pdf`);
+      toast({
+        title: "ID cards ready",
+        description: `${chosen.length} card${chosen.length === 1 ? "" : "s"} across ${pages} page${pages === 1 ? "" : "s"} - check your Downloads.`,
+      });
+    } catch (error) {
+      toast({ title: "Could not make the cards", description: error instanceof Error ? error.message : undefined, variant: "destructive" });
+    }
   };
 
   const allVisibleSelected =
@@ -280,7 +229,7 @@ export default function GenerateIDCards() {
         title="Generate ID Cards"
         description="Select students and generate ID cards in bulk"
         breadcrumbs={[
-          { label: "Certificate & Marksheet", href: "/documents/designer" },
+          { label: "Certificate & Marksheet", href: "/certificate/issue" },
           { label: "Generate ID Cards" },
         ]}
       />
@@ -351,27 +300,6 @@ export default function GenerateIDCards() {
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label>Select Template</Label>
-              <Select value={templateId} onValueChange={setTemplateId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Choose template" />
-                </SelectTrigger>
-                <SelectContent>
-                  {templates.map((item) => (
-                    <SelectItem key={item.id} value={item.id}>
-                      {item.name} ({item.orientation})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {!templates.length && (
-                <p className="text-xs text-muted-foreground">
-                  No templates yet - create one in ID Card Template.
-                </p>
-              )}
-            </div>
-
             <div className="pt-4 border-t space-y-3">
               <div className="flex items-center gap-2 text-sm">
                 <Users className="h-4 w-4 text-muted-foreground" />
@@ -389,17 +317,9 @@ export default function GenerateIDCards() {
             </div>
 
             <div className="flex flex-col gap-2 pt-4">
-              <Button className="w-full" disabled={chosen.length === 0} onClick={printCards}>
-                <CreditCard className="h-4 w-4 mr-2" />
-                Generate ID Cards ({chosen.length})
-              </Button>
-              <Button variant="outline" className="w-full" disabled={!template || chosen.length === 0} onClick={openPreview}>
-                <Eye className="h-4 w-4 mr-2" />
-                Preview Cards
-              </Button>
-              <Button variant="outline" className="w-full" disabled={!template || chosen.length === 0} onClick={downloadPdf}>
+              <Button className="w-full" disabled={chosen.length === 0} onClick={downloadPdf}>
                 <Download className="h-4 w-4 mr-2" />
-                Download PDF
+                Download ID Cards ({chosen.length})
               </Button>
             </div>
           </CardContent>
@@ -476,82 +396,6 @@ export default function GenerateIDCards() {
         </Card>
       </div>
 
-      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>Card preview</DialogTitle>
-            <DialogDescription>
-              {template?.name} - {chosen.length} card{chosen.length === 1 ? "" : "s"} - {runName}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="max-h-[60vh] overflow-y-auto">
-            <div className="flex flex-wrap gap-4">
-              {template && chosen.map((student) => (
-                <div
-                  key={student.id}
-                  className="overflow-hidden rounded-lg border bg-card shadow-sm"
-                  style={{
-                    width: template.orientation === "portrait" ? 200 : 300,
-                    height: template.orientation === "portrait" ? 300 : 200,
-                  }}
-                >
-                  <div className="px-3 py-2 text-white" style={{ background: template.accent }}>
-                    <p className="text-xs font-bold leading-tight">{template.instituteName}</p>
-                    <p className="text-[9px] opacity-85">{template.instituteAddress}</p>
-                  </div>
-                  <div className="flex gap-2 p-3">
-                    {template.showPhoto && (
-                      <div className="h-16 w-12 shrink-0 rounded border bg-muted flex items-center justify-center">
-                        <ImageIcon className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      {template.fields.includes("Student Name") && (
-                        <p className="mb-1 truncate text-xs font-bold">{student.name}</p>
-                      )}
-                      <dl className="space-y-0.5">
-                        {template.fields
-                          .filter((label) => label !== "Student Name")
-                          .map((label) => (
-                            <div key={label} className="flex justify-between gap-2 text-[9px]">
-                              <dt className="shrink-0 text-muted-foreground">{label}</dt>
-                              <dd className="truncate font-medium">{fieldValue(label, student, template)}</dd>
-                            </div>
-                          ))}
-                      </dl>
-                    </div>
-                  </div>
-                  <div className="flex items-end justify-between px-3">
-                    {template.showQr ? (
-                      <div className="flex h-10 w-10 items-center justify-center rounded border">
-                        <QrCode className="h-5 w-5 text-muted-foreground" />
-                      </div>
-                    ) : (
-                      <span />
-                    )}
-                    {template.showSignature && (
-                      <div className="text-center">
-                        <div className="mb-1 w-16 border-t border-foreground" />
-                        <span className="text-[9px]">Principal</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={printCards}>
-              <Printer className="h-4 w-4 mr-2" />
-              Print
-            </Button>
-            <Button onClick={downloadPdf}>
-              <Download className="h-4 w-4 mr-2" />
-              Download PDF
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </AppLayout>
   );
 }

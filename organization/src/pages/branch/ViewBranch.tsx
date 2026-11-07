@@ -45,12 +45,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { getBranchesWithStats, updateBranchWithDetails, getBranchDetails, deleteBranch, setBranchLogin } from "@/lib/supabase/data";
 import { downloadCsv } from "@/lib/export";
 import { instituteName } from "@/lib/instituteName";
-import {
-  assignedBranchDesign,
-  printBranchDocuments,
-  type BranchDetails,
-} from "@/lib/branchTemplateDocument";
-import { getTemplateAssignments, getTemplates } from "@/lib/supabase/documentTemplates";
+import { type BranchDetails } from "@/lib/branchTemplateDocument";
+import { printHtml } from "@/lib/export";
 import { isoOrNull, dateInputValue } from "@/lib/dates";
 import { INDIAN_STATES, canonicalState, districtsFor } from "@/data/indianStates";
 import { lookupPincode, geocode } from "@/lib/postal";
@@ -420,10 +416,8 @@ export default function ViewBranch() {
       ),
     );
     const byId = new Map(branches.map((branch) => [branch.id, branch]));
-    await printBranchDocuments("centre-certificate", details, orgId, instituteName(), (detail) => {
-      const branch = byId.get(String(detail.id));
-      return branch ? getCertificateHtml(branch) : "";
-    });
+    const title = branches.length === 1 ? `Centre Certificate — ${branches[0].name ?? ""}` : `Centre Certificates — ${branches.length} branches`;
+    printHtml(title, details.map((detail) => { const branch = byId.get(String(detail.id)); return branch ? getCertificateHtml(branch) : ""; }).join(""));
   };
 
   // Print certificate for a single branch
@@ -443,22 +437,6 @@ export default function ViewBranch() {
       return;
     }
     try {
-      // A branch with a designed centre certificate prints from it, so the
-      // whole selection goes through the template printer; the built-in PDF
-      // below is only for when none of them has one.
-      const [templates, assignments] = await Promise.all([
-        getTemplates(user?.organizationId ?? null).catch(() => ({ data: [] })),
-        getTemplateAssignments(user?.organizationId ?? null).catch(() => ({ data: {} })),
-      ]);
-      if (
-        branches.some((branch) =>
-          assignedBranchDesign("centre-certificate", templates.data, assignments.data, branch.id),
-        )
-      ) {
-        await printFromTemplates(branches);
-        return;
-      }
-
       const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
