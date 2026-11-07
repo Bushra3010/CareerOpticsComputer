@@ -964,6 +964,27 @@ export interface AdmissionFormCentre {
 export async function drawAdmissionForm(doc: jsPDF, c: AdmissionFormCentre) {
   await registerBrandFonts(doc, ["Poppins-Regular", "Poppins-Medium", "Poppins-SemiBold", "Poppins-Bold", "Poppins-ExtraBold", "GreatVibes-Regular"]);
   await background(doc, "admission-form.jpg", MS.w, MS.h);
+
+  // A double frame around the page, above the footer band: navy outside, orange inside
+  const frameBottom = MS.h - 22;
+  doc.setDrawColor(...rgb(NAVY));
+  doc.setLineWidth(pt(2.4));
+  doc.rect(pt(12), pt(12), pt(MS.w - 24), pt(frameBottom - 12));
+  doc.setDrawColor(...rgb(ORANGE));
+  doc.setLineWidth(pt(0.9));
+  doc.rect(pt(17), pt(17), pt(MS.w - 34), pt(frameBottom - 22));
+  // Corner marks, as printed forms carry
+  doc.setDrawColor(...rgb(NAVY));
+  doc.setLineWidth(pt(1.4));
+  const corner = (x: number, y: number, dx: number, dy: number) => {
+    doc.line(pt(x), pt(y), pt(x + dx * 14), pt(y));
+    doc.line(pt(x), pt(y), pt(x), pt(y + dy * 14));
+  };
+  corner(22, 22, 1, 1);
+  corner(MS.w - 22, 22, -1, 1);
+  corner(22, frameBottom - 10, 1, -1);
+  corner(MS.w - 22, frameBottom - 10, -1, -1);
+
   const left = 36;
   const right = MS.w - 36;
   const W = right - left;
