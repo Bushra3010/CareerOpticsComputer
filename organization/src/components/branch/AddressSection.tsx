@@ -10,17 +10,31 @@ import { blocksFor, citiesFor } from "@/data/indianCities";
 import { SelectWithCustom } from "@/components/ui/select-with-custom";
 import { lookupPincode, geocode, uniqueSorted, type PostalPlace } from "@/lib/postal";
 
-export function AddressSection() {
+/** Values to start from, e.g. a franchise lead being converted; read once, on mount. */
+export interface AddressInitial {
+  address?: string;
+  state?: string;
+  district?: string;
+  city?: string;
+  pincode?: string;
+}
+
+export function AddressSection({ initial }: { initial?: AddressInitial } = {}) {
   // Select values are the plain names, so they round-trip into the lookup
   // tables unchanged. Slugging broke on names containing "and"
   // ("Jammu and Kashmir" -> "Jammu And Kashmir", which matches no key).
-  const [stateKey, setStateKey] = useState("");
-  const [districtKey, setDistrictKey] = useState("");
+  const initialState = initial?.state ? canonicalState(initial.state) : "";
+  // The lead's district in the table's own spelling, so the Select shows it; one the table lacks joins it as extra.
+  const initialDistrict = initial?.district
+    ? (DISTRICTS_BY_STATE[initialState] || []).find((d) => d.toLowerCase() === initial.district!.trim().toLowerCase()) ?? initial.district.trim()
+    : "";
+  const [stateKey, setStateKey] = useState(INDIAN_STATES.includes(initialState) ? initialState : "");
+  const [districtKey, setDistrictKey] = useState(initialDistrict);
 
   // A district the PIN lookup reported that the bundled table does not carry
   // (renamed or newly carved-out districts). India Post is authoritative for
   // the address being entered, so it joins the options rather than being lost.
-  const [extraDistrict, setExtraDistrict] = useState("");
+  const [extraDistrict, setExtraDistrict] = useState(initialDistrict);
 
   const availableDistricts = useMemo(() => {
     const base = stateKey ? DISTRICTS_BY_STATE[stateKey] || [] : [];
@@ -31,8 +45,8 @@ export function AddressSection() {
   }, [stateKey, extraDistrict]);
 
   const [blockQuery, setBlockQuery] = useState("");
-  const [cityQuery, setCityQuery] = useState("");
-  const [pincode, setPincode] = useState("");
+  const [cityQuery, setCityQuery] = useState(initial?.city ?? "");
+  const [pincode, setPincode] = useState((initial?.pincode ?? "").replace(/\D/g, "").slice(0, 6));
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
   const [postal, setPostal] = useState<PostalPlace[]>([]);
@@ -109,7 +123,7 @@ export function AddressSection() {
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="address">Street Address *</Label>
-          <Textarea id="address" name="address" placeholder="Enter full address" rows={2} />
+          <Textarea id="address" name="address" placeholder="Enter full address" rows={2} defaultValue={initial?.address} />
         </div>
         {/* The written address and the pin on a map are not the same thing: a
             lane with no name is found by the link and by nothing else. Paste

@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Building2, CalendarClock, CheckCircle2, Download, FileSignature, MapPin, Plus, TrendingUp, Users } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { downloadCsv } from "@/lib/export";
@@ -93,6 +94,7 @@ const initials = (name: string) =>
 export default function FranchiseLeads() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const orgId = user?.organizationId || null;
 
   const [leads, setLeads] = useState<FranchiseLead[]>([]);
@@ -842,6 +844,29 @@ export default function FranchiseLeads() {
                   Schedule follow-up
                 </Button>
               </div>
+
+              {detail.branchId ? (
+                <div className="flex flex-wrap items-center gap-3 rounded-xl border border-success/30 bg-success/10 p-4 text-sm">
+                  <CheckCircle2 className="h-5 w-5 text-success" />
+                  <span className="font-medium">This lead is now a franchise.</span>
+                  <Button size="sm" variant="outline" className="ml-auto" asChild>
+                    <Link to="/branch/view">Open All Franchises</Link>
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex flex-wrap items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold">Ready to onboard?</p>
+                    <p className="text-muted-foreground">
+                      Opens Add Franchise filled from this lead. Saving the branch marks the lead Converted and links it.
+                    </p>
+                  </div>
+                  <Button size="sm" className="gap-1.5" onClick={() => navigate(`/branch/create?lead=${encodeURIComponent(detail.id)}`)}>
+                    <Building2 className="h-4 w-4" />
+                    Create franchise
+                  </Button>
+                </div>
+              )}
 
               <div className="space-y-2 rounded-xl border p-4">
                 <Label>Pipeline stage</Label>

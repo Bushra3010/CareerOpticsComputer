@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,15 @@ import { BranchDocumentsSection } from "@/components/branch/BranchDocumentsSecti
 import { BranchAdminSection } from "@/components/branch/BranchAdminSection";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { createBranchWithDetails, createBranchLogin, getBranches } from "@/lib/supabase/data";
+import {
+  createBranchWithDetails,
+  createBranchLogin,
+  getBranches,
+  getFranchiseLead,
+  logFranchiseActivity,
+  updateFranchiseLead,
+  type FranchiseLead,
+} from "@/lib/supabase/data";
 import { canonicalState } from "@/data/indianStates";
 import { storedChoice } from "@/lib/choices";
 
@@ -56,6 +64,51 @@ export default function CreateBranch() {
   const { toast } = useToast();
   const [branches, setBranches] = useState<Branch[]>([]);
   const [saving, setSaving] = useState(false);
+
+  // Converting a franchise lead: Franchise Leads opens this page as /branch/create?lead=<id>,
+  // and the lead's answers fill the form. Saving the branch marks the lead Converted.
+  const [params] = useSearchParams();
+  const leadId = params.get("lead");
+  const [lead, setLead] = useState<FranchiseLead | null>(null);
+  const [leadLoading, setLeadLoading] = useState(Boolean(leadId));
+  const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (!leadId) return;
+    getFranchiseLead(leadId)
+      .then((r) => {
+        if (!r.data) {
+          toast({ title: "Lead not found", description: "Filling the form by hand.", variant: "destructive" });
+          return;
+        }
+        if (r.data.branchId) {
+          toast({ title: "This lead is already a franchise", description: "A branch was created from it before. Check All Franchises first." });
+        }
+        setLead(r.data);
+      })
+      .catch((error) => toast({ title: "Could not load the lead", description: error instanceof Error ? error.message : undefined, variant: "destructive" }))
+      .finally(() => setLeadLoading(false));
+  }, [leadId, toast]);
+
+  // The plain inputs are uncontrolled, so the lead's answers are written into them once the form is up.
+  useEffect(() => {
+    const form = formRef.current;
+    if (!lead || !form) return;
+    const fill: Record<string, string> = {
+      phone: lead.phone,
+      whatsappNumber: lead.whatsapp,
+      email: lead.email,
+      directorName: lead.directorName,
+      adminName: lead.directorName,
+      adminPhone: lead.phone,
+      adminEmail: lead.email,
+      numComputers: lead.computers != null ? String(lead.computers) : "",
+    };
+    for (const [name, v] of Object.entries(fill)) {
+      const input = form.elements.namedItem(name);
+      if (v && input instanceof HTMLInputElement && !input.value) input.value = v;
+    }
+  }, [lead]);
 
   useEffect(() => {
     const fetchBranches = async () => {
@@ -234,6 +287,25 @@ export default function CreateBranch() {
           variant: "destructive",
         });
       }
+      // The lead this branch came from is now a franchise: link it and close it as Converted.
+      if (lead) {
+        try {
+          await updateFranchiseLead(lead.id, { status: "Converted", branchId: created.data.id });
+          await logFranchiseActivity({
+            leadId: lead.id,
+            kind: "Converted to franchise",
+            status: "Converted",
+            note: `${value("branchName")} (${code}) created`,
+            actorId: user?.id ?? null,
+          }).catch(() => undefined);
+        } catch (error) {
+          toast({
+            title: "Branch created, lead not updated",
+            description: `Mark ${lead.leadNo} as Converted in Franchise Leads. ${error instanceof Error ? error.message : ""}`,
+            variant: "destructive",
+          });
+        }
+      }
       navigate("/branch/view");
     }).catch((error: unknown) => {
       toast({
@@ -249,18 +321,37 @@ export default function CreateBranch() {
     <AppLayout>
       <PageHeader
         title="Create Branch"
-        description="Add a new branch to your institution"
+        description={lead ? `Converting franchise lead ${lead.leadNo} — ${lead.directorName}` : "Add a new branch to your institution"}
         breadcrumbs={[
           { label: "Branch Management", href: "/branch/view" },
           { label: "Create Branch" },
         ]}
       />
 
-      <form onSubmit={submit}>
+      {lead && (
+        <div className="mb-4 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm">
+          <p className="font-semibold">Filled from franchise lead {lead.leadNo}</p>
+          <p className="mt-1 text-muted-foreground">
+            Director, contact and address came from the lead. Add the <b>Branch Name</b> and <b>Branch Code</b>, check the rest,
+            set the branch login password, then Create Branch — the lead is marked Converted and linked to the new branch.
+          </p>
+        </div>
+      )}
+
+      {leadLoading ? (
+        <p className="py-12 text-center text-sm text-muted-foreground">Loading the lead…</p>
+      ) : (
+      <form ref={formRef} onSubmit={submit} key={lead?.id ?? "blank"}>
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-6">
             <BranchInfoSection />
-            <AddressSection />
+            <AddressSection
+              initial={
+                lead
+                  ? { address: [lead.address, lead.landmark].filter(Boolean).join(", "), state: lead.state, district: lead.district, city: lead.city, pincode: lead.pincode }
+                  : undefined
+              }
+            />
             <ContactSection />
             <DirectorInfoSection />
             <BranchSpaceSection />
@@ -279,6 +370,7 @@ export default function CreateBranch() {
           </Button>
         </div>
       </form>
+      )}
     </AppLayout>
   );
 }

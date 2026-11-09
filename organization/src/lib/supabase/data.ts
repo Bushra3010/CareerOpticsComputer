@@ -5502,6 +5502,8 @@ export interface FranchiseLead {
   /** The source column the shared breakdown reads — here it is the channel
    *  the applicant came through, which this form records as the executive. */
   source: string;
+  /** The branch this lead became, once it was converted from Add Franchise. */
+  branchId: string;
 }
 
 const isMissingFranchiseTable = (error: { code?: string; message?: string } | null) => {
@@ -5547,6 +5549,7 @@ const toFranchiseLead = (row: Record<string, unknown>): FranchiseLead => ({
   followUpType: text(row.followUpType),
   createdAt: text(row.createdAt),
   source: text(row.franchiseType) || "Not recorded",
+  branchId: text(row.branchId),
 });
 
 export async function getFranchiseLeads(organizationId: string | null) {
@@ -5638,6 +5641,13 @@ export async function createFranchiseLead(input: Record<string, unknown>) {
     note: lead.city ? `Proposed at ${[lead.city, lead.district, lead.state].filter(Boolean).join(", ")}` : undefined,
   }).catch(() => undefined);
   return { success: true as const, data: lead };
+}
+
+/** One lead, for Add Franchise to prefill from (`/branch/create?lead=<id>`). */
+export async function getFranchiseLead(id: string) {
+  const { data, error } = await supabase.from("franchise_leads").select("*").eq("id", id).is("deletedAt", null).maybeSingle();
+  if (error) throw new Error(error.message);
+  return { success: true as const, data: data ? toFranchiseLead(data as Record<string, unknown>) : null };
 }
 
 export async function updateFranchiseLead(id: string, input: Record<string, unknown>) {
