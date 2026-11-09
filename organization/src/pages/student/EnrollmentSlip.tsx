@@ -153,11 +153,11 @@ export default function EnrollmentSlip() {
             </div>
             {student && (
               <dl className="grid grid-cols-2 gap-x-4 gap-y-1 rounded-lg border bg-muted/40 p-3 text-sm">
-                <dt className="text-muted-foreground">Enrollment No.</dt><dd className="font-medium">{student.enrollmentNo || student.applicationNo || "—"}</dd>
+                <dt className="text-muted-foreground">Registration No.</dt><dd className="font-medium">{student.enrollmentNo || student.applicationNo || "—"}</dd>
                 <dt className="text-muted-foreground">Course</dt><dd className="font-medium">{course?.name || String(student.courseName ?? "—")}</dd>
                 <dt className="text-muted-foreground">Father's name</dt><dd className="font-medium">{student.fatherName || "—"}</dd>
                 <dt className="text-muted-foreground">Mother's name</dt><dd className="font-medium">{String(student.motherName ?? "") || "—"}</dd>
-                <dt className="text-muted-foreground">Centre</dt><dd className="font-medium">{licence?.centreName || branch?.name || "—"} · {licence?.branchCode || "—"}</dd>
+                <dt className="text-muted-foreground">Centre · ATP code</dt><dd className="font-medium">{licence?.centreName || branch?.name || "—"} · {licence?.branchCode || "—"}</dd>
                 <dt className="text-muted-foreground">Photo</dt><dd className="font-medium">{photoOf(student) ? "On record" : "Not on record"}</dd>
               </dl>
             )}

@@ -63,7 +63,7 @@
         s = s || {};
         var rows = [
             ['Name', s.name], ["Father's name", s.fatherName], ['Enrollment No', s.enrollmentNo],
-            ['Course', s.course], ['Institute', s.centre]
+            ['Course', s.course], ['Institute', s.centre], ['ATP Code', s.centreCode]
         ];
         return '<table class="v-table">' + rows.filter(function(r){ return r[1]; }).map(function(r){
             return '<tr><th>' + esc(r[0]) + '</th><td>' + esc(r[1]) + '</td></tr>';
@@ -102,7 +102,7 @@
             if(!data || !data.found) return notFound();
             if(!data.issued) return studentBlock(data.student) + notFound('No certificate has been issued to this enrollment number yet.');
             var rows = [
-                ['Certificate No', data.certificateNo], ['Issue date', day(data.issueDate)],
+                ['Certificate No', data.certificateNo], ['Serial No', data.serialNo], ['Issue date', day(data.issueDate)],
                 ['Examination held', data.examConductedDate ? day(data.examConductedDate) : ''],
                 ['Result', data.percentage != null ? data.percentage + '% · Grade ' + (data.grade || '') : '']
             ];

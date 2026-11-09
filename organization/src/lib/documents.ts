@@ -25,8 +25,13 @@ export type StudentDocument = {
   course?: { name: string; code?: string; duration?: string };
   session?: string;
   batch?: { name: string };
+  /** The issued certificate's own numbers (certificate_issues), when it has been issued. */
+  certificateNo?: string;
+  certificateSerial?: string;
   branch: {
     name: string;
+    /** The centre's code, printed as the ATP (Authorised Training Partner) code. */
+    code?: string;
     phone: string;
     email: string;
     address?: string;

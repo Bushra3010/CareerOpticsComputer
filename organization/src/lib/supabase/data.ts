@@ -1954,12 +1954,21 @@ export async function getStudentDocument(studentId: string, branchId: string | n
     marks: (Array.isArray(row.marks) ? row.marks : []) as MarkLine[],
   }));
 
+  // The certificate's numbers, once issued; a database before document-numbering.sql has no serialNo.
+  const { data: issue } = await supabase
+    .from("certificate_issues")
+    .select("*")
+    .eq("studentId", studentId)
+    .maybeSingle();
+
   return {
     success: true,
     data: {
       firstName: [student.firstName, student.middleName].filter(Boolean).join(" "),
       lastName: student.lastName || "",
       branchId: student.branchId,
+      certificateNo: (issue?.certificateNo as string | null) || undefined,
+      certificateSerial: (issue?.serialNo as string | null) || undefined,
       enrollmentNo: student.enrollmentNo || undefined,
       applicationNo: student.applicationNo || undefined,
       admissionDate: student.admissionDate || student.createdAt || "",
@@ -1986,6 +1995,7 @@ export async function getStudentDocument(studentId: string, branchId: string | n
       batch: batch ? { name: batch.name } : undefined,
       branch: {
         name: branch?.name || "",
+        code: branch?.code || undefined,
         phone: branch?.phone || "",
         email: branch?.email || "",
         // `branches` carries no address of its own; the one a branch edits
@@ -2760,7 +2770,7 @@ export async function getStudentProfile(userId: string, branchId: string) {
     // `baseFee` rides along because the portal shows the student what their
     // course costs, which is the only figure they have before an invoice is
     // raised against them.
-    .select("*, course:courses(name, code, baseFee), batch:batches(name), branch:branches(name)")
+    .select("*, course:courses(name, code, baseFee), batch:batches(name), branch:branches(name, code)")
     .or(portalStudentMatch(userId))
     .eq("branchId", branchId)
     .is("deletedAt", null)
@@ -5820,6 +5830,7 @@ export interface CertificateCharge {
   amount: number;
   balance?: number;
   certificateNo?: string;
+  serialNo?: string;
 }
 
 /**
@@ -5861,6 +5872,7 @@ export async function issueCertificate(
     amount: Number(row.amount) || 0,
     balance: row.balance == null ? undefined : Number(row.balance),
     certificateNo: row.certificateNo ? String(row.certificateNo) : undefined,
+    serialNo: row.serialNo ? String(row.serialNo) : undefined,
   };
 }
 

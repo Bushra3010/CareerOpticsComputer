@@ -178,7 +178,7 @@ export async function drawBrandMarksheet(doc: jsPDF, s: StudentDocument, extra: 
 
   const name = fullName(s) || "-";
   const regd = s.enrollmentNo || s.applicationNo || "";
-  const serial = extra.serial_no || s.rollNo || "";
+  const serial = extra.serial_no || s.certificateSerial || s.rollNo || "";
   const summary = marksheetSummary(s.examResults);
   const rows = rowsWithMinimum(s.examResults);
   const percentage = summary.max ? (summary.total / summary.max) * 100 : 0;
@@ -202,7 +202,14 @@ export async function drawBrandMarksheet(doc: jsPDF, s: StudentDocument, extra: 
   V(ddmmyyyy(s.dateOfBirth), 410.2, 309.7, 130);
   V(extra.session || s.session || "", 182.8, 328.4, 120);
   V(ddmmyyyy(s.admissionDate), 434.0, 328.4, 110);
-  V(`${s.branch.name || s.branch.organization.name}`.toUpperCase(), 182.8, 347.9, 360, RED);
+  const centreName = `${s.branch.name || s.branch.organization.name}`.toUpperCase();
+  if (s.branch.code) {
+    V(centreName, 182.8, 347.9, 245, RED);
+    const used = Math.min(measure(doc, centreName, "Poppins-SemiBold", 9.6), 245);
+    put(doc, `ATP CODE : ${s.branch.code}`, { x: 182.8 + used + 10, y: 347.9, size: 8.8, font: "Poppins-Bold", color: NAVY, maxWidth: 543 - (182.8 + used + 10) });
+  } else {
+    V(centreName, 182.8, 347.9, 360, RED);
+  }
 
   // The marks table
   const [c0, c1, c2, c3, c4, c5] = MS_TABLE.cols;
@@ -512,9 +519,10 @@ export async function drawBrandCertificate(doc: jsPDF, s: StudentDocument, extra
   const V = (text: string, x: number, y: number, maxWidth: number, size = 12.5, color = DARK) =>
     put(doc, text, { x: cx(x), y: cy(y), size, font: "Poppins-SemiBold", color, maxWidth: cx(maxWidth) });
 
-  V(extra.certificate_no || "", 0.2023, 0.3095, 0.125, 12);
+  const certificateNo = extra.certificate_no || s.certificateNo || "";
+  V(certificateNo, 0.2023, 0.3095, 0.152, 12);
   V(regd, 0.2023, 0.3447, 0.125, 12);
-  V(extra.serial_no || s.rollNo || "", 0.2023, 0.3795, 0.125, 12);
+  V(extra.serial_no || s.certificateSerial || s.rollNo || "", 0.2023, 0.3795, 0.125, 12);
 
   picture(doc, s.photo, cx(0.832), cy(0.288), cx(0.916 - 0.832), cy(0.434 - 0.288));
 
@@ -524,11 +532,19 @@ export async function drawBrandCertificate(doc: jsPDF, s: StudentDocument, extra
   V((s.course?.duration || "").toUpperCase(), 0.238, 0.6305, 0.12, 12.5);
   V(grade, 0.5153, 0.6305, 0.1, 12.5);
   V(ddmmyyyy(s.dateOfBirth), 0.73, 0.6305, 0.18, 12.5);
-  V((s.branch.name || s.branch.organization.name).toUpperCase(), 0.1596, 0.6875, 0.75, 13, RED);
+  // The centre, then its ATP (Authorised Training Partner) code on the same line
+  const centre = (s.branch.name || s.branch.organization.name).toUpperCase();
+  if (s.branch.code) {
+    V(centre, 0.1596, 0.6875, 0.5, 13, RED);
+    const used = Math.min(measure(doc, centre, "Poppins-SemiBold", 13), cx(0.5));
+    put(doc, `ATP CODE : ${s.branch.code}`, { x: cx(0.1596) + used + 14, y: cy(0.6875), size: 11.5, font: "Poppins-Bold", color: DARK, maxWidth: cx(0.9) - (cx(0.1596) + used + 14) });
+  } else {
+    V(centre, 0.1596, 0.6875, 0.75, 13, RED);
+  }
   V(ddmmyyyy(s.admissionDate), 0.2503, 0.7345, 0.1, 12.5);
   V(ddmmyyyy(s.issueDate), 0.7794, 0.7345, 0.13, 12.5);
 
-  const code = await qr(verifyUrl(extra.certificate_no || regd || name, "certificate"));
+  const code = await qr(verifyUrl(certificateNo || regd || name, "certificate"));
   picture(doc, code, cx(0.088), cy(0.788), cx(0.078), cx(0.078));
 }
 
@@ -574,6 +590,10 @@ export async function drawFranchiseLicence(doc: jsPDF, l: FranchiseLicence) {
   put(doc, l.centreName.toUpperCase(), { x: lx(0.5), y: ly(0.4306), size: 19, font: "Poppins-ExtraBold", color: RED, align: "center", maxWidth: lx(0.82) });
   put(doc, l.address.toUpperCase(), { x: lx(0.5), y: ly(0.4564), size: 10, font: "Poppins-SemiBold", color: NAVY, align: "center", maxWidth: lx(0.8), charSpace: 0.4 });
   put(doc, l.directorName.toUpperCase(), { x: lx(0.5), y: ly(0.6009), size: 17, font: "Poppins-ExtraBold", color: RED, align: "center", maxWidth: lx(0.6) });
+  // The artwork's first box is labelled BRANCH CODE; the academy calls it the ATP code.
+  doc.setFillColor(255, 255, 255);
+  doc.rect(pt(lx(0.118)), pt(ly(0.6335)), pt(lx(0.236)), pt(ly(0.0155)), "F");
+  put(doc, "ATP CODE", { x: lx(0.236), y: ly(0.6455), size: 8, font: "Poppins-SemiBold", color: ORANGE, align: "center", charSpace: 2.6 });
   const box = (text: string, centre: number) => put(doc, text, { x: lx(centre), y: ly(0.6689), size: 16, font: "Poppins-ExtraBold", color: NAVY, align: "center", maxWidth: lx(0.2) });
   box(l.branchCode, 0.236);
   box(l.contact, 0.5);
@@ -776,7 +796,7 @@ export async function drawTypingCertificate(doc: jsPDF, t: TypingCertificate) {
   // The centre, highlighted: name in red, code beside it
   put(doc, "STUDY CENTRE", { x: lx(0.5), y: ly(0.552), size: 7.5, font: "Poppins-SemiBold", color: ORANGE, align: "center", charSpace: 1.6 });
   put(doc, t.centre.toUpperCase(), { x: lx(0.5), y: ly(0.571), size: 13, font: "Poppins-ExtraBold", color: RED, align: "center", maxWidth: lx(0.8) });
-  if (t.centreCode) put(doc, `CENTRE CODE : ${t.centreCode}`, { x: lx(0.5), y: ly(0.587), size: 9, font: "Poppins-Bold", color: NAVY, align: "center", charSpace: 0.6 });
+  if (t.centreCode) put(doc, `ATP CODE : ${t.centreCode}`, { x: lx(0.5), y: ly(0.587), size: 9, font: "Poppins-Bold", color: NAVY, align: "center", charSpace: 0.6 });
 
   put(doc, "TYPING PERFORMANCE", { x: lx(0.5), y: ly(0.618), size: 13, font: "Poppins-ExtraBold", color: NAVY, align: "center", charSpace: 3 });
 
@@ -895,7 +915,7 @@ export async function drawEnrollmentSlip(doc: jsPDF, e: EnrollmentSlip) {
   const cw = W / 3;
   doc.setFillColor(232, 236, 246);
   doc.rect(pt(left), pt(y), pt(W), pt(11), "F");
-  ["Enrollment No.", "Institute / Centre Code", "Date of Admission"].forEach((h, k) => put(doc, h, { x: left + cw * k + cw / 2, y: y + 8.2, size: 7, font: "Poppins-Bold", color: NAVY, align: "center" }));
+  ["Registration No.", "ATP Code", "Date of Admission"].forEach((h, k) => put(doc, h, { x: left + cw * k + cw / 2, y: y + 8.2, size: 7, font: "Poppins-Bold", color: NAVY, align: "center" }));
   [e.enrollmentNo, e.centreCode || "—", ddmmyyyy(e.admissionDate).replace(/-/g, "/")].forEach((v, k) => put(doc, v, { x: left + cw * k + cw / 2, y: y + 20.5, size: 8.8, font: "Poppins-Bold", color: "#1a1a1a", align: "center", maxWidth: cw - 8 }));
   doc.rect(pt(left), pt(y), pt(W), pt(24));
   line(left + cw, y, left + cw, y + 24);
@@ -1039,7 +1059,7 @@ export async function drawAdmissionForm(doc: jsPDF, c: AdmissionFormCentre) {
   line(left, 108, right, 108);
   put(doc, c.centreName.toUpperCase(), { x: cx, y: 123, size: 14, font: "Poppins-ExtraBold", color: RED, align: "center", maxWidth: W });
   put(doc, [c.address, c.phone ? `Ph: ${c.phone}` : ""].filter(Boolean).join("   ·   "), { x: cx, y: 135, size: 8.5, font: "Poppins-Medium", color: NAVY, align: "center", maxWidth: W });
-  put(doc, `AUTHORISED STUDY CENTRE OF CAREER OPTICS COMPUTER ACADEMY${c.centreCode ? `   ·   CENTRE CODE : ${c.centreCode}` : ""}`, { x: cx, y: 146, size: 7.5, font: "Poppins-Bold", color: ORANGE, align: "center", charSpace: 0.8, maxWidth: W });
+  put(doc, `AUTHORISED STUDY CENTRE OF CAREER OPTICS COMPUTER ACADEMY${c.centreCode ? `   ·   ATP CODE : ${c.centreCode}` : ""}`, { x: cx, y: 146, size: 7.5, font: "Poppins-Bold", color: ORANGE, align: "center", charSpace: 0.8, maxWidth: W });
 
   // Title and photograph
   doc.setFillColor(...rgb(NAVY));
@@ -1065,7 +1085,7 @@ export async function drawAdmissionForm(doc: jsPDF, c: AdmissionFormCentre) {
   let y = 184;
   ul("Course Name :", left, y, formW);
   y += 19;
-  ul("Centre Code :", left, y, formW / 2 - 6, c.centreCode || "");
+  ul("ATP Code :", left, y, formW / 2 - 6, c.centreCode || "");
   ul("Reg. No. :", left + formW / 2 + 6, y, formW / 2 - 6);
   y += 19;
   ul("Date of Admission :", left, y, formW / 2 - 6);
@@ -1186,7 +1206,7 @@ export async function drawAdmissionForm(doc: jsPDF, c: AdmissionFormCentre) {
   ul("Reg. No. :", left + half + 16, y, half);
   y += 19;
   ul("Centre Name :", left, y, half, c.centreName);
-  ul("Centre Code :", left + half + 16, y, half, c.centreCode || "");
+  ul("ATP Code :", left + half + 16, y, half, c.centreCode || "");
   y += 19;
   ul("Course :", left, y, half);
   ul("Duration :", left + half + 16, y, half);

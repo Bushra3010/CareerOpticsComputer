@@ -153,8 +153,8 @@ export default function MyResults() {
       // The first certificate a student receives is paid for by their centre's
       // wallet, whoever generates it; a wallet that cannot cover it holds the
       // download until the centre recharges.
-      await issueCertificate(profile?.id ?? "", user?.name);
-      await certificatePdf(doc);
+      const issued = await issueCertificate(profile?.id ?? "", user?.name);
+      await certificatePdf(doc, { certificate_no: issued.certificateNo || "", serial_no: issued.serialNo || "" });
       toast({ title: "Certificate downloaded" });
     } catch (err) {
       const message = err instanceof Error ? err.message : "";

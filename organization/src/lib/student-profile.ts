@@ -50,7 +50,7 @@ export interface StudentRow {
   fatherPhone?: string | null;
   course?: { name?: string | null; code?: string | null; baseFee?: number | string | null } | null;
   batch?: { name?: string | null } | null;
-  branch?: { name?: string | null } | null;
+  branch?: { name?: string | null; code?: string | null } | null;
 }
 
 const text = (value: unknown) => (value == null ? "" : String(value));
@@ -113,6 +113,7 @@ export function toStudentProfile(row: StudentRow): StudentProfile {
     batch: text(row.batch?.name),
     section: text(row.section),
     branch: text(row.branch?.name),
+    branchCode: text(row.branch?.code),
     email: text(row.email),
     phone,
     // A student who left the WhatsApp box blank still uses WhatsApp on the

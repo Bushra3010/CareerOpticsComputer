@@ -23,6 +23,8 @@ export interface StudentProfile {
   batch: string;
   section: string;
   branch: string;
+  /** The centre's code, printed as the ATP code on certificates. */
+  branchCode?: string;
   email: string;
   phone: string;
   /** The student's own WhatsApp number — `students.whatsappNumber`. */
@@ -181,6 +183,7 @@ export const asStudentDocument = (
     batch: { name: profile.batch },
     branch: {
       name: profile.branch,
+      code: profile.branchCode || undefined,
       phone: "+91 20 4004 1100",
       email: "kothrud@careeroptics.in",
       organization: { name: "Career Optics Computer Academy" },

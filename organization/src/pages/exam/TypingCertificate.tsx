@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { typingCertificatesPdf } from "@/lib/brand/brandDocuments";
 import { franchiseLicenceOf, type BranchDetails } from "@/lib/branchTemplateDocument";
 import { getBranchDetails, getBranches, getCourses, getStudents } from "@/lib/supabase/data";
+import { supabase } from "@/lib/supabase/client";
 import { photoOf, type StudentRecord } from "@/lib/studentRecord";
 
 /**
@@ -36,7 +37,8 @@ export default function TypingCertificate() {
   const [studentId, setStudentId] = useState("");
 
   const today = new Date().toISOString().slice(0, 10);
-  const [certificateNo, setCertificateNo] = useState(`COCA/TYP/${new Date().getFullYear()}/`);
+  // Blank means "take the next number": COCA/CERT/<year>/<n> and the YYMM serial, from the same series as every certificate.
+  const [certificateNo, setCertificateNo] = useState("");
   const [serialNo, setSerialNo] = useState("");
   const [issueDate, setIssueDate] = useState(today);
   const [course, setCourse] = useState("TSA (Typing Speed & Accuracy)");
@@ -92,15 +94,26 @@ export default function TypingCertificate() {
 
   const print = async () => {
     if (!student) return toast({ title: "Choose a student", variant: "destructive" });
-    if (!certificateNo.trim() || /\/$/.test(certificateNo.trim())) return toast({ title: "Enter the certificate number", description: "Finish the number, e.g. COCA/TYP/2026/0001.", variant: "destructive" });
     if (!englishWpm.trim() && !hindiWpm.trim()) return toast({ title: "Enter the typing speed", description: "At least one of English or Hindi words per minute.", variant: "destructive" });
     setBusy(true);
     try {
+      let certNo = certificateNo.trim();
+      let serial = serialNo.trim();
+      if (!certNo || !serial) {
+        const { data, error } = await supabase.rpc("allocate_certificate_numbers");
+        if (error) throw new Error(`Could not take the next certificate number: ${error.message}`);
+        const next = (data || {}) as { certificateNo?: string; serialNo?: string };
+        certNo = certNo || String(next.certificateNo || "");
+        serial = serial || String(next.serialNo || "");
+        // Shown on the form, so a reprint uses the same numbers rather than taking new ones.
+        setCertificateNo(certNo);
+        setSerialNo(serial);
+      }
       await typingCertificatesPdf(
         [
           {
-            certificateNo: certificateNo.trim(),
-            serialNo: serialNo.trim(),
+            certificateNo: certNo,
+            serialNo: serial,
             name,
             fatherName: String(student.fatherName ?? ""),
             registrationNo: String(student.enrollmentNo || student.applicationNo || ""),
@@ -167,7 +180,7 @@ export default function TypingCertificate() {
                 <dt className="text-muted-foreground">Registration No.</dt><dd className="font-medium">{student.enrollmentNo || student.applicationNo || "—"}</dd>
                 <dt className="text-muted-foreground">Father's name</dt><dd className="font-medium">{student.fatherName || "—"}</dd>
                 <dt className="text-muted-foreground">Study centre</dt><dd className="font-medium">{licence?.centreName || branch?.name || "—"}</dd>
-                <dt className="text-muted-foreground">Centre code</dt><dd className="font-medium">{licence?.branchCode || "—"}</dd>
+                <dt className="text-muted-foreground">ATP code</dt><dd className="font-medium">{licence?.branchCode || "—"}</dd>
                 <dt className="text-muted-foreground">Photo</dt><dd className="font-medium">{photoOf(student) ? "On record" : "Not on record"}</dd>
               </dl>
             )}
@@ -182,11 +195,11 @@ export default function TypingCertificate() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="certificateNo">Certificate No.</Label>
-                <Input id="certificateNo" value={certificateNo} onChange={(e) => setCertificateNo(e.target.value)} />
+                <Input id="certificateNo" value={certificateNo} onChange={(e) => setCertificateNo(e.target.value)} placeholder="Auto — next COCA/CERT number" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="serialNo">Sl. No.</Label>
-                <Input id="serialNo" value={serialNo} onChange={(e) => setSerialNo(e.target.value)} placeholder="0001" />
+                <Input id="serialNo" value={serialNo} onChange={(e) => setSerialNo(e.target.value)} placeholder="Auto — e.g. 26110001" />
               </div>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">

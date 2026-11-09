@@ -93,7 +93,7 @@ describe("getStudentProfile", () => {
 
     expect(selects[0]).toContain("course:courses(");
     expect(selects[0]).toContain("batch:batches(name)");
-    expect(selects[0]).toContain("branch:branches(name)");
+    expect(selects[0]).toContain("branch:branches(name, code)");
   });
 
   // The portal shows the student what their course costs before any invoice is
