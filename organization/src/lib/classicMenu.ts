@@ -140,7 +140,13 @@ const ADMIN_PLAN: Plan = [
   {
     title: "Courses",
     icon: BookOpen,
-    urls: ["/course/create", ["/course/view", "All Courses"], "/course/syllabus", "/course/subjects"],
+    urls: [
+      "/course/create",
+      ["/course/view", "All Courses"],
+      ["/course/batch/assign", "Assign Course to Branch"],
+      "/course/syllabus",
+      "/course/subjects",
+    ],
   },
   {
     title: "Students",
