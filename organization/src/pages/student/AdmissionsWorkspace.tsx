@@ -16,7 +16,7 @@ import { SelectWithCustom } from "@/components/ui/select-with-custom";
 import { DocumentViewer } from "@/components/student/StudentDocuments";
 import { fileKind, studentFiles, type StudentFile } from "@/lib/studentDocuments";
 import { ArrowLeft, ArrowRight, Check, CheckCircle2, Eye, FileText, Save, Upload, X } from "lucide-react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { EditableSelect } from "@/components/ui/EditableSelect";
 import { MultiSelect } from "@/components/ui/MultiSelect";
 import { pickImage } from "@/lib/export";
@@ -1073,17 +1073,63 @@ export default function AdmissionsWorkspace() {
                   />
                 </Field>
                 <Field l="Batch">
-                  <Picker
-                    value={draft.batchId}
-                    onChange={(v) => set("batchId", v)}
-                    disabled={!targetBranchId}
-                    options={batches
-                      .filter(
-                        (b) => draft.courseIds.length === 0 || draft.courseIds.includes(b.courseId),
-                      )
-                      .map((b) => [b.id, b.name])}
-                    placeholder={targetBranchId ? "Choose batch" : "Choose a branch first"}
-                  />
+                  {(() => {
+                    // A batch belongs to one course: only the chosen courses' batches are offered.
+                    // An empty list used to open as a blank dropdown; it now says why, and where to make one.
+                    const offered = batches.filter(
+                      (b) => draft.courseIds.length === 0 || draft.courseIds.includes(b.courseId),
+                    );
+                    const courseName = (id: string) => courses.find((c) => c.id === id)?.name;
+                    const why = !targetBranchId
+                      ? "Choose a branch first"
+                      : batches.length === 0
+                        ? "No batch in this branch yet"
+                        : offered.length === 0
+                          ? "No batch for the chosen course"
+                          : "Choose batch (optional)";
+                    return (
+                      <>
+                        <Picker
+                          value={offered.some((b) => b.id === draft.batchId) ? draft.batchId : ""}
+                          onChange={(v) =>
+                            setDraft((p) => {
+                              // Picking a batch before its course enrols the student on that course too.
+                              const courseId = batches.find((b) => b.id === v)?.courseId;
+                              return {
+                                ...p,
+                                batchId: v,
+                                courseIds:
+                                  courseId && !p.courseIds.includes(courseId) ? [...p.courseIds, courseId] : p.courseIds,
+                              };
+                            })
+                          }
+                          disabled={!targetBranchId || offered.length === 0}
+                          options={offered.map((b) => [
+                            b.id,
+                            draft.courseIds.length === 1 ? b.name : `${b.name} — ${courseName(b.courseId) ?? "course"}`,
+                          ])}
+                          placeholder={why}
+                        />
+                        {targetBranchId && offered.length === 0 ? (
+                          <p className="text-xs text-muted-foreground">
+                            Batch is optional — you can save without one.{" "}
+                            <Link to="/centre/batches" className="font-medium text-primary underline-offset-2 hover:underline">
+                              Create a batch
+                            </Link>{" "}
+                            for this course, then come back.
+                          </p>
+                        ) : draft.batchId ? (
+                          <button
+                            type="button"
+                            className="text-xs text-muted-foreground underline-offset-2 hover:underline"
+                            onClick={() => set("batchId", "")}
+                          >
+                            Clear batch
+                          </button>
+                        ) : null}
+                      </>
+                    );
+                  })()}
                 </Field>
                 <Field l="Section">
                   <Input
