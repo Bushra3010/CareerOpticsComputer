@@ -91,11 +91,13 @@ describe("RechargeDrawer, the account being paid", () => {
     expect(getRechargeUpi).toHaveBeenCalledWith("org1");
   });
 
-  it("still shows an account to pay when the organisation has not set one", async () => {
+  it("shows the company's own account, not a made-up UPI, when the organisation has not set one", async () => {
     getRechargeUpi.mockResolvedValueOnce({ success: true, data: null });
     open();
     await waitFor(() => expect(getRechargeUpi).toHaveBeenCalled());
-    expect(screen.getByText(/@/)).toBeInTheDocument();
+    expect(screen.getByAltText(/Scan & Pay/i)).toBeInTheDocument();
+    expect(screen.getByText("50200121129272")).toBeInTheDocument();
+    expect(screen.queryByText(/careeroptics@icici/)).not.toBeInTheDocument();
   });
 });
 

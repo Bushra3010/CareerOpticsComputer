@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Download, Eye, Pencil, Search, X } from "lucide-react";
+import { Download, Eye, KeyRound, Pencil, Search, X } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import {
   DceBadge,
@@ -17,7 +17,9 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase/client";
-import { getBranches } from "@/lib/supabase/data";
+import { getBranches, type StudentRosterRow } from "@/lib/supabase/data";
+import { StudentLoginDialog } from "@/components/student/StudentLoginDialog";
+import { canIssueStudentLogin } from "@/lib/roles";
 import { paidFromPayments, type InvoiceRow } from "@/lib/supabase/studentFee";
 import { feeStanding } from "@/lib/fees";
 import { downloadCsv } from "@/lib/export";
@@ -171,7 +173,10 @@ function toRow(row: Raw, fees: Map<string, { total: number; paid: number }>): Ce
 }
 
 export default function CentreStudents() {
-  const { branchId, organizationId } = useAuth();
+  const { branchId, organizationId, user } = useAuth();
+  // The centre that enrolled the student hands them their portal login (the edge function checks the caller again).
+  const mayIssueLogin = canIssueStudentLogin(user?.role);
+  const [loginFor, setLoginFor] = useState<CentreStudentRow | null>(null);
   const { toast } = useToast();
   const [params] = useSearchParams();
   const rawType = (params.get("type") || "all").toLowerCase();
@@ -321,6 +326,17 @@ export default function CentreStudents() {
           <DceLinkButton tone="orange" size="sm" to={`/centre/student-payments?id=${encodeURIComponent(r.id)}`}>
             Payments
           </DceLinkButton>
+          {mayIssueLogin && (
+            <DceButton
+              tone={r.raw.userId ? "light" : "teal"}
+              size="sm"
+              title={r.raw.userId ? "Reset the student's portal password" : "Create the student's portal login"}
+              onClick={() => setLoginFor(r)}
+            >
+              <KeyRound className="h-3.5 w-3.5" />
+              {r.raw.userId ? "Reset login" : "Create login"}
+            </DceButton>
+          )}
         </div>
       ),
     },
@@ -392,6 +408,17 @@ export default function CentreStudents() {
       </DcePanel>
 
       {viewing && <StudentDrawer row={viewing} onClose={() => setViewing(null)} />}
+      <StudentLoginDialog
+        student={
+          loginFor
+            ? ({ id: loginFor.id, name: loginFor.name, admissionNo: loginFor.code === "—" ? "" : loginFor.code, hasLogin: Boolean(loginFor.raw.userId) } as StudentRosterRow)
+            : null
+        }
+        onOpenChange={() => setLoginFor(null)}
+        onSaved={(studentId) =>
+          setRows((list) => list.map((s) => (s.id === studentId ? { ...s, raw: { ...s.raw, userId: s.raw.userId || "issued" } } : s)))
+        }
+      />
     </AppLayout>
   );
 }

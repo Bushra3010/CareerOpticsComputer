@@ -72,18 +72,21 @@ const PAYMENT_METHODS = [
 ];
 
 /**
- * Where a branch is told to pay. The UPI half is the organisation's own, set
- * under Wallet Recharge -> Payment account and read from `organizations`; these
- * are only what is shown until an administrator has set it.
+ * Where a branch is told to pay: the company's own current account (the one
+ * on the website's gallery page and the Scan & Pay poster). A UPI ID, when an
+ * administrator sets one under Wallet Recharge -> Payment account, adds a QR
+ * for the exact amount; until then the branch scans the company's poster.
+ * These used to be placeholders (an ICICI account and "careeroptics@icici")
+ * that a branch could have paid into.
  */
 const ORG_BANK_DETAILS = {
-  bankName: "ICICI Bank",
-  accountNo: "109283746512",
-  ifsc: "ICIC0001092",
-  beneficiary: "Career Optics Computer Academy",
-  upiVpa: "careeroptics@icici",
-  upiName: "Career Optics ERP",
+  bankName: "HDFC Bank, Arrah",
+  accountNo: "50200121129272",
+  ifsc: "HDFC0001942",
+  beneficiary: "CAREER OPTICS EDUCATION SERVICE PVT LTD",
 };
+/** The company's Scan & Pay poster, served by the website from the same domain. */
+const SCAN_AND_PAY = "/image/gallery/scan-and-pay.webp";
 
 export function RechargeDrawer({
   open,
@@ -108,10 +111,7 @@ export function RechargeDrawer({
   const [proofFileName, setProofFileName] = useState<string | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
   /** The organisation's own UPI account, once it has been set. */
-  const [upi, setUpi] = useState({
-    upiId: ORG_BANK_DETAILS.upiVpa,
-    merchantName: ORG_BANK_DETAILS.upiName,
-  });
+  const [upi, setUpi] = useState({ upiId: "", merchantName: "" });
   const [submitting, setSubmitting] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
@@ -152,6 +152,11 @@ export function RechargeDrawer({
 
   // Generate dynamic QR code for UPI
   useEffect(() => {
+    // No UPI ID set: no QR is made up; the panel shows the company's own poster instead.
+    if (!upi.upiId) {
+      setQrDataUrl("");
+      return;
+    }
     if (method === "upi") {
       const numericAmount = Number(amount) || 0;
       const upiUrl =
@@ -476,7 +481,29 @@ export function RechargeDrawer({
             </div>
 
             {/* Conditional Method Details */}
-            {method === "upi" && (
+            {method === "upi" && !upi.upiId && (
+              <div className="p-3.5 rounded-lg border bg-muted/20 space-y-2 text-xs">
+                <div className="flex items-start gap-3">
+                  <a href={SCAN_AND_PAY} target="_blank" rel="noopener" className="shrink-0">
+                    <img src={SCAN_AND_PAY} alt="Career Optics Scan & Pay QR" className="w-28 rounded border bg-white shadow-sm" />
+                  </a>
+                  <div className="space-y-1.5">
+                    <span className="font-semibold text-foreground block">Scan & Pay — company account</span>
+                    <p className="text-muted-foreground">
+                      Scan this QR with any UPI app (GPay, PhonePe, Paytm), enter the amount yourself, and pay.
+                      It pays <b className="text-foreground">{ORG_BANK_DETAILS.beneficiary}</b>, {ORG_BANK_DETAILS.bankName}.
+                    </p>
+                    <p className="text-muted-foreground">
+                      A/c <span className="font-mono text-foreground">{ORG_BANK_DETAILS.accountNo}</span> · IFSC{" "}
+                      <span className="font-mono text-foreground">{ORG_BANK_DETAILS.ifsc}</span>
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">Then enter the 12-digit UTR below and attach the payment screenshot.</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {method === "upi" && upi.upiId && (
               <div className="p-3.5 rounded-lg border bg-muted/20 space-y-3">
                 <div className="flex items-center gap-3">
                   {qrDataUrl ? (
