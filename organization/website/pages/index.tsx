@@ -44,15 +44,16 @@ const FACILITIES = [
   { icon: "briefcase", title: "Career & Placement", text: "Admission counselling for higher studies and placement support once you finish." },
 ];
 
+// The academy's courses (Courses -> All Courses in the ERP); each card opens its own course page.
 const COURSES = [
-  { title: "Diploma in Computer Application (DCA)", href: "computer-course.html", points: ["Computer Fundamentals", "Windows & File Management", "MS Word, Excel, PowerPoint", "Internet & Email", "Practical & Viva"] },
-  { title: "Advance Diploma in Computer Application (ADCA)", href: "computer-course.html", points: ["Everything in DCA", "Tally Prime with GST", "HTML & Web Basics", "Photoshop & CorelDRAW", "Project & Viva"] },
-  { title: "Tally Prime with GST", href: "tally-prime.html", points: ["Accounting Basics", "Company & Ledger Creation", "Vouchers & Inventory", "GST, TDS & Payroll", "Practical & Viva"] },
-  { title: "Typing (Hindi & English)", href: "typing.html", points: ["Keyboard Basics", "English Typing", "Hindi Typing", "Speed & Accuracy Practice", "Typing Test"] },
-  { title: "Graphic Design", href: "graphics.html", points: ["Design Fundamentals", "Adobe Photoshop", "CorelDRAW", "Logo, Banner & Poster Design", "Portfolio Project"] },
-  { title: "Python Programming", href: "python.html", points: ["Python Basics", "Control Flow & Functions", "Lists, Dicts & Files", "Mini Projects", "Practical & Viva"] },
-  { title: "Web Development", href: "fullstack.html", points: ["HTML & CSS", "JavaScript", "Responsive Design", "React Basics", "Website Project"] },
-  { title: "Digital Marketing", href: "digital-marketing.html", points: ["Social Media Marketing", "SEO Basics", "Google & Meta Ads", "Content Creation", "Live Project"] },
+  { title: "Diploma in Computer Application (DCA)", href: "course.html?c=DCA", points: ["Computer Fundamental", "MS-Windows", "MS-Office", "Internet", "Practical"] },
+  { title: "Advance Diploma in Computer Application (ADCA)", href: "course.html?c=ADCA", points: ["Computer Fundamental & MS-Office", "DTP: Photoshop, PageMaker, CorelDraw", "Tally with ERP", "Practical Assignment", "Project Work"] },
+  { title: "Certification in Financial Accounting (CFA)", href: "course.html?c=CFA", points: ["Computer Fundamental", "MS-Windows", "Tally with ERP", "Practical", "Project Work"] },
+  { title: "Typing Speed and Accuracy (TSA)", href: "course.html?c=TSA", points: ["Regional Language Typing", "English Typing", "Hindi Typing", "Speed & Accuracy Tests"] },
+  { title: "Diploma in Desktop Publishing (DDTP)", href: "course.html?c=DDTP", points: ["Photoshop", "PageMaker", "CorelDraw", "Card, Poster & Flex Design", "Project Work"] },
+  { title: "Hardware & Networking", href: "course.html?c=ADHN", points: ["Components Identification & Testing", "Digital Electronics", "PC Assembling & Troubleshooting", "Peripheral Devices", "Project Work"] },
+  { title: "Full Stack Development", href: "course.html?c=FSD", points: ["HTML & CSS", "JavaScript", "Front-end Libraries", "PHP & MySQL", "Live Project"] },
+  { title: "Advance Diploma in Digital Marketing", href: "course.html?c=ADDM", points: ["Meta Platform", "Facebook & Google Ads", "WordPress & SEMrush", "Canva", "Live Project"] },
 ];
 
 const SLIDES = [
