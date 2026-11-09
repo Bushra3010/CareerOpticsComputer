@@ -239,6 +239,9 @@ export default function Franchise() {
                 <a className="fr-btn pri" href="#franchise">
                   Apply for franchise <i data-lucide="arrow-right"></i>
                 </a>
+                <a className="fr-btn ghost" href="/downloads/career-optics-franchise-proposal.pdf" download>
+                  <i data-lucide="download"></i> Download proposal (PDF)
+                </a>
                 <a className="fr-btn ghost" href={`tel:+${BRAND.phoneIntl}`}>
                   <i data-lucide="phone"></i> Call {BRAND.phone}
                 </a>
