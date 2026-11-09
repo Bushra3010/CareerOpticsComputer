@@ -21,6 +21,10 @@ interface StudentLoginDialogProps {
   onSaved: (studentId: string) => void;
 }
 
+/** A login ID from a registration number: COCA/2026/00101 -> coca-2026-00101. */
+const toLoginId = (value: string) =>
+  value.trim().toLowerCase().replace(/[^a-z0-9._-]+/g, "-").replace(/^-+|-+$/g, "");
+
 /** Readable rather than maximally random: it is read aloud or written on a slip. */
 function suggestPassword() {
   const words = ["Study", "Learn", "Focus", "Bright", "Skill", "Merit"];
@@ -43,7 +47,9 @@ export function StudentLoginDialog({ student, onOpenChange, onSaved }: StudentLo
     if (!student) return;
     // The enrolment number is already printed on the student's ID card, so it
     // is the login ID they are least likely to lose.
-    setUsername(student.hasLogin ? "" : student.admissionNo.replace(/\s+/g, "").toLowerCase());
+    // Slashes in the registration number (COCA/2026/00101) become hyphens: the login ID is the
+    // first half of an e-mail address, where a slash is not safe.
+    setUsername(student.hasLogin ? "" : toLoginId(student.admissionNo));
     setPassword(suggestPassword());
     setError(null);
     setIssued(null);
@@ -55,6 +61,10 @@ export function StudentLoginDialog({ student, onOpenChange, onSaved }: StudentLo
     const trimmedUser = username.trim();
     if (!isReset && !trimmedUser) {
       setError("A login ID is required for a student who has none yet.");
+      return;
+    }
+    if (trimmedUser && !/^[a-z0-9][a-z0-9._-]*$/i.test(trimmedUser)) {
+      setError("Use only letters, numbers, dot, hyphen or underscore in the login ID — e.g. coca-2026-00101.");
       return;
     }
     if (password.trim().length < 6) {
@@ -143,7 +153,7 @@ export function StudentLoginDialog({ student, onOpenChange, onSaved }: StudentLo
                 id="student-login-id"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder={isReset ? "Leave blank to keep the current ID" : "e.g. pns-2026-001"}
+                placeholder={isReset ? "Leave blank to keep the current ID" : "e.g. coca-2026-00101"}
                 disabled={saving}
                 autoComplete="off"
               />
