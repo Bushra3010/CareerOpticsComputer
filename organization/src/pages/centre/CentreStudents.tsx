@@ -316,9 +316,10 @@ export default function CentreStudents() {
       label: "Action",
       render: (r) => (
         <div className="flex flex-wrap items-center gap-1.5">
-          <DceButton tone="green" size="sm" aria-label={`View ${r.name}`} title="View" onClick={() => setViewing(r)}>
+          <DceLinkButton tone="green" size="sm" to={`/centre/student-view?id=${encodeURIComponent(r.id)}`}>
             <Eye className="h-3.5 w-3.5" />
-          </DceButton>
+            <span className="sr-only">View {r.name}</span>
+          </DceLinkButton>
           <DceLinkButton tone="blue" size="sm" to={`/student/add?id=${encodeURIComponent(r.id)}`}>
             <Pencil className="h-3.5 w-3.5" />
             <span className="sr-only">Edit {r.name}</span>

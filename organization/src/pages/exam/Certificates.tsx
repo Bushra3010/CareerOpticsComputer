@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Printer } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -45,8 +46,10 @@ export default function Certificates({ passoutOnly = false }: { passoutOnly?: bo
   const { user, isAdmin, ownBranch, branches, students, courseOf, branchOf, studentOf } = useExamData();
   // The head office's decisions on this centre's certificates and marksheets; null when approvals are not set up.
   const [approvals, setApprovals] = useState<PrintApproval[] | null>([]);
-  const [branchId, setBranchId] = useState("");
-  const [studentId, setStudentId] = useState("");
+  // A student's own page links here as ?branch=<id>&student=<id>, so that student is already chosen.
+  const [params] = useSearchParams();
+  const [branchId, setBranchId] = useState(params.get("branch") || "");
+  const [studentId, setStudentId] = useState(params.get("student") || "");
   const [issueDate, setIssueDate] = useState(today);
   const [examDate, setExamDate] = useState("");
   const [issued, setIssued] = useState<IssuedCertificate[]>([]);

@@ -63,6 +63,7 @@ const CentreQuestions = lazy(() => import("./pages/centre/CentreQuestions"));
 const CentreExams = lazy(() => import("./pages/centre/CentreExams"));
 const CentreExamCreate = lazy(() => import("./pages/centre/CentreExamCreate"));
 const CentreBatches = lazy(() => import("./pages/centre/CentreBatches"));
+const CentreStudentView = lazy(() => import("./pages/centre/CentreStudentView"));
 const CentreBatchStudents = lazy(() => import("./pages/centre/CentreBatchStudents"));
 const CentreAttendance = lazy(() => import("./pages/centre/CentreAttendance"));
 
@@ -301,6 +302,7 @@ const App = () => (
           <Route path="/centre/profile" element={<CentreProfile />} />
           <Route path="/centre/enquiry" element={<CentreEnquiry />} />
           <Route path="/centre/students" element={<CentreStudents />} />
+          <Route path="/centre/student-view" element={<CentreStudentView />} />
           <Route path="/centre/student-add" element={<CentreAddStudent />} />
           <Route path="/centre/student-payments" element={<CentreStudentPayments />} />
           <Route path="/centre/admission-forms" element={<CentreAdmissionForms />} />
