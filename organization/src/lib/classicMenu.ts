@@ -186,7 +186,7 @@ const ADMIN_PLAN: Plan = [
     urls: ["/fee/collection", ["/fee/due-collection", "Due Collection"], "/fee/types", "/fee/groups", "/fee/allocation"],
   },
   { title: "Users", icon: Users, urls: ["/user/all", "/user/roles", "/user/access-control"] },
-  { title: "Website", icon: Globe, urls: ["/website/content", ["/website/gallery", "Gallery"], "/branch/website-settings", "/branch/website-view"] },
+  { title: "Website", icon: Globe, urls: ["/website/content", ["/website/gallery", "Gallery"], ["/website/dashboard-posters", "Dashboard Posters"], "/branch/website-settings", "/branch/website-view"] },
   {
     title: "Settings",
     icon: Settings,

@@ -17,6 +17,7 @@ import { canAccessWithRole } from "@/lib/navigation";
 import { SUPPORT_PHONE, SUPPORT_WHATSAPP } from "@/lib/classicMenu";
 import { getCentreDashboard, type CentreDashboard } from "@/lib/supabase/centreDashboard";
 import { useToast } from "@/hooks/use-toast";
+import { BANNER_TONES, listDashboardBanners, type DashboardBanner } from "@/lib/supabase/dashboardBanners";
 
 /**
  * The dashboard in the classic franchise-panel layout: a promotion banner with
@@ -28,52 +29,66 @@ import { useToast } from "@/hooks/use-toast";
 const TEAL = "#38c3be";
 const inr = (n: number) => `₹${Math.round(n).toLocaleString("en-IN")}`;
 
-const SLIDES = [
-  {
-    kicker: "Wallet Recharge",
-    title: "Recharge your centre wallet",
-    text: "Certificates, marksheets and ID cards are issued from your wallet balance. Keep it topped up so nothing waits.",
-    tone: "from-[#0b2350] via-[#163b86] to-[#1d4ed8]",
-  },
-  {
-    kicker: "Admission Open 2026–27",
-    title: "बिहार का भरोसेमंद कंप्यूटर संस्थान",
-    text: "Share your online admission link and approve applications straight from the panel.",
-    tone: "from-[#7c2d12] via-[#c2410c] to-[#f97316]",
-  },
-  {
-    kicker: "ISO 9001:2015 Certified",
-    title: "Govt. registered certificates with QR",
-    text: "Every certificate and marksheet carries a QR code that anyone can verify on the website.",
-    tone: "from-[#134e4a] via-[#0f766e] to-[#14b8a6]",
-  },
+/** What the dashboard shows when no poster has been set (or the table is not there yet). */
+const FALLBACK: DashboardBanner[] = [
+  { id: "f1", kicker: "Wallet Recharge", title: "Recharge your centre wallet", text: "Certificates, marksheets and ID cards are issued from your wallet balance. Keep it topped up so nothing waits.", tone: "blue", imageUrl: "", linkUrl: "", sortOrder: 1, isActive: true },
 ];
+const gradientOf = (tone: string) => (BANNER_TONES.find((t) => t.value === tone) ?? BANNER_TONES[0]).gradient;
 
+/** The posters set under Website -> Dashboard Posters, one at a time. */
 function Banner() {
+  const [slides, setSlides] = useState<DashboardBanner[]>(FALLBACK);
   const [i, setI] = useState(0);
   useEffect(() => {
-    const t = window.setInterval(() => setI((n) => (n + 1) % SLIDES.length), 6000);
-    return () => window.clearInterval(t);
+    let live = true;
+    listDashboardBanners(true)
+      .then((rows) => { if (live && rows && rows.length) setSlides(rows); })
+      .catch(() => { /* keep the fallback slide */ });
+    return () => { live = false; };
   }, []);
-  const s = SLIDES[i];
+  useEffect(() => {
+    if (slides.length < 2) return;
+    const t = window.setInterval(() => setI((n) => (n + 1) % slides.length), 6000);
+    return () => window.clearInterval(t);
+  }, [slides.length]);
+  const s = slides[i % slides.length];
+  const dots = slides.length > 1 && (
+    <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
+      {slides.map((x, k) => (
+        <button key={x.id} type="button" aria-label={`Slide ${k + 1}`} onClick={() => setI(k)} className={`h-2 rounded-full shadow transition-all ${k === i % slides.length ? "w-6 bg-white" : "w-2 bg-white/60"}`} />
+      ))}
+    </div>
+  );
+  const wrap = (body: React.ReactNode) =>
+    s.linkUrl ? (
+      /^https:/.test(s.linkUrl) ? <a href={s.linkUrl} target="_blank" rel="noopener" className="block">{body}</a> : <Link to={s.linkUrl} className="block">{body}</Link>
+    ) : body;
+
+  if (s.imageUrl) {
+    // An uploaded poster: the image is the whole slide.
+    return (
+      <div className="relative overflow-hidden rounded-sm bg-slate-100">
+        {wrap(<img src={s.imageUrl} alt={s.title || s.kicker || "Poster"} className="block max-h-[320px] w-full object-cover" />)}
+        {dots}
+      </div>
+    );
+  }
   return (
-    <div className={`relative overflow-hidden rounded-sm bg-gradient-to-r ${s.tone} px-6 py-8 text-white sm:px-10 sm:py-10`}>
+    <div className={`relative overflow-hidden rounded-sm bg-gradient-to-r ${gradientOf(s.tone)} px-6 py-8 text-white sm:px-10 sm:py-10`}>
       <div aria-hidden className="pointer-events-none absolute -right-10 -top-16 h-56 w-56 rounded-full bg-white/10" />
       <div aria-hidden className="pointer-events-none absolute -bottom-20 right-40 h-44 w-44 rounded-full bg-white/[.06]" />
-      <div className="relative flex items-center gap-6">
-        <img src={`${import.meta.env.BASE_URL}career-optics-logo.webp`} alt="" className="hidden h-28 w-28 shrink-0 rounded-full bg-white object-contain p-1 shadow-xl sm:block" />
-        <div className="min-w-0">
-          <span className="inline-block rounded bg-[#fbbf24] px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wider text-[#1f1300]">{s.kicker}</span>
-          <p className="mt-3 text-[22px] font-extrabold leading-tight sm:text-[30px]">{s.title}</p>
-          <p className="mt-2 max-w-2xl text-[13.5px] text-white/85 sm:text-[15px]">{s.text}</p>
-          <p className="mt-3 text-[12.5px] font-semibold text-white/80">Customer Support · {SUPPORT_PHONE}</p>
-        </div>
-      </div>
-      <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
-        {SLIDES.map((x, k) => (
-          <button key={x.kicker} type="button" aria-label={`Slide ${k + 1}`} onClick={() => setI(k)} className={`h-2 rounded-full transition-all ${k === i ? "w-6 bg-white" : "w-2 bg-white/50"}`} />
-        ))}
-      </div>
+      {wrap(
+        <div className="relative flex items-center gap-6">
+          <img src={`${import.meta.env.BASE_URL}career-optics-logo.webp`} alt="" className="hidden h-28 w-28 shrink-0 rounded-full bg-white object-contain p-1 shadow-xl sm:block" />
+          <div className="min-w-0">
+            {s.kicker && <span className="inline-block rounded bg-[#fbbf24] px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wider text-[#1f1300]">{s.kicker}</span>}
+            {s.title && <p className="mt-3 text-[22px] font-extrabold leading-tight sm:text-[30px]">{s.title}</p>}
+            {s.text && <p className="mt-2 max-w-2xl text-[13.5px] text-white/85 sm:text-[15px]">{s.text}</p>}
+            <p className="mt-3 text-[12.5px] font-semibold text-white/80">Customer Support · {SUPPORT_PHONE}</p>
+          </div>
+        </div>,
+      )}
+      {dots}
     </div>
   );
 }

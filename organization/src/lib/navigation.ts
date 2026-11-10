@@ -241,6 +241,7 @@ export const menuItems: MenuItem[] = [
     items: [
       { title: "Website Content", url: "/website/content", icon: LayoutTemplate },
       { title: "Gallery", url: "/website/gallery", icon: Images },
+      { title: "Dashboard Posters", url: "/website/dashboard-posters", icon: Images },
     ],
   },
   {
