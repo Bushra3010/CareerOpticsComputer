@@ -78,7 +78,6 @@ const FRANCHISE_PLAN: Plan = [
   { title: "Exam & Questions", icon: ClipboardList, urls: [["/centre/questions", "Question Bank"], "/centre/exams"] },
   { title: "Batch & Attendance", icon: School, urls: ["/centre/batches", "/centre/attendance"] },
   { title: "Order Certificates", icon: Printer, urls: ["/centre/orders"] },
-  { title: "Awards", icon: Trophy, urls: ["/centre/awards"] },
   { title: "Wallet History", icon: Wallet, urls: ["/centre/wallet"] },
   { title: "Help & Support", icon: Headphones, urls: ["/centre/tickets"] },
   { title: "Expanses", icon: Receipt, urls: ["/centre/expenses"] },

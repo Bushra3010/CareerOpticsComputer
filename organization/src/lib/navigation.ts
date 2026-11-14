@@ -311,7 +311,6 @@ const franchiseMenu: MenuItem[] = [
     "/centre/batches",
     "/centre/attendance",
     "/centre/orders",
-    "/centre/awards",
     "/centre/wallet",
     "/centre/tickets",
     "/centre/expenses",
