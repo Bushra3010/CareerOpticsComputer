@@ -61,6 +61,7 @@ export default function SiteFooter() {
               <li><a href="computer-course.html">Courses</a></li>
               <li><a href="certification.html">Certification</a></li>
               <li><a href="gallery.html">Gallery</a></li>
+              <li><a href="blog.html">Blog</a></li>
               <li><a href="franchise.html">Franchise</a></li>
               <li><a href="index.html#contact">Contact Us</a></li>
             </ul>

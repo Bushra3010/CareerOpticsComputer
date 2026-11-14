@@ -43,6 +43,7 @@ const MENU: Menu[] = [
   },
   { label: "Certification", href: "certification.html" },
   { label: "Gallery", href: "gallery.html" },
+  { label: "Blog", href: "blog.html" },
   {
     label: "Franchise",
     items: [

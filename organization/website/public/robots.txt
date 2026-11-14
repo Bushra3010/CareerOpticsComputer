@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /computercentre/
+
+Sitemap: https://www.careeropticscomputer.in/sitemap.xml
