@@ -48,7 +48,7 @@ export function CentreBar() {
         </p>
       </div>
       <Link
-        to="/branch/wallet"
+        to="/centre/wallet?recharge=1"
         className="press flex h-10 shrink-0 items-center gap-2 rounded-xl bg-card px-3 text-sm shadow-card transition hover:shadow-md"
         aria-label={`My wallet, balance ${inr(centre.balance)}`}
       >

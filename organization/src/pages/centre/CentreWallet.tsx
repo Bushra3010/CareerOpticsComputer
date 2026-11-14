@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
+import { SimpleRechargeDialog } from "@/components/branch/SimpleRechargeDialog";
 
 import { AppLayout } from "@/components/layout/AppLayout";
 import {
@@ -45,7 +46,9 @@ function categoryLabel(r: Pick<WalletTransactionItem, "category" | "type">): str
 export default function CentreWallet() {
   const { branchId, organizationId } = useAuth();
   const { toast } = useToast();
-  const navigate = useNavigate();
+  const [params, setParams] = useSearchParams();
+  // Opened straight from the dashboard or the wallet chip as /centre/wallet?recharge=1.
+  const [rechargeOpen, setRechargeOpen] = useState(params.get("recharge") === "1");
   const isAdmin = !branchId;
   const branches = useBranchOptions(organizationId, isAdmin);
   const [picked, setPicked] = useState("");
@@ -85,9 +88,16 @@ export default function CentreWallet() {
   }, [load]);
 
   const payNow = () => {
-    const value = Number(amount);
-    if (amount && !(value > 0)) return toast({ title: "Enter an amount above zero", variant: "destructive" });
-    navigate(value > 0 ? `/branch/wallet?amount=${encodeURIComponent(String(value))}` : "/branch/wallet");
+    if (amount && !(Number(amount) > 0)) return toast({ title: "Enter an amount above zero", variant: "destructive" });
+    if (!target) return toast({ title: "Choose a branch first", variant: "destructive" });
+    setRechargeOpen(true);
+  };
+  const closeRecharge = (open: boolean) => {
+    setRechargeOpen(open);
+    if (!open && params.get("recharge")) {
+      params.delete("recharge");
+      setParams(params, { replace: true });
+    }
   };
 
   const columns: DceColumn<WalletTransactionItem>[] = [
@@ -152,12 +162,21 @@ export default function CentreWallet() {
           <div className="rounded-sm bg-white p-5 shadow-sm">
             <p className="mb-2 text-[13px] font-semibold text-slate-700">Recharge Wallet</p>
             <div className="flex gap-2">
-              <DceInput type="number" min="1" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Amount" aria-label="Recharge amount" />
-              <DceButton tone="green" onClick={payNow}>Pay Now</DceButton>
+              <DceInput type="number" min="1" value={amount} onChange={(e) => setAmount(e.target.value)} onKeyDown={(e) => e.key === "Enter" && payNow()} placeholder="Amount" aria-label="Recharge amount" />
+              <DceButton tone="green" onClick={payNow}>Add Payment</DceButton>
             </div>
-            <p className="mt-2 text-[11.5px] text-slate-500">Opens the recharge page to pay by UPI and upload the payment proof.</p>
+            <p className="mt-2 text-[11.5px] text-slate-500">Scan the QR to pay, then upload the UTR and screenshot. Your balance updates once the head office approves.</p>
           </div>
         </div>
+
+        <SimpleRechargeDialog
+          open={rechargeOpen && !!target}
+          onOpenChange={closeRecharge}
+          branchId={target}
+          branchName={isAdmin ? branches.find((b) => b.id === target)?.name : undefined}
+          initialAmount={amount}
+          onSubmitted={() => { setAmount(""); void load(); }}
+        />
 
         <DcePanel title="Manage Wallet">
           <DceTable columns={columns} rows={rows} rowKey={(r) => r.id} loading={loading} empty="No wallet transactions yet." />

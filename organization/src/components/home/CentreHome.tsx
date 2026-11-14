@@ -149,7 +149,7 @@ export function CentreHome() {
         <Banner />
         {centre && link("/branch/wallet") && (
           <div className="mt-4 text-center">
-            <Link to={pick("/centre/wallet", "/branch/wallet")!} className="inline-block rounded px-5 py-2 text-[13.5px] font-semibold text-white shadow-sm hover:brightness-95" style={{ background: "#3ecf8e" }}>
+            <Link to={link("/centre/wallet") ? "/centre/wallet?recharge=1" : pick("/centre/wallet", "/branch/wallet")!} className="inline-block rounded px-5 py-2 text-[13.5px] font-semibold text-white shadow-sm hover:brightness-95" style={{ background: "#3ecf8e" }}>
               Recharge Now
             </Link>
           </div>
