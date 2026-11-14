@@ -25,7 +25,7 @@ describe("CentreBar", () => {
     expect(screen.getByText("ID N0088")).toBeInTheDocument();
     expect(screen.getByText("Valid upto 20/06/2099")).toBeInTheDocument();
     expect(screen.getByText("Active")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /My wallet/ })).toHaveAttribute("href", "/branch/wallet");
+    expect(screen.getByRole("link", { name: /My wallet/ })).toHaveAttribute("href", "/centre/wallet?recharge=1");
 
     balance = 1050;
     act(() => { window.dispatchEvent(new Event("wallet:changed")); });
