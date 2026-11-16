@@ -30,13 +30,17 @@ export type StudentDocument = {
   certificateSerial?: string;
   branch: {
     name: string;
-    /** The centre's code, printed as the ATP (Authorised Training Partner) code. */
+    /** The centre's code, printed as the ATC (Authorised Training Centre) code. */
     code?: string;
     phone: string;
     email: string;
     address?: string;
     /** A data URL for the institute's own mark, printed above the title. */
     logo?: string | null;
+    /** The centre's own Mohar (stamp), a data URL; printed beside its signature on certificates. */
+    seal?: string | null;
+    /** The centre director's signature, a data URL. */
+    signature?: string | null;
     organization: { name: string };
   };
   /**

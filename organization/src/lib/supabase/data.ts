@@ -1903,6 +1903,11 @@ export async function getStudentDocument(studentId: string, branchId: string | n
     : { data: null };
   // The address the centre was registered with, for a centre that has set none
   // on its settings page: better on an admit card than the organisation's.
+  // The centre director's signature, printed with the centre's Mohar on its certificates.
+  // A reader the policies keep out of branch_directors (a student) gets the default seal.
+  const { data: director } = branch
+    ? await supabase.from("branch_directors").select("signature").eq("branchId", branch.id).maybeSingle()
+    : { data: null };
   const { data: registered } = branch
     ? await supabase
         .from("branch_addresses")
@@ -2008,6 +2013,8 @@ export async function getStudentDocument(studentId: string, branchId: string | n
             .filter(Boolean)
             .join(", "),
         logo: jsonbImage(branch?.branchLogo) || jsonbImage(organization?.logo),
+        seal: jsonbImage(branch?.branchMohar),
+        signature: jsonbImage(director?.signature),
         organization: { name: organization?.name || "" },
       },
       feeInvoices: invoices.map((invoice) => ({

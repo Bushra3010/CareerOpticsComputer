@@ -260,7 +260,7 @@ export default function CentreStudentView() {
               <div className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
                 <Q label="Franchise" value={String(branch?.name || "").toUpperCase()} />
                 <Q label="Course" value={String(course?.name || "").toUpperCase()} />
-                <Q label="ATP Code" value={branch?.code} />
+                <Q label="ATC Code" value={branch?.code} />
                 <Q label="Batch" value={batch?.name} />
                 <Q label="Admission Date" value={longDate(s.admissionDate || s.createdAt)} />
                 <Q label="Session" value={s.academicYear} />

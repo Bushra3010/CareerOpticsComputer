@@ -23,7 +23,7 @@ export interface StudentProfile {
   batch: string;
   section: string;
   branch: string;
-  /** The centre's code, printed as the ATP code on certificates. */
+  /** The centre's code, printed as the ATC code on certificates. */
   branchCode?: string;
   email: string;
   phone: string;

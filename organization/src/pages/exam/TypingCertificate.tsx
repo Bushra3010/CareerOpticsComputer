@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { typingCertificatesPdf } from "@/lib/brand/brandDocuments";
 import { franchiseLicenceOf, type BranchDetails } from "@/lib/branchTemplateDocument";
+import { centreSealOf, type BranchRecord } from "@/lib/branchDocuments";
 import { getBranchDetails, getBranches, getCourses, getStudents } from "@/lib/supabase/data";
 import { supabase } from "@/lib/supabase/client";
 import { photoOf, type StudentRecord } from "@/lib/studentRecord";
@@ -126,6 +127,7 @@ export default function TypingCertificate() {
             hindiWpm: hindiWpm.trim(),
             accuracy: accuracy.trim(),
             photo: photoOf(student) || null,
+            ...centreSealOf(branch as BranchRecord | null),
           },
         ],
         `typing-certificate-${(student.enrollmentNo || student.applicationNo || name).toString().replace(/[^\w-]+/g, "-")}`,
@@ -180,7 +182,7 @@ export default function TypingCertificate() {
                 <dt className="text-muted-foreground">Registration No.</dt><dd className="font-medium">{student.enrollmentNo || student.applicationNo || "—"}</dd>
                 <dt className="text-muted-foreground">Father's name</dt><dd className="font-medium">{student.fatherName || "—"}</dd>
                 <dt className="text-muted-foreground">Study centre</dt><dd className="font-medium">{licence?.centreName || branch?.name || "—"}</dd>
-                <dt className="text-muted-foreground">ATP code</dt><dd className="font-medium">{licence?.branchCode || "—"}</dd>
+                <dt className="text-muted-foreground">ATC code</dt><dd className="font-medium">{licence?.branchCode || "—"}</dd>
                 <dt className="text-muted-foreground">Photo</dt><dd className="font-medium">{photoOf(student) ? "On record" : "Not on record"}</dd>
               </dl>
             )}

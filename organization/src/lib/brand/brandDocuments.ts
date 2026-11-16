@@ -133,6 +133,128 @@ const origin = () => (typeof window !== "undefined" && window.location ? window.
 export const verifyUrl = (no: string, section: "certificate" | "result" | "admit" | "enrollment") =>
   `${origin()}/verification.html?no=${encodeURIComponent(no)}#${section}`;
 
+/* ------------------------------------------------------------------ */
+/* The centre's seal                                                   */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Two signatures go on a certificate. The right-hand one -- the company's
+ * Pvt. Ltd. seal and its director's signature -- is part of the artwork and
+ * is the same on every document. The left-hand one belongs to the study
+ * centre (ATC) that taught the student, so it is drawn here per document:
+ * the centre's Mohar and its director's signature as uploaded on the
+ * branch, or, for a centre that has uploaded neither, the academy's own
+ * Bhojpur seal. Under it: "Authorised ATC Signature" and the centre's name.
+ */
+export interface CentreSeal {
+  /** The centre's stamp (branches.branchMohar), a data URL. */
+  seal?: string | null;
+  /** The centre director's signature (branch_directors.signature), a data URL. */
+  signature?: string | null;
+  centreName: string;
+}
+
+/**
+ * A scanned stamp or signature is usually a JPEG on white paper, which would
+ * print as a white box over the artwork: lift the paper out so only the ink
+ * is left. Outside a browser (tests) the image is used as it is.
+ */
+async function inkOnly(src: string): Promise<string> {
+  if (typeof document === "undefined" || typeof Image === "undefined") return src;
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const i = new Image();
+      const timer = setTimeout(() => reject(new Error("image did not load")), 4000);
+      i.onload = () => { clearTimeout(timer); resolve(i); };
+      i.onerror = (e) => { clearTimeout(timer); reject(e); };
+      i.src = src;
+    });
+    const scale = Math.min(1, 900 / Math.max(img.naturalWidth, img.naturalHeight));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return src;
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const px = data.data;
+    for (let i = 0; i < px.length; i += 4) {
+      const light = (px[i] + px[i + 1] + px[i + 2]) / 3;
+      // paper (light) goes clear, ink stays; a soft ramp keeps the edges smooth
+      const keep = Math.max(0, Math.min(1, (225 - light) / 70));
+      px[i + 3] = Math.round(px[i + 3] * keep);
+    }
+    ctx.putImageData(data, 0, 0);
+    return canvas.toDataURL("image/png");
+  } catch {
+    return src;
+  }
+}
+
+/** Natural width / height of a data URL image, or null where it cannot be read. */
+function aspect(doc: jsPDF, src: string): number | null {
+  try {
+    const p = doc.getImageProperties(src);
+    return p.width && p.height ? p.width / p.height : null;
+  } catch {
+    return null;
+  }
+}
+
+/** The default seal's proportions (centre-seal-default.png: stamp above, signature below). */
+const DEFAULT_SEAL = { w: 689, h: 903 };
+
+/**
+ * Draws the centre's seal and signature in a box `height` pt tall centred on
+ * `cx`, then the two caption lines from `labelY`.
+ */
+async function drawCentreSeal(
+  doc: jsPDF,
+  c: CentreSeal | undefined,
+  box: { cx: number; top: number; height: number; labelY: number; labelSize?: number; maxWidth?: number },
+) {
+  const { cx, top, height } = box;
+  const width = (height * DEFAULT_SEAL.w) / DEFAULT_SEAL.h;
+  const own = c?.seal || c?.signature;
+  if (own) {
+    // The stamp in the upper part, the signature across the lower part, as the default is laid out.
+    const stampBox = height * 0.7;
+    if (c?.seal) {
+      const src = await inkOnly(c.seal);
+      const r = aspect(doc, src) || 1;
+      const w = r >= 1 ? stampBox : stampBox * r;
+      const h = r >= 1 ? stampBox / r : stampBox;
+      picture(doc, src, cx - w / 2, top + (stampBox - h) / 2, w, h);
+    }
+    if (c?.signature) {
+      const src = await inkOnly(c.signature);
+      const r = aspect(doc, src) || 3;
+      const maxW = width * 1.15;
+      const maxH = height * (c?.seal ? 0.32 : 0.6);
+      let w = maxW;
+      let h = w / r;
+      if (h > maxH) { h = maxH; w = h * r; }
+      picture(doc, src, cx - w / 2, top + height - h, w, h);
+    }
+  } else {
+    const art = await documentArtwork("centre-seal-default.png");
+    picture(doc, art, cx - width / 2, top, width, height);
+  }
+  const size = box.labelSize ?? 7;
+  const maxWidth = box.maxWidth ?? width * 1.6;
+  put(doc, "Authorised ATC Signature", { x: cx, y: box.labelY, size, font: "Poppins-Bold", color: NAVY, align: "center", maxWidth });
+  if (c?.centreName) {
+    put(doc, c.centreName.toUpperCase(), { x: cx, y: box.labelY + size * 1.25, size: size * 0.82, font: "Poppins-SemiBold", color: RED, align: "center", maxWidth });
+  }
+}
+
+/** The seal details a student's documents carry. */
+const sealOf = (s: StudentDocument): CentreSeal => ({
+  seal: s.branch.seal,
+  signature: s.branch.signature,
+  centreName: s.branch.name || s.branch.organization.name,
+});
+
 /** DD-MM-YYYY, as every design prints a date; a string that is not a date is shown as it is. */
 export function ddmmyyyy(value: string | Date | null | undefined): string {
   if (!value) return "";
@@ -204,9 +326,11 @@ export async function drawBrandMarksheet(doc: jsPDF, s: StudentDocument, extra: 
   V(ddmmyyyy(s.admissionDate), 434.0, 328.4, 110);
   const centreName = `${s.branch.name || s.branch.organization.name}`.toUpperCase();
   if (s.branch.code) {
-    V(centreName, 182.8, 347.9, 245, RED);
-    const used = Math.min(measure(doc, centreName, "Poppins-SemiBold", 9.6), 245);
-    put(doc, `ATP CODE : ${s.branch.code}`, { x: 182.8 + used + 10, y: 347.9, size: 8.8, font: "Poppins-Bold", color: NAVY, maxWidth: 543 - (182.8 + used + 10) });
+    // The centre at the left of its line, its ATC code at the right
+    const code = `ATC CODE : ${s.branch.code}`;
+    const room = Math.min(measure(doc, code, "Poppins-Bold", 8.8), 150);
+    V(centreName, 182.8, 347.9, 543 - room - 12 - 182.8, RED);
+    put(doc, code, { x: 543, y: 347.9, size: 8.8, font: "Poppins-Bold", color: NAVY, align: "right", maxWidth: 150 });
   } else {
     V(centreName, 182.8, 347.9, 360, RED);
   }
@@ -259,6 +383,9 @@ export async function drawBrandMarksheet(doc: jsPDF, s: StudentDocument, extra: 
   const code = await qr(verifyUrl(regd || name, "result"));
   picture(doc, code, 48.5, 614.5, 60.0, 60.0);
   put(doc, ddmmyyyy(s.issueDate), { x: 280.6, y: 678.7, size: 9.4, font: "Poppins-SemiBold", align: "center" });
+
+  // The study centre's seal and signature, left of the date (the company's is in the artwork, right)
+  await drawCentreSeal(doc, sealOf(s), { cx: 155, top: 606, height: 76, labelY: 689.5, labelSize: 6.6, maxWidth: 92 });
 }
 
 export async function brandMarksheetPdf(s: StudentDocument, extra: MarksheetExtra = {}) {
@@ -532,12 +659,14 @@ export async function drawBrandCertificate(doc: jsPDF, s: StudentDocument, extra
   V((s.course?.duration || "").toUpperCase(), 0.238, 0.6305, 0.12, 12.5);
   V(grade, 0.5153, 0.6305, 0.1, 12.5);
   V(ddmmyyyy(s.dateOfBirth), 0.73, 0.6305, 0.18, 12.5);
-  // The centre, then its ATP (Authorised Training Partner) code on the same line
+  // The centre, then its ATC (Authorised Training Centre) code on the same line
   const centre = (s.branch.name || s.branch.organization.name).toUpperCase();
   if (s.branch.code) {
-    V(centre, 0.1596, 0.6875, 0.5, 13, RED);
-    const used = Math.min(measure(doc, centre, "Poppins-SemiBold", 13), cx(0.5));
-    put(doc, `ATP CODE : ${s.branch.code}`, { x: cx(0.1596) + used + 14, y: cy(0.6875), size: 11.5, font: "Poppins-Bold", color: DARK, maxWidth: cx(0.9) - (cx(0.1596) + used + 14) });
+    // The centre at the left of its line, its ATC code at the right
+    const atc = `ATC CODE : ${s.branch.code}`;
+    const room = Math.min(measure(doc, atc, "Poppins-Bold", 11.5), cx(0.22));
+    V(centre, 0.1596, 0.6875, 0.915 - 0.1596 - (room + 16) / CERT.w, 13, RED);
+    put(doc, atc, { x: cx(0.915), y: cy(0.6875), size: 11.5, font: "Poppins-Bold", color: DARK, align: "right", maxWidth: cx(0.22) });
   } else {
     V(centre, 0.1596, 0.6875, 0.75, 13, RED);
   }
@@ -546,6 +675,9 @@ export async function drawBrandCertificate(doc: jsPDF, s: StudentDocument, extra
 
   const code = await qr(verifyUrl(certificateNo || regd || name, "certificate"));
   picture(doc, code, cx(0.088), cy(0.788), cx(0.078), cx(0.078));
+
+  // The study centre's seal and signature at the left; the company's is in the artwork, right
+  await drawCentreSeal(doc, sealOf(s), { cx: 194, top: 441, height: 95, labelY: 545, labelSize: 6.8, maxWidth: 92 });
 }
 
 export async function brandCertificatePdf(s: StudentDocument, extra: CertificateExtra = {}) {
@@ -590,10 +722,10 @@ export async function drawFranchiseLicence(doc: jsPDF, l: FranchiseLicence) {
   put(doc, l.centreName.toUpperCase(), { x: lx(0.5), y: ly(0.4306), size: 19, font: "Poppins-ExtraBold", color: RED, align: "center", maxWidth: lx(0.82) });
   put(doc, l.address.toUpperCase(), { x: lx(0.5), y: ly(0.4564), size: 10, font: "Poppins-SemiBold", color: NAVY, align: "center", maxWidth: lx(0.8), charSpace: 0.4 });
   put(doc, l.directorName.toUpperCase(), { x: lx(0.5), y: ly(0.6009), size: 17, font: "Poppins-ExtraBold", color: RED, align: "center", maxWidth: lx(0.6) });
-  // The artwork's first box is labelled BRANCH CODE; the academy calls it the ATP code.
+  // The artwork's first box is labelled BRANCH CODE; the academy calls it the ATC code.
   doc.setFillColor(255, 255, 255);
   doc.rect(pt(lx(0.118)), pt(ly(0.6335)), pt(lx(0.236)), pt(ly(0.0155)), "F");
-  put(doc, "ATP CODE", { x: lx(0.236), y: ly(0.6455), size: 8, font: "Poppins-SemiBold", color: ORANGE, align: "center", charSpace: 2.6 });
+  put(doc, "ATC CODE", { x: lx(0.236), y: ly(0.6455), size: 8, font: "Poppins-SemiBold", color: ORANGE, align: "center", charSpace: 2.6 });
   const box = (text: string, centre: number) => put(doc, text, { x: lx(centre), y: ly(0.6689), size: 16, font: "Poppins-ExtraBold", color: NAVY, align: "center", maxWidth: lx(0.2) });
   box(l.branchCode, 0.236);
   box(l.contact, 0.5);
@@ -759,6 +891,9 @@ export interface TypingCertificate {
   hindiWpm?: number | string;
   accuracy?: number | string;
   photo?: string | null;
+  /** The centre's Mohar and its director's signature; left off, the academy's seal prints. */
+  seal?: string | null;
+  signature?: string | null;
 }
 
 /**
@@ -795,8 +930,9 @@ export async function drawTypingCertificate(doc: jsPDF, t: TypingCertificate) {
 
   // The centre, highlighted: name in red, code beside it
   put(doc, "STUDY CENTRE", { x: lx(0.5), y: ly(0.552), size: 7.5, font: "Poppins-SemiBold", color: ORANGE, align: "center", charSpace: 1.6 });
+  // The centre's ATC code at the right of the centre block
+  if (t.centreCode) put(doc, `ATC CODE : ${t.centreCode}`, { x: lx(0.91), y: ly(0.552), size: 8.2, font: "Poppins-Bold", color: NAVY, align: "right", charSpace: 0.3, maxWidth: lx(0.2) });
   put(doc, t.centre.toUpperCase(), { x: lx(0.5), y: ly(0.571), size: 13, font: "Poppins-ExtraBold", color: RED, align: "center", maxWidth: lx(0.8) });
-  if (t.centreCode) put(doc, `ATP CODE : ${t.centreCode}`, { x: lx(0.5), y: ly(0.587), size: 9, font: "Poppins-Bold", color: NAVY, align: "center", charSpace: 0.6 });
 
   put(doc, "TYPING PERFORMANCE", { x: lx(0.5), y: ly(0.618), size: 13, font: "Poppins-ExtraBold", color: NAVY, align: "center", charSpace: 3 });
 
@@ -815,6 +951,8 @@ export async function drawTypingCertificate(doc: jsPDF, t: TypingCertificate) {
 
   const code = await qr(verifyUrl(t.certificateNo, "certificate"));
   picture(doc, code, lx(0.437), ly(0.7445), lx(0.127), lx(0.127));
+
+  await drawCentreSeal(doc, { seal: t.seal, signature: t.signature, centreName: t.centre }, { cx: 113, top: 606, height: 92, labelY: 708, labelSize: 7, maxWidth: 120 });
 }
 
 export async function typingCertificatesPdf(items: TypingCertificate[], fileName = "typing-certificate") {
@@ -846,6 +984,9 @@ export interface EnrollmentSlip {
   centreName: string;
   centreAddress?: string;
   photo?: string | null;
+  /** The centre's Mohar and its director's signature; left off, the academy's seal prints. */
+  seal?: string | null;
+  signature?: string | null;
 }
 
 /** A5 landscape, as the slip is handed over and filed: 210 × 148 mm. */
@@ -915,7 +1056,7 @@ export async function drawEnrollmentSlip(doc: jsPDF, e: EnrollmentSlip) {
   const cw = W / 3;
   doc.setFillColor(232, 236, 246);
   doc.rect(pt(left), pt(y), pt(W), pt(11), "F");
-  ["Registration No.", "ATP Code", "Date of Admission"].forEach((h, k) => put(doc, h, { x: left + cw * k + cw / 2, y: y + 8.2, size: 7, font: "Poppins-Bold", color: NAVY, align: "center" }));
+  ["Registration No.", "ATC Code", "Date of Admission"].forEach((h, k) => put(doc, h, { x: left + cw * k + cw / 2, y: y + 8.2, size: 7, font: "Poppins-Bold", color: NAVY, align: "center" }));
   [e.enrollmentNo, e.centreCode || "—", ddmmyyyy(e.admissionDate).replace(/-/g, "/")].forEach((v, k) => put(doc, v, { x: left + cw * k + cw / 2, y: y + 20.5, size: 8.8, font: "Poppins-Bold", color: "#1a1a1a", align: "center", maxWidth: cw - 8 }));
   doc.rect(pt(left), pt(y), pt(W), pt(24));
   line(left + cw, y, left + cw, y + 24);
@@ -964,10 +1105,13 @@ export async function drawEnrollmentSlip(doc: jsPDF, e: EnrollmentSlip) {
   addr.forEach((l, k) => put(doc, l, { x: left + 112, y: y + 19 + k * 9, size: 6.8, font: "Poppins-Medium", color: "#333333" }));
   y += ch;
 
-  // The artwork carries the seal (left) and the signatory (right); the QR sits between them
+  // The centre's seal (left) and the company's signatory (right, in the artwork); the QR between them
   const code = await qr(verifyUrl(e.enrollmentNo, "enrollment"), 240);
   picture(doc, code, SLIP.w / 2 - 18, 262, 36, 36);
   put(doc, "Scan to verify", { x: SLIP.w / 2, y: 305, size: 5.8, font: "Poppins-SemiBold", color: NAVY, align: "center" });
+
+  // The centre's seal at the left; the company's signatory is in the artwork, right
+  await drawCentreSeal(doc, { seal: e.seal, signature: e.signature, centreName: e.centreName }, { cx: 70, top: 252, height: 62, labelY: 322, labelSize: 5.8, maxWidth: 100 });
 }
 
 export async function enrollmentSlipsPdf(slips: EnrollmentSlip[], fileName = "enrollment-slip") {
@@ -1059,7 +1203,7 @@ export async function drawAdmissionForm(doc: jsPDF, c: AdmissionFormCentre) {
   line(left, 108, right, 108);
   put(doc, c.centreName.toUpperCase(), { x: cx, y: 123, size: 14, font: "Poppins-ExtraBold", color: RED, align: "center", maxWidth: W });
   put(doc, [c.address, c.phone ? `Ph: ${c.phone}` : ""].filter(Boolean).join("   ·   "), { x: cx, y: 135, size: 8.5, font: "Poppins-Medium", color: NAVY, align: "center", maxWidth: W });
-  put(doc, `AUTHORISED STUDY CENTRE OF CAREER OPTICS COMPUTER ACADEMY${c.centreCode ? `   ·   ATP CODE : ${c.centreCode}` : ""}`, { x: cx, y: 146, size: 7.5, font: "Poppins-Bold", color: ORANGE, align: "center", charSpace: 0.8, maxWidth: W });
+  put(doc, `AUTHORISED STUDY CENTRE OF CAREER OPTICS COMPUTER ACADEMY${c.centreCode ? `   ·   ATC CODE : ${c.centreCode}` : ""}`, { x: cx, y: 146, size: 7.5, font: "Poppins-Bold", color: ORANGE, align: "center", charSpace: 0.8, maxWidth: W });
 
   // Title and photograph
   doc.setFillColor(...rgb(NAVY));
@@ -1085,7 +1229,7 @@ export async function drawAdmissionForm(doc: jsPDF, c: AdmissionFormCentre) {
   let y = 184;
   ul("Course Name :", left, y, formW);
   y += 19;
-  ul("ATP Code :", left, y, formW / 2 - 6, c.centreCode || "");
+  ul("ATC Code :", left, y, formW / 2 - 6, c.centreCode || "");
   ul("Reg. No. :", left + formW / 2 + 6, y, formW / 2 - 6);
   y += 19;
   ul("Date of Admission :", left, y, formW / 2 - 6);
@@ -1206,7 +1350,7 @@ export async function drawAdmissionForm(doc: jsPDF, c: AdmissionFormCentre) {
   ul("Reg. No. :", left + half + 16, y, half);
   y += 19;
   ul("Centre Name :", left, y, half, c.centreName);
-  ul("ATP Code :", left + half + 16, y, half, c.centreCode || "");
+  ul("ATC Code :", left + half + 16, y, half, c.centreCode || "");
   y += 19;
   ul("Course :", left, y, half);
   ul("Duration :", left + half + 16, y, half);

@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { enrollmentSlipsPdf } from "@/lib/brand/brandDocuments";
 import { franchiseLicenceOf, type BranchDetails } from "@/lib/branchTemplateDocument";
+import { centreSealOf, type BranchRecord } from "@/lib/branchDocuments";
 import { getBranchDetails, getBranches, getCourses, getStudents } from "@/lib/supabase/data";
 import { photoOf, type StudentRecord } from "@/lib/studentRecord";
 
@@ -102,6 +103,7 @@ export default function EnrollmentSlip() {
             centreName: licence?.centreName || String(branch?.name ?? ""),
             centreAddress: licence?.address || "",
             photo: photoOf(student) || null,
+            ...centreSealOf(branch as BranchRecord | null),
           },
         ],
         `enrollment-slip-${(enrollmentNo || name).replace(/[^\w-]+/g, "-")}`,
@@ -157,7 +159,7 @@ export default function EnrollmentSlip() {
                 <dt className="text-muted-foreground">Course</dt><dd className="font-medium">{course?.name || String(student.courseName ?? "—")}</dd>
                 <dt className="text-muted-foreground">Father's name</dt><dd className="font-medium">{student.fatherName || "—"}</dd>
                 <dt className="text-muted-foreground">Mother's name</dt><dd className="font-medium">{String(student.motherName ?? "") || "—"}</dd>
-                <dt className="text-muted-foreground">Centre · ATP code</dt><dd className="font-medium">{licence?.centreName || branch?.name || "—"} · {licence?.branchCode || "—"}</dd>
+                <dt className="text-muted-foreground">Centre · ATC code</dt><dd className="font-medium">{licence?.centreName || branch?.name || "—"} · {licence?.branchCode || "—"}</dd>
                 <dt className="text-muted-foreground">Photo</dt><dd className="font-medium">{photoOf(student) ? "On record" : "Not on record"}</dd>
               </dl>
             )}

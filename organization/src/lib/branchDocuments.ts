@@ -47,3 +47,23 @@ export const storedFile = (picked: { name: string; dataUrl: string }) => ({
   dataUrl: picked.dataUrl,
   uploadedAt: new Date().toISOString(),
 });
+
+/** A stored image as a data URL or link: a bare string from older uploads, else the object's dataUrl / url. */
+function imageOf(value: unknown): string | null {
+  if (typeof value === "string") return value || null;
+  if (value && typeof value === "object") {
+    for (const key of ["dataUrl", "url", "src"]) {
+      const found = (value as Record<string, unknown>)[key];
+      if (typeof found === "string" && found) return found;
+    }
+  }
+  return null;
+}
+
+/** The centre's Mohar and its director's signature, as its certificates print them. */
+export function centreSealOf(record: BranchRecord | null | undefined): { seal: string | null; signature: string | null } {
+  return {
+    seal: imageOf(record?.branchMohar),
+    signature: imageOf(record?.director?.signature),
+  };
+}
