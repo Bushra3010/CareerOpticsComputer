@@ -202,6 +202,16 @@ $$;
 revoke all on function public.issue_certificate(text, text) from public, anon;
 grant execute on function public.issue_certificate(text, text) to authenticated;
 
+-- A database that already has the later four-argument issue_certificate
+-- (exam-workflow.sql onwards) must not keep this one beside it: a call that
+-- names only the student and issuer matches both and fails as "not unique".
+do $$
+begin
+  if to_regprocedure('public.issue_certificate(text,text,date,date)') is not null then
+    drop function if exists public.issue_certificate(text, text);
+  end if;
+end $$;
+
 notify pgrst, 'reload schema';
 
 

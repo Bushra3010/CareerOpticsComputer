@@ -405,6 +405,13 @@ export default function Results() {
                   )}
                 </div>
               )}
+              {lines.length === 0 && (
+                <p className="text-sm text-destructive">
+                  {subjects.length
+                    ? `${course.name} has no subjects in ${terms.find((t) => t.term === term)?.label || "this term"}. Choose the term that has them.`
+                    : `${course.name} has no subjects yet, so there is nothing to put marks against. The head office adds them under Courses → Subjects.`}
+                </p>
+              )}
               <Button onClick={save} disabled={saving || !lines.length}>{saving ? "Saving…" : existing ? "Update result" : "Save result"}</Button>
             </>
           )}
