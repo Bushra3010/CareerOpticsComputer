@@ -445,6 +445,7 @@ const SHARED_SIBLINGS: Record<string, string | string[]> = {
   "/marksheet/generate": "/exam/results",
   // Pages the centre panel opens from its lists.
   "/centre/student-payments": "/centre/students",
+  "/centre/student-view": "/centre/students",
   "/centre/exam-create": "/centre/exams",
   "/centre/batch-students": "/centre/batches",
 };
