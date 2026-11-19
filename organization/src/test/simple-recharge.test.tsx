@@ -5,6 +5,7 @@ const submitRechargeRequest = vi.fn();
 const uploadRechargeProof = vi.fn();
 const getRechargeUpi = vi.fn();
 const toast = vi.fn();
+const toDataURL = vi.fn((_uri: string) => Promise.resolve("data:image/png;base64,QR"));
 
 vi.mock("@/lib/supabase/data", () => ({
   submitRechargeRequest: (...a: unknown[]) => submitRechargeRequest(...a),
@@ -13,7 +14,7 @@ vi.mock("@/lib/supabase/data", () => ({
 }));
 vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ user: { id: "u1", name: "Centre", email: "c@x.in", organizationId: "org1" } }) }));
 vi.mock("@/hooks/use-toast", () => ({ useToast: () => ({ toast }) }));
-vi.mock("qrcode", () => ({ default: { toDataURL: () => Promise.resolve("data:image/png;base64,QR") } }));
+vi.mock("qrcode", () => ({ default: { toDataURL: (uri: string) => toDataURL(uri) } }));
 
 const { SimpleRechargeDialog } = await import("@/components/branch/SimpleRechargeDialog");
 
@@ -26,6 +27,7 @@ beforeEach(() => {
   uploadRechargeProof.mockReset().mockResolvedValue({ success: true, data: "b1/proof.png" });
   getRechargeUpi.mockReset().mockResolvedValue({ success: true, data: null });
   toast.mockReset();
+  toDataURL.mockClear();
   globalThis.URL.createObjectURL = vi.fn(() => "blob:shot");
   globalThis.URL.revokeObjectURL = vi.fn();
 });
@@ -38,11 +40,15 @@ describe("SimpleRechargeDialog", () => {
     expect(screen.queryByText(/Scan & pay/i)).toBeNull();
   });
 
-  it("shows the company's Scan & Pay poster when no UPI ID is set", async () => {
+  it("makes a QR for the entered amount on the company UPI ID when none is set", async () => {
     open();
-    fireEvent.click(screen.getByRole("button", { name: "₹2,000" }));
+    await waitFor(() => expect(getRechargeUpi).toHaveBeenCalled());
+    fireEvent.change(screen.getByPlaceholderText("e.g. 2000"), { target: { value: "50" } });
     fireEvent.click(screen.getByRole("button", { name: /Add Payment/i }));
-    expect(await screen.findByAltText(/Scan & Pay/i)).toBeInTheDocument();
+    expect(await screen.findByAltText("UPI QR for ₹50")).toBeInTheDocument();
+    const uri = toDataURL.mock.calls.at(-1)![0];
+    expect(uri).toContain("pa=7372001707%40hdfc");
+    expect(uri).toContain("am=50&");
     expect(screen.getByText(/50200121129272/)).toBeInTheDocument();
   });
 

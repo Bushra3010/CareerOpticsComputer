@@ -12,9 +12,9 @@ import { getRechargeUpi, submitRechargeRequest, uploadRechargeProof } from "@/li
  * request goes to the head office (Franchise -> Wallet Requests), and the
  * balance moves once they approve it.
  *
- * The QR pays the company's own UPI ID for the exact amount when the head
- * office has set one (Wallet Requests -> Payment account); until then it is
- * the company's Scan & Pay poster, where the centre types the amount.
+ * The QR is built for the exact amount the centre enters, so ₹50 gives a
+ * ₹50 QR. It pays the UPI ID the head office set in Wallet Requests ->
+ * Payment account, or else the company UPI ID from the Scan & Pay poster.
  */
 
 const ACCOUNT = {
@@ -23,6 +23,8 @@ const ACCOUNT = {
   ifsc: "HDFC0001942",
   bank: "HDFC Bank, Arrah",
 };
+/** The UPI ID inside the company Scan & Pay poster QR. */
+export const DEFAULT_UPI = { upiId: "7372001707@hdfc", merchantName: ACCOUNT.holder };
 const SCAN_AND_PAY = "/image/gallery/scan-and-pay.webp";
 const QUICK = [500, 1000, 2000, 5000];
 const MAX_PROOF = 5 * 1024 * 1024;
@@ -46,7 +48,7 @@ export function SimpleRechargeDialog({
   const { toast } = useToast();
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [amount, setAmount] = useState("");
-  const [upi, setUpi] = useState<{ upiId: string; merchantName: string } | null>(null);
+  const [upi, setUpi] = useState<{ upiId: string; merchantName: string }>(DEFAULT_UPI);
   const [qr, setQr] = useState("");
   const [utr, setUtr] = useState("");
   const [proof, setProof] = useState<File | null>(null);
@@ -62,8 +64,8 @@ export function SimpleRechargeDialog({
     setProof(null);
     setPreview("");
     getRechargeUpi(user?.organizationId ?? null)
-      .then((r) => setUpi(r.data))
-      .catch(() => setUpi(null));
+      .then((r) => setUpi(r.data ?? DEFAULT_UPI))
+      .catch(() => setUpi(DEFAULT_UPI));
   }, [open, initialAmount, user?.organizationId]);
 
   const value = Number(amount);
