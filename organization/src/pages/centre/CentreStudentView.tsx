@@ -127,7 +127,7 @@ export default function CentreStudentView() {
   const applicationForm = () =>
     run("form", async () => {
       const { data } = await getStudentDocument(id, ownBranch ?? null);
-      admissionPdf(data);
+      await admissionPdf(data);
     }, "Application form ready");
 
   const enrollmentSlip = () =>

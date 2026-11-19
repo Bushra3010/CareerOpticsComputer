@@ -1135,7 +1135,27 @@ export interface AdmissionFormCentre {
   phone?: string;
   /** The centre's own logo, shown beside the academy's. */
   logo?: string | null;
+  /**
+   * A student whose admission this form records: their details are written
+   * into the boxes, so the same form prints filled from the student's page.
+   */
+  student?: StudentDocument;
 }
+
+/** "XXXX XXXX 9012": only the last four digits of an Aadhaar number go on paper. */
+const maskAadhar = (v?: string) => {
+  const d = String(v || "").replace(/\D/g, "");
+  return d.length >= 4 ? `XXXX XXXX ${d.slice(-4)}` : "";
+};
+
+/** A date as its eight DDMMYYYY digits, or nothing when it does not parse. */
+const dobDigits = (v?: string) => {
+  if (!v) return "";
+  const iso = /^\d{4}-\d{2}-\d{2}/.test(v) ? v.slice(0, 10) : "";
+  const d = iso ? new Date(`${iso}T00:00:00`) : new Date(v);
+  if (Number.isNaN(d.getTime())) return "";
+  return `${String(d.getDate()).padStart(2, "0")}${String(d.getMonth() + 1).padStart(2, "0")}${d.getFullYear()}`;
+};
 
 /**
  * The blank admission form a centre prints and the student fills by hand:
@@ -1214,7 +1234,15 @@ export async function drawAdmissionForm(doc: jsPDF, c: AdmissionFormCentre) {
   doc.setLineDashPattern([pt(2), pt(1.5)], 0);
   rect(right - 70, 150, 70, 86);
   doc.setLineDashPattern([], 0);
-  ["Paste recent", "passport size", "photograph"].forEach((t, i) => put(doc, t, { x: right - 35, y: 184 + i * 10, size: 7, font: "Poppins-Regular", color: "#8a8fa5", align: "center" }));
+  const s = c.student;
+  const a = s?.applicant ?? {};
+  const photo = s?.photo && s.photo.startsWith("data:image") ? s.photo : null;
+  if (photo) picture(doc, photo, right - 69, 151, 68, 84);
+  else ["Paste recent", "passport size", "photograph"].forEach((t, i) => put(doc, t, { x: right - 35, y: 184 + i * 10, size: 7, font: "Poppins-Regular", color: "#8a8fa5", align: "center" }));
+  const regNo = s ? s.enrollmentNo || s.applicationNo || "" : "";
+  const admitted = s ? ddmmyyyy(s.admissionDate).replace(/-/g, "/") : "";
+  const courseName = s?.course?.name || "";
+  const duration = s?.course?.duration || "";
 
   // Top lines: course, centre code / reg. no., date / duration
   const ul = (label: string, x: number, y: number, w: number, value = "") => {
@@ -1227,32 +1255,39 @@ export async function drawAdmissionForm(doc: jsPDF, c: AdmissionFormCentre) {
   };
   const formW = W - 90;
   let y = 184;
-  ul("Course Name :", left, y, formW);
+  ul("Course Name :", left, y, formW, courseName);
   y += 19;
   ul("ATC Code :", left, y, formW / 2 - 6, c.centreCode || "");
-  ul("Reg. No. :", left + formW / 2 + 6, y, formW / 2 - 6);
+  ul("Reg. No. :", left + formW / 2 + 6, y, formW / 2 - 6, regNo);
   y += 19;
-  ul("Date of Admission :", left, y, formW / 2 - 6);
-  ul("Duration :", left + formW / 2 + 6, y, formW / 2 - 6);
+  ul("Date of Admission :", left, y, formW / 2 - 6, admitted);
+  ul("Duration :", left + formW / 2 + 6, y, formW / 2 - 6, duration);
   y += 22;
 
-  // Character boxes
+  // Character boxes, one letter to a box when a student's details are given
   const labelW = 92;
-  const boxes = (label: string, rows: number) => {
+  const boxes = (label: string, rows: number, text = "") => {
     const n = 26;
     const bw = (W - labelW) / n;
     const bh = 17;
     put(doc, label, { x: left, y: y + 12, size: 9, font: "Poppins-SemiBold", color: NAVY });
     doc.setDrawColor(...rgb(NAVY));
     doc.setLineWidth(pt(0.5));
+    const chars = text.toUpperCase().replace(/\s+/g, " ").trim().slice(0, n * rows).split("");
     for (let r = 0; r < rows; r++) {
-      for (let i = 0; i < n; i++) rect(left + labelW + i * bw, y + r * (bh + 2), bw, bh);
+      for (let i = 0; i < n; i++) {
+        const bx = left + labelW + i * bw;
+        const by = y + r * (bh + 2);
+        rect(bx, by, bw, bh);
+        const ch = chars[r * n + i];
+        if (ch && ch !== " ") put(doc, ch, { x: bx + bw / 2, y: by + 12, size: 9, font: "Poppins-Bold", color: "#1a1a1a", align: "center" });
+      }
     }
     y += rows * (bh + 2) + 7;
   };
-  boxes("Student's Name :", 1);
-  boxes("Father's Name :", 1);
-  boxes("Mother's Name :", 1);
+  boxes("Student's Name :", 1, s ? `${s.firstName} ${s.lastName}` : "");
+  boxes(s?.parentage ? `${s.parentage.replace(/ of$/i, "")} of :` : "Father's Name :", 1, s?.fatherName || "");
+  boxes("Mother's Name :", 1, a.motherName || "");
 
   // DOB / gender / category / mobile
   const bh = 17;
@@ -1260,36 +1295,51 @@ export async function drawAdmissionForm(doc: jsPDF, c: AdmissionFormCentre) {
   doc.setDrawColor(...rgb(NAVY));
   doc.setLineWidth(pt(0.5));
   const dob = ["D", "D", "M", "M", "Y", "Y", "Y", "Y"];
+  const dobFilled = dobDigits(s?.dateOfBirth);
   dob.forEach((ch, i) => {
     rect(left + labelW + i * 16, y, 16, bh);
-    put(doc, ch, { x: left + labelW + i * 16 + 8, y: y + 10.5, size: 8, font: "Poppins-Regular", color: "#b4b9c9", align: "center" });
+    if (dobFilled) put(doc, dobFilled[i], { x: left + labelW + i * 16 + 8, y: y + 12, size: 9, font: "Poppins-Bold", color: "#1a1a1a", align: "center" });
+    else put(doc, ch, { x: left + labelW + i * 16 + 8, y: y + 10.5, size: 8, font: "Poppins-Regular", color: "#b4b9c9", align: "center" });
   });
-  const tick = (label: string, x: number) => {
+  // A tick box; `on` draws the tick the student would have made.
+  const tick = (label: string, x: number, on = false) => {
     rect(x, y + 2, 11, 11);
+    if (on) {
+      doc.setLineWidth(pt(1.4));
+      doc.line(pt(x + 2.2), pt(y + 7.5), pt(x + 4.6), pt(y + 10.4));
+      doc.line(pt(x + 4.6), pt(y + 10.4), pt(x + 9.2), pt(y + 3.8));
+      doc.setLineWidth(pt(0.5));
+    }
     put(doc, label, { x: x + 15, y: y + 11, size: 8.5, font: "Poppins-Medium", color: "#1a1a1a" });
     return x + 15 + measure(doc, label, "Poppins-Medium", 8.5) + 10;
   };
+  const gender = String(a.gender || "").toUpperCase();
   let tx = left + labelW + 8 * 16 + 14;
   put(doc, "Gender :", { x: tx, y: y + 11, size: 9, font: "Poppins-SemiBold", color: NAVY });
   tx += 42;
-  tx = tick("Male", tx);
-  tx = tick("Female", tx);
-  tick("Other", tx);
+  tx = tick("Male", tx, gender === "MALE");
+  tx = tick("Female", tx, gender === "FEMALE");
+  tick("Other", tx, Boolean(gender) && gender !== "MALE" && gender !== "FEMALE");
   y += bh + 9;
   put(doc, "Category :", { x: left, y: y + 11, size: 9, font: "Poppins-SemiBold", color: NAVY });
+  const category = String(a.category || "").toUpperCase().replace(/^GENERAL$/, "GEN");
   tx = left + labelW;
-  for (const cat of ["GEN", "OBC", "SC", "ST", "EWS"]) tx = tick(cat, tx);
+  for (const cat of ["GEN", "OBC", "SC", "ST", "EWS"]) tx = tick(cat, tx, category === cat);
   put(doc, "Mobile :", { x: tx + 6, y: y + 11, size: 9, font: "Poppins-SemiBold", color: NAVY });
   const mob0 = tx + 6 + 40;
-  for (let i = 0; i < 10; i++) rect(mob0 + i * 14, y, 14, bh);
+  const mobile = String(a.phone || "").replace(/\D/g, "").slice(-10);
+  for (let i = 0; i < 10; i++) {
+    rect(mob0 + i * 14, y, 14, bh);
+    if (mobile[i]) put(doc, mobile[i], { x: mob0 + i * 14 + 7, y: y + 12, size: 9, font: "Poppins-Bold", color: "#1a1a1a", align: "center" });
+  }
   y += bh + 10;
-  ul("Aadhaar No. :", left, y + 9, W / 2 - 8);
-  ul("Email :", left + W / 2 + 8, y + 9, W / 2 - 8);
+  ul("Aadhaar No. :", left, y + 9, W / 2 - 8, maskAadhar(a.aadharNumber));
+  ul("Email :", left + W / 2 + 8, y + 9, W / 2 - 8, a.email || "");
   y += 24;
-  boxes("Address :", 2);
-  ul("District :", left + labelW, y + 9, (W - labelW) / 3 - 6);
-  ul("State :", left + labelW + (W - labelW) / 3, y + 9, (W - labelW) / 3 - 6);
-  ul("PIN :", left + labelW + (2 * (W - labelW)) / 3, y + 9, (W - labelW) / 3);
+  boxes("Address :", 2, [a.streetAddress, a.block, a.city].filter(Boolean).join(", "));
+  ul("District :", left + labelW, y + 9, (W - labelW) / 3 - 6, a.district || "");
+  ul("State :", left + labelW + (W - labelW) / 3, y + 9, (W - labelW) / 3 - 6, a.state || "");
+  ul("PIN :", left + labelW + (2 * (W - labelW)) / 3, y + 9, (W - labelW) / 3, a.pincode || "");
   y += 24;
 
   // Last qualification table
@@ -1298,17 +1348,34 @@ export async function drawAdmissionForm(doc: jsPDF, c: AdmissionFormCentre) {
   const cw = (W - labelW) / cols.length;
   doc.setFillColor(232, 236, 246);
   rect(left + labelW, y, W - labelW, 14, "F");
+  const pct = (v?: string) => (v ? `${v}${/%$/.test(v) ? "" : "%"}` : "");
+  const schooling: string[][] = s
+    ? [
+        ["10th", a.tenthBoard || "", a.tenthYearOfPassing || "", pct(a.tenthPercentage), ""],
+        [a.twelfthStream ? `12th (${a.twelfthStream})` : "12th", a.twelfthBoard || "", a.twelfthYearOfPassing || "", pct(a.twelfthPercentage), ""],
+      ]
+    : [];
   cols.forEach((h, i) => {
     rect(left + labelW + i * cw, y, cw, 14);
     put(doc, h, { x: left + labelW + i * cw + cw / 2, y: y + 10, size: 7.5, font: "Poppins-SemiBold", color: NAVY, align: "center" });
     rect(left + labelW + i * cw, y + 14, cw, 18);
     rect(left + labelW + i * cw, y + 32, cw, 18);
+    schooling.forEach((row, r) => {
+      if (row[i] && row.slice(1).some(Boolean))
+        put(doc, row[i], { x: left + labelW + i * cw + cw / 2, y: y + 26 + r * 18, size: 8, font: "Poppins-Medium", color: "#1a1a1a", align: "center", maxWidth: cw - 4 });
+    });
   });
   y += 50 + 12;
 
   // Declaration and signatures
   doc.setDrawColor(...rgb(NAVY));
   rect(left, y + 1, 10, 10);
+  if (s) {
+    doc.setLineWidth(pt(1.4));
+    doc.line(pt(left + 2), pt(y + 6.5), pt(left + 4.3), pt(y + 9.3));
+    doc.line(pt(left + 4.3), pt(y + 9.3), pt(left + 8.6), pt(y + 3));
+    doc.setLineWidth(pt(0.5));
+  }
   put(doc, "I declare that the information given above is true and I agree to abide by the rules and regulations of the Academy and the centre.", { x: left + 15, y: y + 9, size: 8, font: "Poppins-Regular", color: "#1a1a1a", maxWidth: W - 15 });
   y += 34;
   const sig = (label: string, x: number) => {
@@ -1316,6 +1383,11 @@ export async function drawAdmissionForm(doc: jsPDF, c: AdmissionFormCentre) {
     line(x, y, x + 130, y);
     put(doc, label, { x: x + 65, y: y + 9, size: 7.5, font: "Poppins-SemiBold", color: NAVY, align: "center" });
   };
+  // The centre's seal and its director's signature, as the other documents carry them.
+  const sealImg = s?.branch.seal && s.branch.seal.startsWith("data:image") ? s.branch.seal : null;
+  const signImg = s?.branch.signature && s.branch.signature.startsWith("data:image") ? s.branch.signature : null;
+  if (sealImg) picture(doc, sealImg, right - 140, y - 32, 30, 30);
+  if (signImg) picture(doc, signImg, right - 100, y - 24, 70, 22);
   sig("Signature of Student", left);
   sig("Signature of Parent / Guardian", cx - 65);
   sig("Centre Director (with seal)", right - 130);
@@ -1343,17 +1415,17 @@ export async function drawAdmissionForm(doc: jsPDF, c: AdmissionFormCentre) {
   y += 14;
   put(doc, "FOR OFFICE USE ONLY", { x: left, y: y + 2, size: 7.5, font: "Poppins-Bold", color: ORANGE, charSpace: 1 });
   put(doc, "STUDENT'S ACKNOWLEDGEMENT SLIP", { x: cx, y: y + 2, size: 9, font: "Poppins-ExtraBold", color: NAVY, align: "center", charSpace: 1 });
-  put(doc, "Date : ____ / ____ / ________", { x: right, y: y + 2, size: 8, font: "Poppins-Medium", color: "#1a1a1a", align: "right" });
+  put(doc, admitted ? `Date : ${admitted}` : "Date : ____ / ____ / ________", { x: right, y: y + 2, size: 8, font: "Poppins-Medium", color: "#1a1a1a", align: "right" });
   y += 18;
   const half = W / 2 - 8;
-  ul("Student's Name :", left, y, half);
-  ul("Reg. No. :", left + half + 16, y, half);
+  ul("Student's Name :", left, y, half, s ? `${s.firstName} ${s.lastName}`.toUpperCase() : "");
+  ul("Reg. No. :", left + half + 16, y, half, regNo);
   y += 19;
   ul("Centre Name :", left, y, half, c.centreName);
   ul("ATC Code :", left + half + 16, y, half, c.centreCode || "");
   y += 19;
-  ul("Course :", left, y, half);
-  ul("Duration :", left + half + 16, y, half);
+  ul("Course :", left, y, half, courseName);
+  ul("Duration :", left + half + 16, y, half, duration);
   y += 19;
   const third = W / 3 - 8;
   ul("Admission Fee :", left, y, third);
@@ -1375,6 +1447,21 @@ function measure(doc: jsPDF, text: string, font: BrandFont, size: number): numbe
   doc.setFont(fontOn(doc, font), "normal");
   doc.setFontSize(size);
   return doc.getTextWidth(text) / pt(1);
+}
+
+/** The admission form filled with one student's details, from the student's page. */
+export async function studentAdmissionFormPdf(student: StudentDocument, fileName?: string) {
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+  await drawAdmissionForm(doc, {
+    centreName: student.branch.name || "Career Optics Computer Academy",
+    centreCode: student.branch.code,
+    address: student.branch.address,
+    phone: student.branch.phone,
+    logo: student.branch.logo,
+    student,
+  });
+  save(doc, `${fileName || `application-form-${student.enrollmentNo || student.applicationNo || "student"}`}.pdf`);
+  return doc;
 }
 
 export async function admissionFormPdf(centre: AdmissionFormCentre, fileName = "admission-form") {

@@ -247,7 +247,7 @@ export default function MyDocuments() {
               </div>
               <div className="flex items-center gap-3 rounded-2xl border border-border/70 p-3">
                 <div className="min-w-0 flex-1"><p className="text-sm font-semibold">Admission summary</p><p className="text-xs text-muted-foreground">Course, batch, fees and results on one sheet</p></div>
-                <Button size="sm" variant="outline" onClick={() => { if (!profile) return; admissionPdf(asStudentDocument(profile, invoices, results)); toast({ title: "Admission summary downloaded" }); }} disabled={!profile}><Download className="mr-1.5 h-3.5 w-3.5" />PDF</Button>
+                <Button size="sm" variant="outline" onClick={() => { if (!profile) return; void admissionPdf(asStudentDocument(profile, invoices, results)).then(() => toast({ title: "Admission form downloaded" }), () => toast({ title: "Could not make the admission form", variant: "destructive" })); }} disabled={!profile}><Download className="mr-1.5 h-3.5 w-3.5" />PDF</Button>
               </div>
               <div className="flex items-center gap-3 rounded-2xl border border-border/70 p-3">
                 <div className="min-w-0 flex-1"><p className="text-sm font-semibold">Marksheet & certificate</p><p className="text-xs text-muted-foreground">Issued from your published results</p></div>

@@ -1,50 +1,57 @@
-import { describe, it, expect } from "vitest";
-import { buildAdmissionPdf, type StudentDocument } from "@/lib/documents";
+import { describe, it, expect, vi } from "vitest";
+import { jsPDF } from "jspdf";
+import type { StudentDocument } from "@/lib/documents";
 
-/** The application form a centre prints from the student's page. */
+/**
+ * The student's application form is the academy's own admission form with
+ * the student's details written in. No artwork or fonts are served here, so
+ * the text lands in Helvetica and can be read back from the file.
+ */
+vi.stubGlobal("fetch", async () => ({ ok: false, status: 404, arrayBuffer: async () => new ArrayBuffer(0), blob: async () => new Blob([]) }));
+
+const { drawAdmissionForm } = await import("@/lib/brand/brandDocuments");
 
 const student: StudentDocument = {
-  firstName: "Asha",
-  lastName: "Kumari",
-  applicationNo: "APP-2026-0042",
-  enrollmentNo: "ENR-42",
-  admissionDate: "2026-07-15",
-  fatherName: "Ram Kumar",
-  parentage: "Daughter of",
-  session: "2026-27",
-  course: { name: "ADCA", code: "ADCA", duration: "12 months" },
-  branch: { name: "Ara Centre", code: "COCA/BR/AR/001", phone: "8252532179", email: "c@x.in", organization: { name: "x" } },
-  applicant: {
-    motherName: "Sita Devi",
-    aadharNumber: "1234 5678 9012",
-    phone: "9876543210",
-    city: "Ara",
-    tenthBoard: "BSEB",
-    tenthPercentage: "78",
-  },
+  firstName: "MOHAN",
+  lastName: "KUMAR",
+  enrollmentNo: "COCA/2026/00103",
+  admissionDate: "2026-11-19",
+  fatherName: "RAM KUMAR",
+  parentage: "Son of",
+  dateOfBirth: "12 Feb 2015",
+  course: { name: "Diploma in Computer Application", duration: "6 months" },
+  branch: { name: "Ara Centre", code: "COCA/BR/AR/001", phone: "", email: "", organization: { name: "x" } },
+  applicant: { gender: "MALE", category: "OBC", phone: "9876543210", aadharNumber: "123456789012", district: "Bhojpur", motherName: "MOTI DEVI", tenthBoard: "BSEB" },
   feeInvoices: [],
   examResults: [],
 };
 
-const text = (s: StudentDocument) => buildAdmissionPdf(s).output();
+const render = async (s?: StudentDocument) => {
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+  await drawAdmissionForm(doc, { centreName: "Ara Centre", centreCode: "COCA/BR/AR/001", student: s });
+  return doc.output();
+};
 
 describe("Application form", () => {
-  it("prints the particulars the admission collected", () => {
-    const out = text(student);
-    for (const v of ["ADMISSION / APPLICATION FORM", "APP-2026-0042", "ASHA KUMARI", "Sita Devi", "9876543210", "BSEB", "ATC Code: COCA/BR/AR/001", "Daughter of"]) {
+  it("fills the academy's admission form with the student's details", async () => {
+    const out = await render(student);
+    for (const v of ["Diploma in Computer Application", "COCA/2026/00103", "19/11/2026", "6 months", "MOHAN KUMAR", "Bhojpur", "BSEB", "Son of :"]) {
       expect(out).toContain(v);
     }
+    // One letter to a box, the date of birth and mobile one digit to a box.
+    expect(out).toContain("(M)");
+    expect(out).toContain("(9)");
   });
 
-  it("prints only the last four digits of the Aadhaar number", () => {
-    const out = text(student);
+  it("prints only the last four digits of the Aadhaar number", async () => {
+    const out = await render(student);
     expect(out).toContain("XXXX XXXX 9012");
-    expect(out).not.toContain("1234 5678");
+    expect(out).not.toContain("123456789012");
   });
 
-  it("still prints for a record with none of the extra details", () => {
-    const out = text({ ...student, applicant: undefined });
-    expect(out).toContain("ASHA KUMARI");
-    expect(out).toContain("Signature of Student");
+  it("is still the blank form when no student is given", async () => {
+    const out = await render();
+    expect(out).toContain("Paste recent");
+    expect(out).not.toContain("COCA/2026/00103");
   });
 });
