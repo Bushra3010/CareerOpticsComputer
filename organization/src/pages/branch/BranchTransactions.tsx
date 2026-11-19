@@ -24,7 +24,7 @@ import { useMemo, useState, useEffect } from "react";
 import { downloadCsv, downloadHtml, printHtml } from "@/lib/export";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { getTransactionsByOrg, getTransactions } from "@/lib/supabase/data";
+import { deleteWalletTransaction, getTransactionsByOrg, getTransactions } from "@/lib/supabase/data";
 
 interface Transaction {
   id: string;
@@ -206,7 +206,20 @@ export default function BranchTransactions() {
     { label: "View Details", onClick: () => setDetails(txn) },
     { label: "Download Receipt", onClick: () => downloadReceipt(txn) },
     { label: "Print", onClick: () => printHtml(`Receipt ${txn.reference}`, receiptHtml(txn)) },
+    // The head office only; a centre sees its history but cannot change it.
+    ...(branchId ? [] : [{ label: "Delete", onClick: () => void removeEntry(txn), destructive: true }]),
   ];
+
+  const removeEntry = async (txn: Transaction) => {
+    if (!window.confirm(`Delete ${txn.reference || "this entry"} from the wallet history?\n\nOnly the entry is removed. The centre's wallet balance does not change.`)) return;
+    try {
+      await deleteWalletTransaction(txn.id);
+      setRawRows((rows) => rows.filter((r) => r.id !== txn.id));
+      toast({ title: "Entry deleted", description: "The wallet balance is unchanged." });
+    } catch (e: any) {
+      toast({ title: "Could not delete the entry", description: e?.message, variant: "destructive" });
+    }
+  };
 
   return (
     <AppLayout>

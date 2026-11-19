@@ -50,6 +50,7 @@ import {
   ChevronsRight,
   ShieldAlert,
   QrCode,
+  Trash2,
 } from "lucide-react";
 import { downloadCsv } from "@/lib/export";
 import {
@@ -60,6 +61,7 @@ import {
   rejectRechargeTransaction,
   bulkApproveRecharges,
   bulkRejectRecharges,
+  deleteWalletTransaction,
   type WalletTransactionItem,
 } from "@/lib/supabase/data";
 import { RechargeDrawer } from "@/components/branch/RechargeDrawer";
@@ -266,6 +268,21 @@ export default function WalletRecharge() {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // Removes the entry from the lists only; the wallet balance stays as it is.
+  const handleDelete = async (tx: WalletTransactionItem) => {
+    if (!window.confirm(`Delete this ${tx.status === "PENDING" ? "recharge request" : "wallet entry"}${tx.reference ? ` (${tx.reference})` : ""}?\n\nOnly the entry is removed. The centre's wallet balance does not change.`)) return;
+    setProcessingId(tx.id);
+    try {
+      await deleteWalletTransaction(tx.id);
+      toast({ title: "Entry deleted", description: "The wallet balance is unchanged." });
+      loadData(true);
+    } catch (e) {
+      toast({ title: "Could not delete the entry", description: e instanceof Error ? e.message : undefined, variant: "destructive" });
+    } finally {
+      setProcessingId(null);
+    }
+  };
 
   // Single Approve Action
   const handleApprove = async (tx: WalletTransactionItem) => {
@@ -1187,6 +1204,16 @@ export default function WalletRecharge() {
                                 <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
                                 Approve
                               </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 px-2 text-xs text-destructive hover:bg-destructive hover:text-white"
+                                aria-label={`Delete wallet entry ${tx.reference || tx.id}`}
+                                disabled={processingId === tx.id}
+                                onClick={() => void handleDelete(tx)}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
                             </div>
                           ) : isPending ? (
                             <span className="text-xs text-muted-foreground">Awaiting approval</span>
@@ -1215,6 +1242,18 @@ export default function WalletRecharge() {
                                   }}
                                 >
                                   Proof
+                                </Button>
+                              )}
+                              {canApprove && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 px-2 text-xs text-destructive hover:bg-destructive hover:text-white"
+                                  aria-label={`Delete wallet entry ${tx.reference || tx.id}`}
+                                  disabled={processingId === tx.id}
+                                  onClick={() => void handleDelete(tx)}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
                                 </Button>
                               )}
                             </div>

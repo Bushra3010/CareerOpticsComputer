@@ -3216,6 +3216,18 @@ function extractRemarks(desc: string | null | undefined): string {
   return clean === "Wallet recharge" || clean === "Wallet recharge request" ? "" : clean;
 }
 
+/**
+ * Removes a wallet history entry or recharge request from the lists, for the
+ * head office. Only the row goes: the wallet balance is left as it is, so a
+ * deleted approved recharge or charge does not move money back.
+ */
+export async function deleteWalletTransaction(id: string) {
+  const { data, error } = await supabase.from("branch_transactions").delete().eq("id", id).select("id");
+  if (error) throw new Error(error.message);
+  assertRemoved(data, "That wallet entry");
+  return { success: true };
+}
+
 function mapTransaction(row: Record<string, unknown>): WalletTransactionItem {
   const branch = row.branch as { name?: string; code?: string } | null;
   const created = (row.createdAt as string) || "";
