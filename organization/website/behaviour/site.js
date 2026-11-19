@@ -291,12 +291,13 @@
     }
     fact(site.establishedYear ? "Since " + site.establishedYear : "", "Teaching students");
     fact((site.courses || []).length ? String(site.courses.length) : "", (site.courses || []).length === 1 ? "Course offered" : "Courses offered");
-    fact(site.director, "Centre director");
+    // The director the head office registered: a photo card when a photo was
+    // uploaded then, else one of the facts.
+    var photo = safeUrl(site.directorPhoto, true);
+    if (!photo) fact(site.director, "Centre director");
     fact(site.numComputers, "Computers in the lab");
     fact(site.numFaculty, site.numFaculty === 1 ? "Teacher" : "Teachers");
 
-    // The director the head office registered, with the photo uploaded then.
-    var photo = safeUrl(site.directorPhoto, true);
     if (site.director && photo) {
       $("sDirectorPhoto").src = photo;
       $("sDirectorPhoto").alt = site.director;
