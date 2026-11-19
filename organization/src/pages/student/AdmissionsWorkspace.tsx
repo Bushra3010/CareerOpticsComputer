@@ -43,6 +43,11 @@ import { useToast } from "@/hooks/use-toast";
  * Every key here is a real column on `students`, so the whole draft can be
  * handed to `createStudent` after the numeric and date fields are converted.
  */
+import { academicYearOf, recentAcademicYears } from "@/lib/academicYear";
+
+/** The session picker's "Other year (type it)" entry. */
+const CUSTOM_YEAR = "__other_year__";
+
 type Draft = {
   // Personal
   firstName: string;
@@ -347,6 +352,8 @@ export default function AdmissionsWorkspace() {
    * to the free-text box this field used to be.
    */
   const [sessions, setSessions] = useState<SessionYear[]>([]);
+  /** "Other year" was picked: the year is typed instead of chosen. */
+  const [typingYear, setTypingYear] = useState(false);
   const [documents, setDocuments] = useState<Record<string, AdmissionDocument>>(() => {
     try {
       const held = JSON.parse(localStorage.getItem(DOCUMENTS_KEY) || "{}");
@@ -553,6 +560,12 @@ export default function AdmissionsWorkspace() {
     if (draft.academicYear && !offered.some((s) => s.name === draft.academicYear)) {
       options.unshift([draft.academicYear, draft.academicYear]);
     }
+    // Past and coming years too, so a back-dated admission has its year even
+    // where no session was set up for it, and any other year can be typed.
+    for (const year of recentAcademicYears()) {
+      if (!options.some(([v]) => v === year)) options.push([year, year]);
+    }
+    options.push([CUSTOM_YEAR, "Other year (type it)"]);
     return options;
   })();
   /** The rule: an admission cannot be dated before its academic year began. */
@@ -568,11 +581,20 @@ export default function AdmissionsWorkspace() {
       return {
         ...p,
         admissionDate: value,
-        academicYear: fits || !matches.length ? p.academicYear : matches[0].name,
+        academicYear: matches.length
+          ? fits
+            ? p.academicYear
+            : matches[0].name
+          : // No session holds this date: the year it falls in, unless one was typed.
+            !p.academicYear || sessions.some((s) => s.name === p.academicYear)
+            ? academicYearOf(value) || p.academicYear
+            : p.academicYear,
       };
     });
 
-  const changeSession = (name: string) =>
+  const changeSession = (name: string) => {
+    setTypingYear(name === CUSTOM_YEAR);
+    if (name === CUSTOM_YEAR) return;
     setDraft((p) => {
       const picked = sessions.find((s) => s.name === name);
       if (!picked) return { ...p, academicYear: name };
@@ -592,6 +614,7 @@ export default function AdmissionsWorkspace() {
             : picked.startDate,
       };
     });
+  };
 
   const requiredDocuments = ADMISSION_DOCUMENTS.filter((doc) => doc.required);
   const missingDocuments = requiredDocuments.filter((doc) => !documents[doc.id]);
@@ -999,15 +1022,23 @@ export default function AdmissionsWorkspace() {
                   {sessions.length ? (
                     <>
                       <Picker
-                        value={draft.academicYear}
+                        value={typingYear ? CUSTOM_YEAR : draft.academicYear}
                         onChange={changeSession}
                         options={sessionOptions}
                         placeholder="Choose session"
                       />
+                      {typingYear && (
+                        <Input
+                          aria-label="Academic year"
+                          placeholder="e.g. 2023-24"
+                          value={draft.academicYear}
+                          onChange={(e) => set("academicYear", e.target.value)}
+                        />
+                      )}
                       <p className="text-xs text-muted-foreground">
                         {draft.admissionDate && sessionsForDate.length
                           ? "The session this admission date falls in."
-                          : "Pick the session; the admission date is kept inside it."}
+                          : "Pick the year, or a past date sets it for you."}
                       </p>
                     </>
                   ) : (

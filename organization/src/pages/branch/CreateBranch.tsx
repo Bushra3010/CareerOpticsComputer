@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   createBranchWithDetails,
+  createSubCentre,
   createBranchLogin,
   getBranches,
   getFranchiseLead,
@@ -22,6 +23,7 @@ import {
   type FranchiseLead,
 } from "@/lib/supabase/data";
 import { canonicalState } from "@/data/indianStates";
+import { loginIdFromCode, nextBranchCode } from "@/lib/branchCode";
 import { storedChoice } from "@/lib/choices";
 
 interface Branch {
@@ -32,7 +34,6 @@ interface Branch {
 /** Fields the register cannot do without, in the order they appear on the page. */
 const REQUIRED: Array<[string, string]> = [
   ["branchName", "Branch Name"],
-  ["branchCode", "Branch Code"],
   ["instituteType", "Institute Type"],
   ["academicYear", "Academic Year"],
   ["address", "Street Address"],
@@ -46,7 +47,6 @@ const REQUIRED: Array<[string, string]> = [
   ["directorGender", "Gender"],
   ["directorDOB", "Date of Birth"],
   ["adminName", "Admin Name"],
-  ["adminUsername", "Admin Username"],
   ["adminPassword", "Admin Password"],
 ];
 
@@ -59,7 +59,9 @@ const titleCase = (value: string) =>
   value.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
 export default function CreateBranch() {
-  const { user } = useAuth();
+  const { user, branchId } = useAuth();
+  // A centre adding a centre: the database files it and numbers its code.
+  const isCentre = Boolean(branchId);
   const navigate = useNavigate();
   const { toast } = useToast();
   const [branches, setBranches] = useState<Branch[]>([]);
@@ -144,7 +146,8 @@ export default function CreateBranch() {
       return;
     }
 
-    const code = value("branchCode").toUpperCase();
+    // Left blank, the code and the login ID are made for the centre.
+    const code = (value("branchCode") || nextBranchCode(value("state"), value("city"), branches.map((b) => b.code))).toUpperCase();
     if (branches.some((branch) => branch.code.toUpperCase() === code)) {
       toast({
         title: "Branch code already used",
@@ -159,7 +162,7 @@ export default function CreateBranch() {
     }
     // A browser can fill the admin's own saved login into this form; a branch
     // must never be given the signed-in account's login.
-    const loginId = value("adminUsername").toLowerCase();
+    const loginId = (value("adminUsername") || loginIdFromCode(code)).toLowerCase();
     if (user?.email && (loginId === user.email.toLowerCase() || loginId === user.email.split("@")[0].toLowerCase())) {
       toast({
         title: "That is your own login",
@@ -197,7 +200,7 @@ export default function CreateBranch() {
       Object.fromEntries(pairs.map(([column, key]) => [column, fileOf(key)]).filter(([, file]) => Object.keys(file as object).length));
     // Branch details live across three tables: the branch itself, its address
     // and its director. Enum columns take the uppercase form of the select value.
-    createBranchWithDetails(user.organizationId, {
+    (isCentre ? createSubCentre : createBranchWithDetails)(user.organizationId, {
       branch: {
         name: value("branchName"),
         code,
@@ -270,7 +273,8 @@ export default function CreateBranch() {
       try {
         const login = await createBranchLogin({
           branchId: created.data.id as string,
-          username: value("adminUsername"),
+          // Made from the code the database gave, when none was typed.
+          username: value("adminUsername") ? loginId : loginIdFromCode(String(created.data.code || code)),
           password: value("adminPassword"),
           name: value("adminName"),
           email: value("adminEmail"),
@@ -278,7 +282,7 @@ export default function CreateBranch() {
         });
         toast({
           title: "Branch created",
-          description: `${value("branchName")} (${code}) is on the register. Login ID: ${login.data.username}`,
+          description: `${value("branchName")} (${String(created.data.code || code)}) is on the register. Login ID: ${login.data.username}`,
         });
       } catch (error) {
         toast({

@@ -79,7 +79,12 @@ Deno.serve(async (req) => {
   // their own user_metadata with supabase.auth.updateUser(), so trusting it here
   // would let a branch account promote itself and mint logins.
   const callerApp = caller.user.app_metadata ?? {};
-  if (!ADMIN_ROLES.includes(String(callerApp.role ?? "").toUpperCase())) {
+  const callerRole = String(callerApp.role ?? "").toUpperCase();
+  const isAdmin = ADMIN_ROLES.includes(callerRole);
+  // A centre may make the first login of a centre it added itself
+  // (create_sub_centre in franchise-sub-centres.sql); checked below.
+  const isCentre = callerRole === "BRANCH_ADMIN" && Boolean(callerApp.branchId);
+  if (!isAdmin && !isCentre) {
     return json(
       {
         error:
@@ -105,10 +110,13 @@ Deno.serve(async (req) => {
   // 3. The branch must exist inside the caller's own organisation.
   const { data: branch, error: branchError } = await admin
     .from("branches")
-    .select("id, name, organizationId")
+    .select("*")
     .eq("id", branchId)
     .single();
   if (branchError || !branch) return json({ error: "Branch not found" }, 404);
+  if (!isAdmin && branch.createdByBranchId !== callerApp.branchId) {
+    return json({ error: "A centre can only make the login of a centre it added." }, 403);
+  }
 
   if (callerApp.organizationId && branch.organizationId !== callerApp.organizationId) {
     return json({ error: "That branch belongs to another organisation" }, 403);
@@ -147,6 +155,8 @@ Deno.serve(async (req) => {
   }
 
   if (existing) {
+    // Resetting a login stays with the head office.
+    if (!isAdmin) return json({ error: "This centre already has a login. Ask the head office to reset it." }, 403);
     // No username sent means "keep the current login ID, change only the password".
     const loginEmail = asked ? emailFor(asked) : String(existing.email ?? "");
     const { data: updated, error: updateError } = await admin.auth.admin.updateUserById(existing.id, {

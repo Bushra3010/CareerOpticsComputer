@@ -80,6 +80,8 @@ interface Branch {
   pendingRevenue: number;
   /** Prepaid wallet money, topped up on Wallet Recharge. Not part of revenue. */
   walletBalance: number;
+  /** The centre that added this one, when a centre did; empty for the head office. */
+  createdByName?: string;
   expiryDate: string;
   status: "active" | "inactive";
 }
@@ -114,6 +116,7 @@ const columns: Column<Branch>[] = [
         <div>
           <p className="font-medium">{branch.name}</p>
           <p className="text-xs text-muted-foreground">{branch.code}</p>
+          <p className="text-xs text-muted-foreground">Created by: {branch.createdByName || "Head office"}</p>
         </div>
       </div>
     ),

@@ -110,6 +110,7 @@ const FRANCHISE_PLAN: Plan = [
       "/branch/notice-board",
       ["/branch/website-settings", "My Website"],
       ["/website/gallery", "Website Gallery"],
+      ["/branch/create", "Add Franchise"],
     ],
   },
 ];

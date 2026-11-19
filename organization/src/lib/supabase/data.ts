@@ -4,6 +4,7 @@ import { KNOWN_COURSE_CATEGORIES } from "../courseCategories";
 import { describeEnumRejection } from "../choices";
 import { newId, nowIso } from "../id";
 import { storedTime } from "../storedTime";
+import { codePrefix } from "../branchCode";
 import { listNames, renameInList, splitNames } from "../instructors";
 import { toStudentProfile, type StudentRow } from "../student-profile";
 import {
@@ -2362,6 +2363,32 @@ async function insertBranchRow(payload: Record<string, unknown>) {
   return data;
 }
 
+/**
+ * A centre's own login adds a new centre (franchise-sub-centres.sql). The
+ * database files it under the head office, numbers its code and records which
+ * centre brought it in; the code sent in `input.branch` is not used.
+ */
+export async function createSubCentre(
+  _organizationId: string,
+  input: { branch: Record<string, unknown>; address: Record<string, unknown>; director: Record<string, unknown>; license?: Record<string, unknown> },
+) {
+  const { data, error } = await supabase.rpc("create_sub_centre", {
+    p_branch: input.branch,
+    p_address: input.address,
+    p_director: input.director,
+    p_license: input.license ?? null,
+    p_prefix: codePrefix(String(input.address.state ?? ""), String(input.address.city ?? "")),
+  });
+  if (error) {
+    if (/create_sub_centre/.test(error.message) && /find|exist|schema cache/i.test(error.message)) {
+      throw new Error("Adding a centre from a centre login is not set up yet. Ask the head office to run franchise-sub-centres.sql.");
+    }
+    throw new Error(describeEnumRejection(error, "Could not add the centre"));
+  }
+  const row = data as { id: string; code: string };
+  return { success: true, data: { id: row.id, code: row.code } as Record<string, unknown> };
+}
+
 export async function createBranch(organizationId: string, input: Record<string, unknown>) {
   const data = await insertBranchRow({ ...input, organizationId });
   return { success: true, data };
@@ -2458,12 +2485,15 @@ export async function getBranchesWithStats(organizationId: string | null) {
     walletFor.set(row.branchId as string, Number(row.balance) || 0);
   }
 
+  // Which centre added each one (franchise-sub-centres.sql); none means the head office.
+  const nameOf = new Map((branches as Record<string, unknown>[]).map((b) => [String(b.id), `${b.name} (${b.code})`]));
   return {
     success: true,
     data: (branches as Record<string, unknown>[]).map((b) => {
       const id = b.id as string;
       return {
         ...b,
+        createdByName: b.createdByBranchId ? nameOf.get(String(b.createdByBranchId)) || "Another centre" : "",
         city: addressFor.get(id)?.city || "",
         state: addressFor.get(id)?.state || "",
         // The register is read district- and block-wise as well as by state.

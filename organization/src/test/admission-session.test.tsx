@@ -165,8 +165,12 @@ describe("Admission session", () => {
       .getAllByRole("option")
       .map((option) => option.textContent);
 
-    expect(options).toHaveLength(1);
+    // The session the date falls in comes first; past years and a typed year
+    // follow, for an admission filed into a year no session was set up for.
     expect(options[0]).toContain("Session 2026-2027");
+    expect(options.some((o) => o?.includes("Session 2025-2026"))).toBe(false);
+    expect(options).toContain("2023-24");
+    expect(options.at(-1)).toBe("Other year (type it)");
   });
 
   it("follows the admission date into the session that contains it", async () => {
@@ -188,23 +192,18 @@ describe("Admission session", () => {
     expect(dateText("Admission date")).toContain("15 Jul 2026");
   });
 
-  it("says so when the date falls before the academic year began", async () => {
+  it("gives a back-dated admission the academic year its date falls in", async () => {
     draft({ admissionDate: "2026-07-15", academicYear: "Session 2026-2027" });
     await renderForm();
 
-    // Before every session on file, so no session claims it and the one already
-    // chosen stays -- which is exactly the contradiction being reported.
+    // Before every session on file: the year comes from the date (April to
+    // March) rather than leaving a session the date contradicts.
     await pickDate("Admission date", "2020-01-01");
-    await waitFor(() =>
-      expect(screen.getByText(/cannot be dated before its academic year/i)).toBeInTheDocument(),
-    );
-    expect(within(fieldUnder("Admission date")).getByRole("button")).toHaveAttribute(
-      "aria-invalid",
-      "true",
-    );
+    await waitFor(() => expect(sessionTrigger()).toHaveTextContent("2019-20"));
+    expect(screen.queryByText(/cannot be dated before its academic year/i)).toBeNull();
   });
 
-  it("refuses to file an admission dated outside the session it claims", async () => {
+  it("files a back-dated admission under that year", async () => {
     draft({ ...COMPLETE, admissionDate: "2026-07-15", academicYear: "Session 2026-2027" });
     await renderForm();
 
@@ -214,13 +213,19 @@ describe("Admission session", () => {
     fireEvent.click(screen.getByRole("button", { name: /6\. Review/ }));
     fireEvent.click(screen.getByRole("button", { name: /complete admission/i }));
 
-    await waitFor(() =>
-      expect(toast).toHaveBeenCalledWith(
-        expect.objectContaining({ title: "Check the admission date" }),
-      ),
-    );
-    // The point of the check: nothing was written.
-    expect(created).toHaveLength(0);
+    await waitFor(() => expect(created).toHaveLength(1));
+    expect(created[0]).toMatchObject({ academicYear: "2019-20" });
+  });
+
+  it("lets any other year be typed", async () => {
+    draft({ admissionDate: "2026-07-15", academicYear: "Session 2026-2027" });
+    await renderForm();
+
+    fireEvent.keyDown(sessionTrigger(), { key: "Enter" });
+    await waitFor(() => expect(screen.getByRole("listbox")).toBeInTheDocument());
+    fireEvent.click(within(screen.getByRole("listbox")).getByText("Other year (type it)"));
+    fireEvent.change(await screen.findByLabelText("Academic year"), { target: { value: "2018-19" } });
+    expect(screen.getByLabelText("Academic year")).toHaveValue("2018-19");
   });
 
   it("moves an out-of-range date with the session it was given", async () => {

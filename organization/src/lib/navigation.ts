@@ -359,6 +359,8 @@ const franchiseMenu: MenuItem[] = [
     "/certificate/generate",
   ]),
   ...scope("Branch Management", [
+    // Adds a centre under the head office (franchise-sub-centres.sql).
+    "/branch/create",
     "/branch/wallet",
     "/branch/charges",
     "/branch/transactions",

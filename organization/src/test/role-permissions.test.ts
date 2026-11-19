@@ -29,8 +29,8 @@ describe("a role's own menu", () => {
   it("cannot be granted a page its view was never authorised for", () => {
     // The ceiling is the view, which is the line the database keeps too: a
     // branch role handed an organisation page would be refused the data anyway.
-    expect(canAccess("franchise", "/branch/create")).toBe(false);
-    expect(canAccessWithRole("franchise", "/branch/create", ["/branch/create"])).toBe(false);
+    expect(canAccess("franchise", "/branch/leads")).toBe(false);
+    expect(canAccessWithRole("franchise", "/branch/leads", ["/branch/leads"])).toBe(false);
     expect(canAccessWithRole("student", "/user/all", ["/user/all"])).toBe(false);
   });
 
@@ -102,6 +102,6 @@ describe("the pages an administrator can tick", () => {
     // Only pages that view can actually open are offered.
     expect(urls.every((url) => canAccess("franchise", url))).toBe(true);
     expect(urls).toContain("/fee/collection");
-    expect(urls).not.toContain("/branch/create");
+    expect(urls).not.toContain("/branch/leads");
   });
 });

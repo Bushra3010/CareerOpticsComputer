@@ -41,11 +41,11 @@ export function BranchAdminSection() {
             <Input id="adminName" name="adminName" autoComplete="off" placeholder="Branch admin name" />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="adminUsername">Admin Username *</Label>
+            <Label htmlFor="adminUsername">Admin Username</Label>
             {/* The signed-in admin's saved login must not be filled in here: these are
                 the new branch's own credentials. "new-password" is what makes a
                 browser offer a fresh password instead of the saved one. */}
-            <Input id="adminUsername" name="adminUsername" autoComplete="off" data-lpignore="true" placeholder="admin_username" />
+            <Input id="adminUsername" name="adminUsername" autoComplete="off" data-lpignore="true" placeholder="Leave blank: the branch code, e.g. coca-br-ar-002" />
             <p className="text-xs text-muted-foreground">
               This is the login ID the branch will sign in with.
             </p>

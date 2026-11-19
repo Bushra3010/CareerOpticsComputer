@@ -49,8 +49,8 @@ export function BranchInfoSection() {
             <Input id="branchName" name="branchName" placeholder="Enter branch name" />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="branchCode">Branch Code *</Label>
-            <Input id="branchCode" name="branchCode" placeholder="e.g., BR001" />
+            <Label htmlFor="branchCode">Branch Code</Label>
+            <Input id="branchCode" name="branchCode" placeholder="Leave blank: made for you, e.g. COCA/BR/AR/002" />
           </div>
         </div>
         <div className="grid gap-4 md:grid-cols-3">

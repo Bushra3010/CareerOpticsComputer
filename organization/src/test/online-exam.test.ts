@@ -130,7 +130,7 @@ describe("nested page paths", () => {
     expect(canAccess("student", "/me/exams/abc/def")).toBe(false);
     expect(canAccess("student", "/branch/create/x")).toBe(false);
     expect(canAccess("franchise", "/online-exam/create/x")).toBe(true);
-    expect(canAccess("franchise", "/branch/create/x")).toBe(false);
+    expect(canAccess("franchise", "/branch/leads/x")).toBe(false);
   });
 
   it("puts the centre's online exam pages in the franchise menu", () => {
