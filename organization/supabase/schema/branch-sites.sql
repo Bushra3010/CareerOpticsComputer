@@ -396,6 +396,19 @@ create policy "Centre removes its gallery images" on storage.objects
 --    matches. Every field is chosen one by one -- nothing is `select *`,
 --    so a column added to these tables later never leaks by accident.
 -- ---------------------------------------------------------------------
+-- An uploaded file as the ERP stores it (a jsonb object with url, dataUrl
+-- or src, or a plain string) as the address of the picture.
+create or replace function public.site_file_url(p_file jsonb)
+returns text
+language sql
+immutable
+as $$
+  select nullif(case jsonb_typeof(p_file)
+    when 'string' then p_file #>> '{}'
+    when 'object' then coalesce(p_file ->> 'url', p_file ->> 'dataUrl', p_file ->> 'src')
+  end, '');
+$$;
+
 create or replace function public.public_branch_site(p_slug text default null, p_host text default null)
 returns jsonb
 language plpgsql
@@ -463,10 +476,7 @@ begin
              order by "sortOrder", "createdAt" desc limit 12) g;
   end if;
 
-  v_logo := coalesce(nullif(s."logo", ''), case jsonb_typeof(b."branchLogo")
-    when 'string' then b."branchLogo" #>> '{}'
-    when 'object' then coalesce(b."branchLogo" ->> 'url', b."branchLogo" ->> 'dataUrl', b."branchLogo" ->> 'src')
-  end);
+  v_logo := coalesce(nullif(s."logo", ''), public.site_file_url(b."branchLogo"));
 
   return jsonb_build_object(
     'id', b."id",
@@ -494,6 +504,12 @@ begin
       'youtube', nullif(s."youtube", ''), 'twitter', nullif(s."twitter", ''),
       'linkedin', nullif(s."linkedin", ''))),
     'director', (select d."name" from public.branch_directors d where d."branchId" = b."id" limit 1),
+    -- The director's photo only: their signature and Aadhaar stay private.
+    'directorPhoto', (select public.site_file_url(d."photo") from public.branch_directors d where d."branchId" = b."id" limit 1),
+    'centrePhoto', public.site_file_url(b."branchPhoto"),
+    'labPhoto', public.site_file_url(b."labPhoto"),
+    'numComputers', nullif(b."numComputers", 0),
+    'numFaculty', nullif(b."numFaculty", 0),
     'establishedYear', b."establishedYear",
     'onlineAdmission', coalesce(b."onlineEnrollment", true),
     'courses', v_courses,

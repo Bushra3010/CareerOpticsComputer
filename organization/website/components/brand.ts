@@ -47,6 +47,14 @@ export const REGISTRATIONS: Registration[] = [
     extra: "Valid 29 July 2026 to 28 July 2029",
   },
   {
+    file: "dpiit-startup-india",
+    title: "Startup India Recognition",
+    authority: "DPIIT, Ministry of Commerce & Industry, Govt. of India",
+    label: "Certificate No.",
+    value: "DIPP292883",
+    extra: "Recognised as a startup in Education / Skill Development. Issued 16 November 2026, valid up to 18 June 2036",
+  },
+  {
     file: "msme-udyam",
     title: "MSME Udyam Registration",
     authority: "Ministry of Micro, Small & Medium Enterprises, Govt. of India",

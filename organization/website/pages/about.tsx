@@ -112,9 +112,9 @@ body{margin:0;font-family:Poppins,system-ui,sans-serif;color:#0f172a;background:
 .ab-facts small{display:block;color:#5b6b88;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
 .ab-facts b{color:#0b2350;font-size:14.5px}
 .ab-founder{display:grid;grid-template-columns:.75fr 1.25fr;gap:44px;align-items:center}
-.ab-photo{position:relative}
-.ab-photo img{width:100%;border-radius:18px;box-shadow:0 24px 50px rgba(11,35,80,.22);display:block;aspect-ratio:4/5;object-fit:cover;object-position:center top}
-.ab-photo .ab-name{position:absolute;left:16px;right:16px;bottom:16px;background:rgba(11,35,80,.92);color:#fff;border-radius:12px;padding:12px 16px}
+.ab-photo{position:relative;text-align:center}
+.ab-photo img{width:100%;max-width:340px;aspect-ratio:1/1;border-radius:50%;border:6px solid #fff;box-shadow:0 24px 50px rgba(11,35,80,.22);display:block;margin:0 auto;object-fit:cover;object-position:center top}
+.ab-photo .ab-name{display:inline-block;margin-top:18px;background:rgba(11,35,80,.92);color:#fff;border-radius:12px;padding:12px 16px}
 .ab-photo .ab-name b{display:block;font-size:16px}
 .ab-photo .ab-name span{font-size:12.5px;color:#fdba74}
 .ab-quote{position:relative;margin:18px 0 0;padding:18px 22px 18px 26px;background:#fff4ec;border-left:5px solid #f97316;border-radius:10px;color:#0b2350;font-size:18px;font-weight:700;line-height:1.6}

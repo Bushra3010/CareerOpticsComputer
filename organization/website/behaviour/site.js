@@ -292,6 +292,17 @@
     fact(site.establishedYear ? "Since " + site.establishedYear : "", "Teaching students");
     fact((site.courses || []).length ? String(site.courses.length) : "", (site.courses || []).length === 1 ? "Course offered" : "Courses offered");
     fact(site.director, "Centre director");
+    fact(site.numComputers, "Computers in the lab");
+    fact(site.numFaculty, site.numFaculty === 1 ? "Teacher" : "Teachers");
+
+    // The director the head office registered, with the photo uploaded then.
+    var photo = safeUrl(site.directorPhoto, true);
+    if (site.director && photo) {
+      $("sDirectorPhoto").src = photo;
+      $("sDirectorPhoto").alt = site.director;
+      $("sDirectorName").textContent = site.director;
+      $("sDirector").hidden = false;
+    }
     fact(city, site.address && site.address.state ? site.address.state : "Location");
     fact(site.code, "Centre code");
   }
@@ -401,14 +412,20 @@
   }
 
   function fillGallery(site) {
-    var photos = (site.gallery || []).filter(function (p) { return safeUrl(p.imageUrl); });
+    // The centre and lab photos uploaded when the centre was registered come
+    // first; they are the centre's own even when the gallery is the academy's.
+    var own = [
+      { title: "Our centre", imageUrl: site.centrePhoto },
+      { title: "Computer lab", imageUrl: site.labPhoto },
+    ].filter(function (p) { return safeUrl(p.imageUrl, true); });
+    var photos = own.concat((site.gallery || []).filter(function (p) { return safeUrl(p.imageUrl, true); }));
     if (!photos.length) {
       var link = document.querySelector("[data-gallery-link]");
       if (link) link.hidden = true;
       return;
     }
     $("gallery").hidden = false;
-    if (!site.galleryIsOwn) {
+    if (!site.galleryIsOwn && photos.length > own.length) {
       var note = $("sGalleryNote");
       note.textContent = "Photos from " + BRAND + ".";
       note.hidden = false;

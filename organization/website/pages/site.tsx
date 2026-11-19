@@ -124,7 +124,16 @@ export default function Site() {
                     <div className="s-about-text" id="sAbout"></div>
                     <ul className="s-highlights" id="sHighlights" hidden></ul>
                   </div>
-                  <div className="s-facts" id="sFacts"></div>
+                  <div>
+                    <figure className="s-director" id="sDirector" hidden>
+                      <img id="sDirectorPhoto" src="" alt="" width={112} height={112} />
+                      <figcaption>
+                        <b id="sDirectorName"></b>
+                        <span>Centre Director</span>
+                      </figcaption>
+                    </figure>
+                    <div className="s-facts" id="sFacts"></div>
+                  </div>
                 </div>
               </div>
             </section>
