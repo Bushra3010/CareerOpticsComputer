@@ -31,13 +31,15 @@ vi.mock("@/contexts/AuthContext", () => ({
   }),
 }));
 vi.mock("@/lib/supabase/data", () => ({
+  BRANCH_STAFF_LEVELS: ["ACCOUNTANT", "RECEPTIONIST", "TEACHER", "STAFF"],
+  changeUserLevel: vi.fn(() => Promise.resolve({ success: true })),
   getUsers: (...args: unknown[]) => getUsers(...(args as [])),
   getRoles: (...args: unknown[]) => getRoles(...(args as [])),
   createStaffUser: (...args: unknown[]) => createStaffUser(...(args as [])),
   setUserRole: (...args: unknown[]) => setUserRole(...(args as [])),
   updateUser: vi.fn(),
   deleteUser: vi.fn(),
-  getBranches: () => Promise.resolve({ success: true, data: [] }),
+  getBranches: () => Promise.resolve({ success: true, data: [{ id: "b1", name: "Ara Centre" }] }),
   grantableRoles: () => ["ORGANIZATION_ADMIN", "BRANCH_ADMIN", "ACCOUNTANT", "STAFF"],
   canManageUsers: () => true,
   SYSTEM_ROLES: ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "BRANCH_ADMIN", "ACCOUNTANT", "RECEPTIONIST", "TEACHER", "STAFF", "STUDENT"],
@@ -112,13 +114,34 @@ describe("giving a new login one of the institute's roles", () => {
     const picker = screen.getByRole("combobox", { name: /role for the new user/i });
     fireEvent.keyDown(picker, { key: "Enter" });
     fireEvent.click(await screen.findByText("Accounts Head"));
+    // Branch staff work at a branch.
+    const branch = screen.getByRole("combobox", { name: /branch for the new user/i });
+    fireEvent.keyDown(branch, { key: "Enter" });
+    fireEvent.click(await screen.findByText("Ara Centre"));
 
     fireEvent.click(screen.getByRole("button", { name: /^create user$/i }));
 
     await waitFor(() => expect(createStaffUser).toHaveBeenCalled());
+    expect(createStaffUser.mock.calls[0][0]).toMatchObject({ branchId: "b1" });
     // ACCOUNTANT is what RLS will see; "Accounts Head" is only a name.
     expect(createStaffUser.mock.calls[0][0]).toMatchObject({ role: "ACCOUNTANT" });
     await waitFor(() => expect(setUserRole).toHaveBeenCalledWith("new-user", "role-accounts"));
+  });
+
+  it("refuses a branch-staff level at head office and says what to do instead", async () => {
+    open();
+    await waitFor(() => expect(getRoles).toHaveBeenCalled());
+    fireEvent.click(screen.getByRole("button", { name: /add user/i }));
+    fillForm();
+    const picker = screen.getByRole("combobox", { name: /role for the new user/i });
+    fireEvent.keyDown(picker, { key: "Enter" });
+    fireEvent.click(await screen.findByText("Accounts Head"));
+    fireEvent.click(screen.getByRole("button", { name: /^create user$/i }));
+
+    await waitFor(() =>
+      expect(toast).toHaveBeenCalledWith(expect.objectContaining({ title: "Choose a branch, or an organisation-wide role", variant: "destructive" })),
+    );
+    expect(createStaffUser).not.toHaveBeenCalled();
   });
 
   it("falls back to the built-in roles on a database without roles.sql", async () => {

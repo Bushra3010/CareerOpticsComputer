@@ -45,6 +45,8 @@ import {
   updateUser,
   deleteUser,
   createStaffUser,
+  changeUserLevel,
+  BRANCH_STAFF_LEVELS,
   getBranches,
   getRoles,
   setUserRole,
@@ -199,6 +201,18 @@ const AllUsers = () => {
       toast({ title: "Password must be at least 6 characters", variant: "destructive" });
       return;
     }
+    {
+      const picked = offeredRoles.find((role) => role.id === draft.roleId) ?? null;
+      const level = (picked ? picked.baseRole : draft.role) as SystemRole;
+      if (BRANCH_STAFF_LEVELS.includes(level) && canChooseBranch && draft.branchId === "none") {
+        toast({
+          title: "Choose a branch, or an organisation-wide role",
+          description: "Branch staff work at a branch. For a head office user, make a role at the Organisation-wide level under Users → Roles, tick its pages in Access Control, and choose that role here.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
     setCreating(true);
     try {
       const chosen = offeredRoles.find((role) => role.id === draft.roleId) ?? null;
@@ -271,6 +285,19 @@ const AllUsers = () => {
     setSaving(true);
     try {
       const chosen = offeredRoles.find((role) => role.id === form.roleId) ?? null;
+      const level = (chosen ? chosen.baseRole : form.role) as SystemRole;
+      if (level.toUpperCase() !== String(editing.role || "").toUpperCase()) {
+        if (BRANCH_STAFF_LEVELS.includes(level) && !editing.branchId) {
+          toast({
+            title: "This user is at head office",
+            description: "Branch staff levels need a branch. Give a head office user a role at the Organisation-wide level (Users → Roles), narrowed to their pages in Access Control.",
+            variant: "destructive",
+          });
+          return;
+        }
+        // The login's own claims move with it, or it keeps working as before.
+        await changeUserLevel(editing.id, level);
+      }
       await updateUser(editing.id, {
         name: form.name,
         phone: form.phone,
@@ -742,7 +769,9 @@ const AllUsers = () => {
                       posted to a branch sees that branch, and one posted to head
                       office sees the organisation. */}
                   <p className="text-xs text-muted-foreground">
-                    Decides what they can see once they sign in.
+                    Decides what they can see once they sign in. A head office user needs an
+                    Organisation-wide role; make one under Users → Roles and tick only the pages
+                    they should see in Access Control.
                   </p>
                 </div>
               )}

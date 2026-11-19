@@ -26,6 +26,8 @@ vi.mock("@/contexts/AuthContext", () => ({
   }),
 }));
 vi.mock("@/lib/supabase/data", () => ({
+  BRANCH_STAFF_LEVELS: ["ACCOUNTANT", "RECEPTIONIST", "TEACHER", "STAFF"],
+  changeUserLevel: vi.fn(() => Promise.resolve({ success: true })),
   getUsers: (...a: unknown[]) => getUsers(...(a as [])),
   getRoles: () => Promise.resolve({ success: true, data: [] }),
   createStaffUser: vi.fn(),

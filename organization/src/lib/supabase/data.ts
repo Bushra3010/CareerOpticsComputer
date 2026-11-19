@@ -4870,6 +4870,25 @@ export async function createStaffUser(input: {
   };
 }
 
+/** The levels that belong to a branch; a head office login takes an organisation-wide one. */
+export const BRANCH_STAFF_LEVELS: SystemRole[] = ["ACCOUNTANT", "RECEPTIONIST", "TEACHER", "STAFF"];
+
+/**
+ * Moves an existing login to another level. Through create-staff-user, which
+ * rewrites the token's claims as well as the listed row: the database reads
+ * the role from the token, so changing only `users.role` left the login
+ * working as before.
+ */
+export async function changeUserLevel(userId: string, role: SystemRole, branchId?: string | null) {
+  await requireLiveSession();
+  const { data, error } = await supabase.functions.invoke("create-staff-user", {
+    body: { userId, role, ...(branchId !== undefined ? { branchId } : {}) },
+  });
+  if (error) await throwFunctionError("create-staff-user", error);
+  if (data?.error) throw new Error(data.error);
+  return { success: true as const, data: data as { userId: string; role: SystemRole; branchId: string | null } };
+}
+
 /**
  * Set a new password on another user's login.
  *

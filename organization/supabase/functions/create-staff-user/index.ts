@@ -63,6 +63,66 @@ const GRANTABLE: Record<string, string[]> = {
 const userTypeFor = (role: string) =>
   role === "SUPER_ADMIN" || role === "ORGANIZATION_ADMIN" ? "ORGANIZATION" : "BRANCH";
 
+/** The four levels that belong to a branch. */
+const BRANCH_STAFF = ["ACCOUNTANT", "RECEPTIONIST", "TEACHER", "STAFF"];
+
+const HEAD_OFFICE_STAFF_HINT =
+  "Branch staff (accountant, receptionist, teacher, staff) need a branch. For a head office user, " +
+  "make a role at the Organisation-wide level under Users -> Roles, tick its pages in Access Control, and give them that role.";
+
+type Json = (body: unknown, status?: number) => Response;
+
+/**
+ * Moves an existing staff login to another level: its token's claims (which
+ * RLS reads), the name the UI reads, and the listed row, all together.
+ * The caller may only do this for a login of their own organisation and may
+ * only hand out a level they could have created it with.
+ */
+async function changeRole(
+  admin: ReturnType<typeof createClient>,
+  json: Json,
+  input: { callerRole: string; callerApp: Record<string, unknown>; userId: string; role: string; branchId?: string | null },
+) {
+  const wanted = input.role.toUpperCase();
+  if (!(GRANTABLE[input.callerRole] ?? []).includes(wanted)) {
+    return json({ error: `A ${input.callerRole.replace(/_/g, " ").toLowerCase()} cannot give the ${wanted.replace(/_/g, " ").toLowerCase()} level` }, 403);
+  }
+  const { data: row, error: rowErr } = await admin.from("users").select("id, organizationId, branchId, role").eq("id", input.userId).maybeSingle();
+  if (rowErr || !row) return json({ error: "User not found" }, 404);
+  const org = (input.callerApp.organizationId as string | undefined) ?? null;
+  if (org && row.organizationId && row.organizationId !== org) return json({ error: "That user belongs to another organisation" }, 403);
+  if (input.callerRole === "BRANCH_ADMIN" && row.branchId !== input.callerApp.branchId) {
+    return json({ error: "A branch admin can only change their own branch's staff" }, 403);
+  }
+  if (!(GRANTABLE[input.callerRole] ?? []).includes(String(row.role || "").toUpperCase())) {
+    return json({ error: "You cannot change the level of a login above your own" }, 403);
+  }
+  // An organisation-wide level sits at no branch; a branch level keeps the
+  // branch it has unless another of the organisation's is named.
+  let branchId: string | null = wanted === "SUPER_ADMIN" || wanted === "ORGANIZATION_ADMIN" ? null : (input.branchId ?? row.branchId ?? null);
+  if (input.callerRole === "BRANCH_ADMIN") branchId = (input.callerApp.branchId as string) ?? null;
+  if (branchId) {
+    const { data: b } = await admin.from("branches").select("id, organizationId").eq("id", branchId).maybeSingle();
+    if (!b || (org && b.organizationId !== org)) return json({ error: "Branch not found" }, 404);
+  }
+  if (BRANCH_STAFF.includes(wanted) && !branchId) return json({ error: HEAD_OFFICE_STAFF_HINT }, 400);
+
+  const organizationId = row.organizationId ?? org;
+  const { data: got, error: getErr } = await admin.auth.admin.getUserById(input.userId);
+  if (getErr || !got?.user) return json({ error: "The sign-in account was not found" }, 404);
+  const { error: upErr } = await admin.auth.admin.updateUserById(input.userId, {
+    user_metadata: { ...(got.user.user_metadata ?? {}), role: wanted, userType: userTypeFor(wanted), branchId, organizationId },
+    app_metadata: { ...(got.user.app_metadata ?? {}), role: wanted, branchId, organizationId },
+  });
+  if (upErr) return json({ error: upErr.message }, 400);
+  const { error: listErr } = await admin
+    .from("users")
+    .update({ role: wanted, userType: userTypeFor(wanted), branchId, updatedAt: new Date().toISOString() })
+    .eq("id", input.userId);
+  if (listErr) return json({ error: listErr.message }, 500);
+  return json({ userId: input.userId, role: wanted, branchId, changed: true });
+}
+
 /**
  * The admin API cannot filter on user_metadata, so an existing account is
  * found by walking the list. Capped so a bad page count cannot spin forever.
@@ -126,6 +186,12 @@ Deno.serve(async (req) => {
   const body = await req.json().catch(() => ({}));
   const { username, password, name, role, email, phone, branchId } = body;
 
+  // Changing an existing login's level (All Users -> Edit): the token's claims
+  // and the listed row move together, or RLS keeps reading the old role.
+  if (body.userId && !password) {
+    return changeRole(admin, json, { callerRole, callerApp, userId: String(body.userId), role: String(role || ""), branchId: body.branchId ?? undefined });
+  }
+
   if (!username || !password || !name || !role) {
     return json({ error: "name, username, password and role are required" }, 400);
   }
@@ -162,6 +228,13 @@ Deno.serve(async (req) => {
     }
     organizationId = organizationId ?? branch.organizationId;
     postedBranchId = branch.id;
+  }
+
+  // Branch staff work at a branch: with none they are scoped to nothing, and
+  // the panel they open is a branch's. Head office staff take an
+  // organisation-wide role, narrowed to their pages under Roles.
+  if (BRANCH_STAFF.includes(wantedRole) && !postedBranchId) {
+    return json({ error: HEAD_OFFICE_STAFF_HINT }, 400);
   }
 
   // A login with no organisation is scoped to nothing, and the All Users page
