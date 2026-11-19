@@ -73,6 +73,8 @@ const FRANCHISE_PLAN: Plan = [
       ["/student/passout", "Passout Students"],
     ],
   },
+  // A centre adds a centre under the head office (franchise-sub-centres.sql).
+  { title: "Add Franchise", icon: Store, urls: [["/branch/create", "Add Franchise"]] },
   { title: "Admission Forms", icon: Globe, urls: ["/centre/admission-forms"] },
   { title: "Sample Certificate", icon: Award, urls: ["/centre/sample-certificates"] },
   { title: "Downloads", icon: Download, urls: ["/centre/downloads", ["/certificate/centre", "Authorization Letter"]] },
@@ -111,7 +113,6 @@ const FRANCHISE_PLAN: Plan = [
       "/branch/notice-board",
       ["/branch/website-settings", "My Website"],
       ["/website/gallery", "Website Gallery"],
-      ["/branch/create", "Add Franchise"],
     ],
   },
 ];

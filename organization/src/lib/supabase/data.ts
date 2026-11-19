@@ -1880,6 +1880,17 @@ function jsonbImage(value: unknown): string | null {
  * helpers expect. Missing relations degrade to undefined rather than throwing:
  * a student with no batch should still get an admission letter.
  */
+/** The `students` columns the application form prints, beyond what other documents use. */
+const APPLICANT_FIELDS = [
+  "gender", "category", "religion", "nationality", "bloodGroup", "maritalStatus", "aadharNumber",
+  "phone", "altPhone", "whatsappNumber", "email",
+  "streetAddress", "block", "city", "district", "state", "pincode", "country",
+  "motherName", "fatherOccupation", "fatherPhone", "motherPhone",
+  "localGuardianName", "localGuardianRelation", "localGuardianPhone",
+  "tenthBoard", "tenthSchoolName", "tenthYearOfPassing", "tenthPercentage",
+  "twelfthBoard", "twelfthSchoolName", "twelfthYearOfPassing", "twelfthPercentage", "twelfthStream",
+] as const;
+
 export async function getStudentDocument(studentId: string, branchId: string | null) {
   const student = (await getStudent(studentId, branchId)).data as Record<string, any>;
 
@@ -1999,6 +2010,10 @@ export async function getStudentDocument(studentId: string, branchId: string | n
       course: course ? { name: course.name, code: course.code || undefined, duration: course.durationMonths ? `${course.durationMonths} months` : undefined } : undefined,
       session: student.academicYear || undefined,
       batch: batch ? { name: batch.name } : undefined,
+      // What the application form prints besides the above.
+      applicant: Object.fromEntries(
+        APPLICANT_FIELDS.map((key) => [key, student[key] == null ? "" : String(student[key])]).filter(([, v]) => v !== ""),
+      ),
       branch: {
         name: branch?.name || "",
         code: branch?.code || undefined,
