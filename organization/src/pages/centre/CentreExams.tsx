@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { DceBadge, DceButton, DceLinkButton, DcePanel, DceTable, shortDate, type DceColumn } from "@/components/dce/Dce";
 import { getBranches, getCourses } from "@/lib/supabase/data";
 import { listStudents, studentName, type StudentRow } from "@/lib/supabase/examAttendance";
-import { getExamAssignments, getExamAttempts, type ExamAssignment, type ExamAttempt } from "@/lib/supabase/onlineExams";
+import { deleteOnlineExam, getExamAssignments, getExamAttempts, type ExamAssignment, type ExamAttempt } from "@/lib/supabase/onlineExams";
 import { listCentreExams, type CentreExam } from "@/lib/supabase/questionBank";
 
 const STATUS_BADGE: Record<string, { status: string; label: string }> = {
@@ -82,6 +82,18 @@ export default function CentreExams() {
     return out;
   }, [exams, assignments, students, attempts]);
 
+  const removeExam = async (e: CentreExam) => {
+    if (!window.confirm(`Delete the exam "${e.title}"? Students will no longer see it.`)) return;
+    try {
+      await deleteOnlineExam(e.id);
+      setExams((prev) => prev.filter((x) => x.id !== e.id));
+      if (resultsFor?.id === e.id) setResultsFor(null);
+      toast({ title: "Exam deleted", description: e.title });
+    } catch (err) {
+      toast({ title: "Could not delete the exam", description: err instanceof Error ? err.message : undefined, variant: "destructive" });
+    }
+  };
+
   const columns: DceColumn<CentreExam>[] = [
     { key: "n", label: "#", render: (_r, i) => i + 1, className: "w-10" },
     {
@@ -120,9 +132,16 @@ export default function CentreExams() {
       key: "action",
       label: "Action",
       render: (e) => (
-        <DceButton size="sm" tone="teal" onClick={() => setResultsFor(e)}>
-          Results
-        </DceButton>
+        <div className="flex flex-wrap gap-1.5">
+          <DceButton size="sm" tone="teal" onClick={() => setResultsFor(e)}>
+            Results
+          </DceButton>
+          {(isAdmin || (e.branchId && e.branchId === branchId)) && (
+            <DceButton size="sm" tone="red" aria-label={`Delete exam ${e.title}`} onClick={() => void removeExam(e)}>
+              Delete
+            </DceButton>
+          )}
+        </div>
       ),
     },
   ];

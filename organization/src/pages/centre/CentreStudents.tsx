@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Download, Eye, KeyRound, Pencil, Search, X } from "lucide-react";
+import { Download, Eye, KeyRound, Pencil, Search, Trash2, X } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import {
   DceBadge,
@@ -17,7 +17,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase/client";
-import { getBranches, type StudentRosterRow } from "@/lib/supabase/data";
+import { deleteStudent, getBranches, type StudentRosterRow } from "@/lib/supabase/data";
 import { StudentLoginDialog } from "@/components/student/StudentLoginDialog";
 import { canIssueStudentLogin } from "@/lib/roles";
 import { paidFromPayments, type InvoiceRow } from "@/lib/supabase/studentFee";
@@ -204,6 +204,18 @@ export default function CentreStudents() {
       .catch(() => setBranches([]));
   }, [isAdmin, organizationId]);
 
+  const removeStudent = async (r: CentreStudentRow) => {
+    if (!window.confirm(`Delete ${r.name} (${r.code})?\n\nThe student leaves the list. Any fee already taken from the wallet for this student is not refunded.`)) return;
+    try {
+      await deleteStudent(r.id, branchId || null);
+      setRows((prev) => prev.filter((x) => x.id !== r.id));
+      setTotal((t) => Math.max(0, t - 1));
+      toast({ title: "Student deleted", description: r.name });
+    } catch (error) {
+      toast({ title: "Could not delete the student", description: (error as Error).message, variant: "destructive" });
+    }
+  };
+
   const fetchRows = useCallback(
     async (from: number, to: number) => {
       const { data, count } = await queryStudents(scope, type, search, from, to);
@@ -338,6 +350,10 @@ export default function CentreStudents() {
               {r.raw.userId ? "Reset login" : "Create login"}
             </DceButton>
           )}
+          <DceButton tone="red" size="sm" title={`Delete ${r.name}`} onClick={() => void removeStudent(r)}>
+            <Trash2 className="h-3.5 w-3.5" />
+            <span className="sr-only">Delete {r.name}</span>
+          </DceButton>
         </div>
       ),
     },

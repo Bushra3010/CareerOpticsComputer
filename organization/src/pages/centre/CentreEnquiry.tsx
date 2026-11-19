@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Pencil, Printer } from "lucide-react";
+import { Pencil, Printer, Trash2 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import {
   DceBadge,
@@ -17,7 +17,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase/client";
-import { createEnquiry, getBranches, getCourses, updateEnquiry } from "@/lib/supabase/data";
+import { createEnquiry, deleteEnquiry, getBranches, getCourses, updateEnquiry } from "@/lib/supabase/data";
 import { ENQUIRY_STATUSES, toDepartmentEnum } from "@/lib/supabase/reception";
 
 // Rows as PostgREST returns them, embeds included; the columns vary by deployment.
@@ -286,10 +286,25 @@ export default function CentreEnquiry() {
           <DceButton tone="blue" size="sm" aria-label={`Edit enquiry ${r.visitorName || ""}`} onClick={() => startEdit(r)}>
             <Pencil className="h-3.5 w-3.5" /> Edit
           </DceButton>
+          <DceButton tone="red" size="sm" aria-label={`Delete enquiry ${r.visitorName || ""}`} onClick={() => void removeEnquiry(r)}>
+            <Trash2 className="h-3.5 w-3.5" /> Delete
+          </DceButton>
         </div>
       ),
     },
   ];
+
+  const removeEnquiry = async (r: Raw) => {
+    if (!window.confirm(`Delete the enquiry from ${r.visitorName || "this person"}?`)) return;
+    try {
+      await deleteEnquiry(String(r.id), branchId || null);
+      setRows((prev) => prev.filter((x) => x.id !== r.id));
+      setTotal((t) => Math.max(0, t - 1));
+      toast({ title: "Enquiry deleted" });
+    } catch (e) {
+      toast({ title: "Could not delete the enquiry", description: e instanceof Error ? e.message : undefined, variant: "destructive" });
+    }
+  };
 
   const set = <K extends keyof EnquiryForm>(key: K, value: EnquiryForm[K]) => setForm((p) => ({ ...p, [key]: value }));
 

@@ -9,7 +9,8 @@ import { MemoryRouter } from "react-router-dom";
  * mobile number that is not ten digits.
  */
 
-const { tables, toast, createStudent } = vi.hoisted(() => ({
+const { tables, toast, createStudent, deleteStudent } = vi.hoisted(() => ({
+  deleteStudent: vi.fn(),
   tables: {} as Record<string, Array<Record<string, unknown>>>,
   toast: vi.fn(),
   createStudent: vi.fn(),
@@ -32,6 +33,7 @@ vi.mock("@/lib/supabase/data", () => ({
   getCourses: () => Promise.resolve({ success: true, data: [{ id: "c1", name: "ADCA", baseFee: 6000, durationValue: 12, durationUnit: "MONTHS" }] }),
   getBatches: () => Promise.resolve({ success: true, data: [] }),
   createStudent,
+  deleteStudent,
 }));
 
 /**
@@ -91,6 +93,7 @@ const student = (id: string, firstName: string, extra: Record<string, unknown> =
 beforeEach(() => {
   toast.mockReset();
   createStudent.mockReset();
+  deleteStudent.mockReset().mockResolvedValue({ success: true });
   tables.students = [
     student("s1", "Raj"),
     student("s2", "Sita", { admissionStatus: "SUBMITTED", applicationSource: "ONLINE", enrollmentNo: null, applicationNo: "APP-2026-0002" }),
@@ -173,5 +176,26 @@ describe("Centre add student", () => {
     const course = await screen.findByRole("option", { name: "ADCA (12 months)" });
     fireEvent.change(screen.getByLabelText("Select Course"), { target: { value: (course as HTMLOptionElement).value } });
     expect(screen.getByLabelText("Fees")).toHaveValue(6000);
+  });
+});
+
+describe("Deleting a student from the centre list", () => {
+  it("asks first, then deletes the centre's own student and drops the row", async () => {
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
+    renderList("all");
+    fireEvent.click(await screen.findByRole("button", { name: "Delete Raj Kumar" }));
+    expect(confirm.mock.calls[0][0]).toMatch(/not refunded/);
+    await waitFor(() => expect(deleteStudent).toHaveBeenCalledWith("s1", "b1"));
+    await waitFor(() => expect(screen.queryByText("Raj Kumar")).toBeNull());
+    confirm.mockRestore();
+  });
+
+  it("does nothing when the centre cancels", async () => {
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
+    renderList("all");
+    fireEvent.click(await screen.findByRole("button", { name: "Delete Raj Kumar" }));
+    expect(deleteStudent).not.toHaveBeenCalled();
+    expect(screen.getByText("Raj Kumar")).toBeInTheDocument();
+    confirm.mockRestore();
   });
 });

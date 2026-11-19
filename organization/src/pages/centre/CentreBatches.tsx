@@ -14,7 +14,7 @@ import {
   shortDate,
   type DceColumn,
 } from "@/components/dce/Dce";
-import { createBatch, getBatches, getBatchesByOrg, getBranches, getCourses, updateBatch } from "@/lib/supabase/data";
+import { createBatch, deleteBatch, getBatches, getBatchesByOrg, getBranches, getCourses, updateBatch } from "@/lib/supabase/data";
 
 interface BatchRow {
   id: string;
@@ -115,6 +115,17 @@ export default function CentreBatches() {
     }
   };
 
+  const removeBatch = async (r: BatchRow) => {
+    if (!window.confirm(`Delete the batch "${r.name}"?`)) return;
+    try {
+      await deleteBatch(r.id);
+      setBatches((prev) => prev.filter((b) => b.id !== r.id));
+      toast({ title: "Batch deleted", description: r.name });
+    } catch (e) {
+      toast({ title: "Could not delete the batch", description: e instanceof Error ? e.message : undefined, variant: "destructive" });
+    }
+  };
+
   const columns: DceColumn<BatchRow>[] = [
     { key: "n", label: "#", render: (_r, i) => i + 1, className: "w-10" },
     { key: "name", label: "NAME", render: (r) => <span className="font-semibold">{r.name}</span> },
@@ -138,6 +149,9 @@ export default function CentreBatches() {
           <DceLinkButton size="sm" tone="teal" to={`/centre/batch-students?id=${encodeURIComponent(r.id)}`}>
             All Students
           </DceLinkButton>
+          <DceButton size="sm" tone="red" aria-label={`Delete batch ${r.name}`} onClick={() => void removeBatch(r)}>
+            Delete
+          </DceButton>
         </div>
       ),
     },
