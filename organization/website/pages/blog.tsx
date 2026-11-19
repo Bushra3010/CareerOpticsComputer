@@ -20,6 +20,7 @@ export default function Blog() {
         </div>
       </section>
       <div className="bl-wrap">
+        <div data-blog="list" hidden></div>
         <div className="bl-grid">
           {posts.map((p, i) => (
             <a key={p.slug} href={`blog-${p.slug}.html`} className={`bl-card${i === 0 ? " bl-feature" : ""}`}>

@@ -46,6 +46,7 @@ import {
   IndianRupee,
   User,
   Images,
+  Newspaper,
 } from "lucide-react";
 import { VIEWS, type View } from "@/lib/roles";
 import type { Permissions } from "@/lib/permissions";
@@ -242,6 +243,7 @@ export const menuItems: MenuItem[] = [
       { title: "Website Content", url: "/website/content", icon: LayoutTemplate },
       { title: "Gallery", url: "/website/gallery", icon: Images },
       { title: "Dashboard Posters", url: "/website/dashboard-posters", icon: Images },
+      { title: "Blog", url: "/website/blog", icon: Newspaper },
     ],
   },
   {

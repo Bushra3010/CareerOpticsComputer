@@ -5,6 +5,7 @@ import WhatsappWidget from "./WhatsappWidget";
 import { BRAND } from "./brand";
 import { POSTS, longDate, postBySlug, type Block } from "./blogPosts";
 import js_c1268ab4 from "../behaviour/c1268ab4.js?raw";
+import js_blog from "../behaviour/blog.js?raw";
 
 /**
  * The blog's pages: the shared head and styles, the listing's cards, and one
@@ -110,6 +111,7 @@ export function BlogShell({ title, description, url, image, jsonLd, children }: 
         <SiteFooter />
         <WhatsappWidget />
         <script dangerouslySetInnerHTML={{ __html: js_c1268ab4 }} />
+        <script dangerouslySetInnerHTML={{ __html: js_blog }} />
         <script dangerouslySetInnerHTML={{ __html: 'document.addEventListener("DOMContentLoaded",function(){if(window.lucide)lucide.createIcons()});' }} />
       </body>
     </html>

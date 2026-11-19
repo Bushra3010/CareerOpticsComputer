@@ -131,6 +131,7 @@ const GeneralSettings = lazy(() => import("./pages/settings/GeneralSettings"));
 const WebsiteContent = lazy(() => import("./pages/website/WebsiteContent"));
 const WebsiteGallery = lazy(() => import("./pages/website/WebsiteGallery"));
 const DashboardPosters = lazy(() => import("./pages/website/DashboardPosters"));
+const WebsiteBlog = lazy(() => import("./pages/website/WebsiteBlog"));
 const PaymentGateway = lazy(() => import("./pages/settings/PaymentGateway"));
 const PaymentQRCode = lazy(() => import("./pages/settings/PaymentQRCode"));
 const BatchPaymentQR = lazy(() => import("./pages/settings/BatchPaymentQR"));
@@ -332,6 +333,7 @@ const App = () => (
           <Route path="/website/content" element={<WebsiteContent />} />
           <Route path="/website/gallery" element={<WebsiteGallery />} />
           <Route path="/website/dashboard-posters" element={<DashboardPosters />} />
+          <Route path="/website/blog" element={<WebsiteBlog />} />
           <Route path="/settings/payment-gateway" element={<PaymentGateway />} />
           <Route path="/settings/payment-qr" element={<PaymentQRCode />} />
           <Route path="/settings/batch-qr" element={<BatchPaymentQR />} />
