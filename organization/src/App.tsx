@@ -141,6 +141,9 @@ const BatchPaymentQR = lazy(() => import("./pages/settings/BatchPaymentQR"));
 const AddPartner = lazy(() => import("./pages/partners/AddPartner"));
 const AllPartners = lazy(() => import("./pages/partners/AllPartners"));
 const PartnerTransactions = lazy(() => import("./pages/partners/PartnerTransactions"));
+const ReferralCodes = lazy(() => import("./pages/teacher-referral/ReferralCodes"));
+const TeacherReferrals = lazy(() => import("./pages/teacher-referral/Referrals"));
+const MyReferral = lazy(() => import("./pages/teacher-referral/MyReferral"));
 
 // Expense Management
 const VoucherHead = lazy(() => import("./pages/expense/VoucherHead"));
@@ -344,6 +347,9 @@ const App = () => (
           <Route path="/partners/add" element={<AddPartner />} />
           <Route path="/partners/all" element={<AllPartners />} />
           <Route path="/partners/transactions" element={<PartnerTransactions />} />
+          <Route path="/teacher-referral/codes" element={<ReferralCodes />} />
+          <Route path="/teacher-referral/referrals" element={<TeacherReferrals />} />
+          <Route path="/teacher-referral/my" element={<MyReferral />} />
 
           {/* Expense Management */}
           <Route path="/expense/voucher-head" element={<VoucherHead />} />

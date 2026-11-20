@@ -31,6 +31,7 @@ import {
   Play,
   FileCheck,
   Handshake,
+  Gift,
   ArrowRightLeft,
   PiggyBank,
   TrendingUp,
@@ -193,6 +194,16 @@ export const menuItems: MenuItem[] = [
       { title: "Add Partner", url: "/partners/add", icon: UserPlus },
       { title: "All Partners", url: "/partners/all", icon: Users },
       { title: "Partner Transactions", url: "/partners/transactions", icon: ArrowRightLeft },
+    ],
+  },
+  {
+    // Teachers earn a share when someone joins as a teacher on their code
+    // (teacher-referrals.sql). The organisation sets codes and pays rewards.
+    title: "Teacher Referral",
+    icon: Gift,
+    items: [
+      { title: "Referral Codes", url: "/teacher-referral/codes", icon: Gift },
+      { title: "Referrals & Payouts", url: "/teacher-referral/referrals", icon: ArrowRightLeft },
     ],
   },
   {
@@ -374,6 +385,13 @@ const franchiseMenu: MenuItem[] = [
     "/expense/deposit-voucher",
     "/expense/expense-voucher",
   ]),
+  // A teacher's own code and earnings. Not in the admin catalogue: the head
+  // office sees every teacher's on Referral Codes instead.
+  {
+    title: "My Referral",
+    icon: Gift,
+    items: [{ title: "My Referral", url: "/teacher-referral/my", icon: Gift }],
+  },
 ];
 
 /** A student only ever sees their own record — every page here is self-service. */

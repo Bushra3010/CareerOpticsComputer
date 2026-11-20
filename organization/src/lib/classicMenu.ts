@@ -3,6 +3,7 @@ import {
   BookOpen,
   ClipboardList,
   Download,
+  Gift,
   Handshake,
   Settings,
   Globe,
@@ -77,6 +78,7 @@ const FRANCHISE_PLAN: Plan = [
   { title: "Add Franchise", icon: Store, urls: [["/branch/create", "Add Franchise"]] },
   { title: "Admission Forms", icon: Globe, urls: ["/centre/admission-forms"] },
   { title: "Sample Certificate", icon: Award, urls: ["/centre/sample-certificates"] },
+  { title: "My Referral", icon: Gift, urls: ["/teacher-referral/my"] },
   { title: "Downloads", icon: Download, urls: ["/centre/downloads", ["/certificate/centre", "Authorization Letter"]] },
   { title: "Exam & Questions", icon: ClipboardList, urls: [["/centre/questions", "Question Bank"], "/centre/exams"] },
   { title: "Batch & Attendance", icon: School, urls: ["/centre/batches", "/centre/attendance"] },
@@ -196,6 +198,7 @@ const ADMIN_PLAN: Plan = [
   },
   { title: "Live Class", icon: MonitorPlay, urls: ["/live-class/view", "/live-class/setup", "/tools/code-lab", "/tools/whiteboard"] },
   { title: "Partners", icon: Handshake, urls: ["/partners/all", "/partners/add", "/partners/transactions"] },
+  { title: "Teacher Referral", icon: Gift, urls: ["/teacher-referral/codes", "/teacher-referral/referrals"] },
 ];
 
 /** Admin and student panels keep their module groups, each as a heading. */
