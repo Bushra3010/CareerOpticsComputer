@@ -4820,9 +4820,9 @@ export async function deleteUser(id: string) {
  * confined to the branch they are confined to.
  */
 const GRANTABLE_ROLES: Record<string, SystemRole[]> = {
-  SUPER_ADMIN: ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "BRANCH_ADMIN", "ACCOUNTANT", "RECEPTIONIST", "TEACHER", "STAFF"],
-  ORGANIZATION_ADMIN: ["ORGANIZATION_ADMIN", "BRANCH_ADMIN", "ACCOUNTANT", "RECEPTIONIST", "TEACHER", "STAFF"],
-  BRANCH_ADMIN: ["ACCOUNTANT", "RECEPTIONIST", "TEACHER", "STAFF"],
+  SUPER_ADMIN: ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "BRANCH_ADMIN", "TEACHER", "STAFF"],
+  ORGANIZATION_ADMIN: ["ORGANIZATION_ADMIN", "BRANCH_ADMIN", "TEACHER", "STAFF"],
+  BRANCH_ADMIN: ["TEACHER", "STAFF"],
 };
 
 /** The roles this caller may create. Empty means they may not create logins. */

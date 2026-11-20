@@ -221,7 +221,10 @@ describe("getUsers", () => {
 
 describe("grantableRoles", () => {
   it("lets an organisation admin staff the institute", () => {
-    expect(grantableRoles("ORGANIZATION_ADMIN")).toContain("RECEPTIONIST");
+    expect(grantableRoles("ORGANIZATION_ADMIN")).toContain("TEACHER");
+    // Not modules this CRM has: no longer handed out.
+    expect(grantableRoles("ORGANIZATION_ADMIN")).not.toContain("RECEPTIONIST");
+    expect(grantableRoles("ORGANIZATION_ADMIN")).not.toContain("ACCOUNTANT");
     expect(grantableRoles("ORGANIZATION_ADMIN")).toContain("BRANCH_ADMIN");
   });
 

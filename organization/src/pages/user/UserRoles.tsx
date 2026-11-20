@@ -73,8 +73,6 @@ const BASE_LABELS: Record<string, { label: string; help: string }> = {
     label: "Runs a branch",
     help: "One branch, with its staff and its admissions.",
   },
-  ACCOUNTANT: { label: "Branch staff — accounts", help: "One branch, fees side." },
-  RECEPTIONIST: { label: "Branch staff — front desk", help: "One branch, reception side." },
   TEACHER: { label: "Branch staff — teaching", help: "One branch, classes and marks." },
   STAFF: { label: "Branch staff — general", help: "One branch, whatever you grant." },
 };

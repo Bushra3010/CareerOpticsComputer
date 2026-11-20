@@ -14,8 +14,6 @@ returns void language sql security definer set search_path = public as $$
   from (values
     ('ORGANIZATION_ADMIN', 'Organisation Admin', 'Every branch and every module, settings and users included.'),
     ('BRANCH_ADMIN',       'Branch Admin',       'Runs one branch: its admissions, fees, attendance and results.'),
-    ('ACCOUNTANT',         'Accountant',         'Fees, payments and the branch wallet.'),
-    ('RECEPTIONIST',       'Receptionist',       'The front desk: visitors, enquiries and admissions.'),
     ('TEACHER',            'Teacher',            'Classes, attendance, exams and marks.'),
     ('STAFF',              'Staff',              'General staff: whatever the institute grants them.')
   ) as r(base, label, description)

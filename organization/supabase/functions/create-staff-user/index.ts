@@ -54,9 +54,9 @@ const ADMIN_ROLES = ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "BRANCH_ADMIN"];
  * portal account attached to no student record.
  */
 const GRANTABLE: Record<string, string[]> = {
-  SUPER_ADMIN: ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "BRANCH_ADMIN", "ACCOUNTANT", "RECEPTIONIST", "TEACHER", "STAFF"],
-  ORGANIZATION_ADMIN: ["ORGANIZATION_ADMIN", "BRANCH_ADMIN", "ACCOUNTANT", "RECEPTIONIST", "TEACHER", "STAFF"],
-  BRANCH_ADMIN: ["ACCOUNTANT", "RECEPTIONIST", "TEACHER", "STAFF"],
+  SUPER_ADMIN: ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "BRANCH_ADMIN", "TEACHER", "STAFF"],
+  ORGANIZATION_ADMIN: ["ORGANIZATION_ADMIN", "BRANCH_ADMIN", "TEACHER", "STAFF"],
+  BRANCH_ADMIN: ["TEACHER", "STAFF"],
 };
 
 /** A staff role sits at the branch; the two admin roles sit above it. */
@@ -67,7 +67,7 @@ const userTypeFor = (role: string) =>
 const BRANCH_STAFF = ["ACCOUNTANT", "RECEPTIONIST", "TEACHER", "STAFF"];
 
 const HEAD_OFFICE_STAFF_HINT =
-  "Branch staff (accountant, receptionist, teacher, staff) need a branch. For a head office user, " +
+  "Branch staff (teacher, staff) need a branch. For a head office user, " +
   "make a role at the Organisation-wide level under Users -> Roles, tick its pages in Access Control, and give them that role.";
 
 type Json = (body: unknown, status?: number) => Response;
